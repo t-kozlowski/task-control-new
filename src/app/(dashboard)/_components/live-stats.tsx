@@ -115,6 +115,14 @@ export default function LiveStats({ tasks }: LiveStatsProps) {
     ideal: { label: 'Idealna ścieżka', color: 'hsl(var(--muted-foreground)/0.5)' },
     actual: { label: 'Rzeczywisty postęp', color: 'hsl(var(--primary))' },
   };
+
+   const barChartConfig = {
+    zadania: { label: 'Zadania' },
+    ...statusData.reduce((acc, status) => {
+      acc[status.name] = { label: status.name, color: status.fill };
+      return acc;
+    }, {} as any),
+  };
   
   const KpiCard = ({ title, value, unit, isPositive }: { title: string; value: string | number; unit: string, isPositive?: boolean }) => (
     <div className="rounded-lg bg-secondary/50 p-3 text-center">
@@ -161,23 +169,25 @@ export default function LiveStats({ tasks }: LiveStatsProps) {
            <CardDescription>Rozkład zadań w kluczowych statusach w czasie rzeczywistym.</CardDescription>
         </CardHeader>
         <CardContent className="h-[350px]">
-           <ResponsiveContainer width="100%" height="100%">
-               <BarChart data={statusData} layout="vertical" margin={{ top: 20, right: 20, bottom: 0, left: 10 }}>
-                    <CartesianGrid horizontal={false} stroke="hsl(var(--border) / 0.5)" />
-                    <XAxis type="number" hide />
-                    <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} tick={{ fill: 'hsl(var(--muted-foreground))' }} width={80} />
-                    <ChartTooltip cursor={{fill: 'hsl(var(--accent))'}} content={<ChartTooltipContent hideLabel hideIndicator />} />
-                    <Bar dataKey="zadania" radius={[0, 4, 4, 0]} isAnimationActive={true} animationDuration={1000} animationEasing="ease-out">
-                         <LabelList 
-                            dataKey="zadania" 
-                            position="right"
-                            offset={8}
-                            className="fill-foreground font-semibold"
-                            formatter={(value: number) => (value > 0 ? value : '')}
-                         />
-                    </Bar>
-               </BarChart>
-            </ResponsiveContainer>
+           <ChartContainer config={barChartConfig}>
+             <ResponsiveContainer width="100%" height="100%">
+                 <BarChart data={statusData} layout="vertical" margin={{ top: 20, right: 20, bottom: 0, left: 10 }}>
+                      <CartesianGrid horizontal={false} stroke="hsl(var(--border) / 0.5)" />
+                      <XAxis type="number" hide />
+                      <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} tick={{ fill: 'hsl(var(--muted-foreground))' }} width={80} />
+                      <ChartTooltip cursor={{fill: 'hsl(var(--accent))'}} content={<ChartTooltipContent hideLabel hideIndicator />} />
+                      <Bar dataKey="zadania" radius={[0, 4, 4, 0]} isAnimationActive={true} animationDuration={1000} animationEasing="ease-out">
+                           <LabelList 
+                              dataKey="zadania" 
+                              position="right"
+                              offset={8}
+                              className="fill-foreground font-semibold"
+                              formatter={(value: number) => (value > 0 ? value : '')}
+                           />
+                      </Bar>
+                 </BarChart>
+              </ResponsiveContainer>
+           </ChartContainer>
         </CardContent>
       </Card>
     </div>
