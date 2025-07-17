@@ -3,7 +3,9 @@
     "id": "TASK-1",
     "name": "Implementacja uwierzytelniania użytkowników",
     "description": "Opracowanie i integracja bezpiecznego systemu uwierzytelniania użytkowników z wykorzystaniem JWT i OAuth 2.0.",
-    "assignees": ["alice@example.com"],
+    "assignees": [
+      "alice@example.com"
+    ],
     "priority": "Critical",
     "status": "In Progress",
     "subTasks": [
@@ -31,7 +33,10 @@
     "id": "TASK-2",
     "name": "Budowa interfejsu pulpitu",
     "description": "Stworzenie głównego interfejsu pulpitu z wszystkimi wymaganymi widżetami i komponentami.",
-    "assignees": ["bob@example.com", "alice@example.com"],
+    "assignees": [
+      "bob@example.com",
+      "alice@example.com"
+    ],
     "priority": "High",
     "status": "In Progress",
     "subTasks": [
@@ -65,7 +70,9 @@
     "id": "TASK-3",
     "name": "Konfiguracja punktu końcowego analizy AI",
     "description": "Stworzenie usługi backendowej do obsługi żądań analizy AI z użyciem Genkit.",
-    "assignees": ["charlie@example.com"],
+    "assignees": [
+      "charlie@example.com"
+    ],
     "priority": "High",
     "status": "Done",
     "subTasks": [
@@ -93,7 +100,9 @@
     "id": "TASK-4",
     "name": "Refaktoryzacja starszego kodu",
     "description": "Poprawa wydajności i łatwości utrzymania poprzez refaktoryzację starej bazy kodu.",
-    "assignees": ["david@example.com"],
+    "assignees": [
+      "david@example.com"
+    ],
     "priority": "Medium",
     "status": "In Progress",
     "subTasks": [
@@ -121,7 +130,9 @@
     "id": "TASK-5",
     "name": "Dokumentacja dla użytkownika",
     "description": "Napisanie obszernej dokumentacji dla użytkowników końcowych.",
-    "assignees": ["eve@example.com"],
+    "assignees": [
+      "eve@example.com"
+    ],
     "priority": "Low",
     "status": "Backlog",
     "subTasks": []
@@ -130,10 +141,69 @@
     "id": "TASK-1752745199145",
     "name": "Aktualizacja UI/UX",
     "description": "Odświeżenie interfejsu użytkownika aplikacji.",
-    "assignees": ["david@example.com", "bob@example.com"],
+    "assignees": [
+      "david@example.com",
+      "bob@example.com"
+    ],
     "priority": "Medium",
     "status": "Done",
     "parentId": "TASK-4",
     "date": "2025-07-17T10:06:31.254Z"
+  },
+  {
+    "id": "TASK-1752748342001",
+    "name": "Pobieranie Danych BP",
+    "description": "u6srgb",
+    "assignees": [
+      "david@example.com"
+    ],
+    "priority": "Low",
+    "status": "Todo",
+    "parentId": "TASK-5"
+  },
+  {
+    "id": "TASK-1752748364749",
+    "name": "j,jh",
+    "description": "jjj",
+    "assignees": [
+      "david@example.com"
+    ],
+    "priority": "Low",
+    "status": "Done",
+    "parentId": "TASK-5",
+    "date": "2025-07-17T10:33:00.904Z"
+  },
+  {
+    "id": "TASK-1752748406131",
+    "name": "bhjn",
+    "description": "kml",
+    "assignees": [
+      "david@example.com"
+    ],
+    "priority": "Critical",
+    "status": "Todo",
+    "parentId": "TASK-5"
+  },
+  {
+    "id": "TASK-1752748420705",
+    "name": "n nm,",
+    "description": " bnm",
+    "assignees": [
+      "david@example.com"
+    ],
+    "priority": "Critical",
+    "status": "Todo",
+    "parentId": "TASK-5"
+  },
+  {
+    "id": "TASK-1752748420705",
+    "name": "n nm,",
+    "description": " bnm",
+    "assignees": [
+      "david@example.com"
+    ],
+    "priority": "Critical",
+    "status": "Todo",
+    "parentId": "TASK-5"
   }
 ]

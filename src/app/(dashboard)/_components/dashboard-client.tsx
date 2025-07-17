@@ -1,36 +1,30 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import type { Task, User } from '@/types';
-import TaskList from './task-list';
 import TaskSpotlight from './task-spotlight';
-import { Button } from '@/components/ui/button';
-import { Icons } from '@/components/icons';
-import AiSummaryDialog from './ai-summary-dialog';
-import { useApp } from '@/context/app-context';
+import { KeyStats } from './key-stats';
+import { AiSummaryCard } from './ai-summary-card';
 
-export default function DashboardClient({ initialTasks }: { initialTasks: Task[] }) {
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
-  const [isSummaryDialogOpen, setIsSummaryDialogOpen] = useState(false);
-  const { users } = useApp();
-
+export default function DashboardClient({ initialTasks, initialUsers }: { initialTasks: Task[], initialUsers: User[] }) {
 
   return (
-    <>
+    <div className="flex flex-col gap-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-2xl font-bold tracking-tight">Pulpit</h1>
-        <Button onClick={() => setIsSummaryDialogOpen(true)}>
-          <Icons.bot className="mr-2" />
-          Podsumowanie AI "Big Picture"
-        </Button>
-      </div>
-      
-      <div className="space-y-6">
-        <TaskList tasks={tasks} />
-        <TaskSpotlight tasks={tasks} />
+        <h1 className="text-2xl font-bold tracking-tight">Pulpit Strategiczny</h1>
       </div>
 
-      <AiSummaryDialog open={isSummaryDialogOpen} onOpenChange={setIsSummaryDialogOpen} />
-    </>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+         <div className="lg:col-span-3">
+            <AiSummaryCard />
+        </div>
+        <div className="lg:col-span-3">
+            <KeyStats tasks={initialTasks} users={initialUsers} />
+        </div>
+        <div className="lg:col-span-3">
+          <TaskSpotlight tasks={initialTasks} />
+        </div>
+      </div>
+    </div>
   );
 }
