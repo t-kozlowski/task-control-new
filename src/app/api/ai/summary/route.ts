@@ -13,8 +13,9 @@ export async function GET() {
     });
 
     return NextResponse.json(summary);
-  } catch (error) {
+  } catch (error: any) {
     console.error('AI Summary Error:', error);
-    return NextResponse.json({ message: 'Error generating AI summary' }, { status: 500 });
+    const errorMessage = error.message || 'Error generating AI summary';
+    return NextResponse.json({ message: errorMessage }, { status: 500 });
   }
 }

@@ -6,7 +6,6 @@ export const ai = genkit({
     googleAI({
       // The API key is read from the GOOGLE_API_KEY environment variable.
       apiVersion: 'v1beta',
-      model: 'gemini-1.5-flash',
     }),
   ],
   logLevel: 'debug',

@@ -23,7 +23,7 @@ export default function AiTestPage() {
     try {
       const response = await fetch('/api/ai/summary');
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Wystąpił nieoczekiwany błąd serwera.' }));
+        const errorData = await response.json().catch(() => ({ message: 'Wystąpił nieoczekiwany błąd serwera. Sprawdź konsolę po stronie serwera, aby uzyskać więcej informacji.' }));
         throw new Error(errorData.message || 'Nie udało się uzyskać odpowiedzi od AI.');
       }
       const data = await response.json();
