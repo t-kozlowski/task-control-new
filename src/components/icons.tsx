@@ -24,6 +24,7 @@ import {
   Users,
   LoaderCircle,
   LogOut,
+  Search,
 } from 'lucide-react';
 
 export const Icons = {
@@ -52,6 +53,7 @@ export const Icons = {
   attendees: Users,
   spinner: LoaderCircle,
   logout: LogOut,
+  search: Search,
 };
 
 export const PriorityIcons = {
