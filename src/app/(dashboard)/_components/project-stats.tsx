@@ -136,7 +136,7 @@ export default function ProjectStats({ tasks }: { tasks: Task[] }) {
                     position="inside"
                     dataKey="name"
                     className="fill-white font-bold text-sm drop-shadow-lg"
-                    formatter={(value: string, entry: any) => `${value}: ${entry.payload.value}`}
+                    formatter={(value: string, entry: { payload: { value: number } }) => `${value}: ${entry.payload.value}`}
                   />
               </RadialBar>
               <ChartLegend content={<ChartLegendContent nameKey="name" iconType="circle" />} />
