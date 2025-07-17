@@ -1,73 +1,90 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Icons } from '../icons';
+import { Icons, BotMessageSquare } from '../icons';
 import { useToast } from '@/hooks/use-toast';
 import type { AiNotificationOutput } from '@/ai/flows/ai-notifications';
 import { Button } from '../ui/button';
+import { AnimatePresence, motion } from 'framer-motion';
 
 export function AiNotifications() {
-  const { toast } = useToast();
-  const [lastNotificationTime, setLastNotificationTime] = useState(0);
+  const [notification, setNotification] = useState<AiNotificationOutput | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const fetchNotification = async () => {
-      // Prevent fetching if a toast was recently shown
-      if (Date.now() - lastNotificationTime < 60000) { // 1 minute cooldown
-        return;
-      }
-      
+    const fetchAndShowNotification = async () => {
       try {
         const res = await fetch('/api/ai/notification');
         if (!res.ok) return;
         const newNotification: AiNotificationOutput = await res.json();
-        
-        setLastNotificationTime(Date.now());
-        
-        let description = newNotification.notification;
-        let action;
+        setNotification(newNotification);
+        setIsVisible(true);
 
-        if (newNotification.newTaskSuggestion) {
-            description += ` Nowy pomysł: ${newNotification.newTaskSuggestion.name}`;
-            action = (
-              <Button variant="secondary" size="sm" onClick={() => alert(`Nowe zadanie: ${newNotification.newTaskSuggestion.name}\n\nOpis: ${newNotification.newTaskSuggestion.description}`)}>
-                Pokaż szczegóły
-              </Button>
-            )
-        }
+        // Hide after 10 seconds, then fetch new one after 5 seconds
+        setTimeout(() => {
+          setIsVisible(false);
+          setTimeout(fetchAndShowNotification, 5000); 
+        }, 10000);
 
-        toast({
-          title: (
-            <div className="flex items-center gap-2">
-              <Icons.bot className="text-primary" />
-              <span className="capitalize">{getBadgeText(newNotification.type)}</span>
-            </div>
-          ),
-          description: description,
-          variant: newNotification.type === 'risk' ? 'destructive' : 'default',
-          duration: 10000,
-          action: action,
-        });
       } catch (error) {
         console.error('Failed to fetch AI notification', error);
+        // Retry after a longer delay
+        setTimeout(fetchAndShowNotification, 30000);
       }
     };
 
-    // Fetch one immediately on mount after a short delay
-    const timer = setTimeout(fetchNotification, 5000);
-
+    // Initial fetch after a short delay
+    const timer = setTimeout(fetchAndShowNotification, 5000);
     return () => clearTimeout(timer);
-  }, [toast, lastNotificationTime]);
+  }, []);
 
   const getBadgeText = (type: AiNotificationOutput['type']) => {
     switch(type) {
-      case 'risk': return 'Ryzyko';
-      case 'positive': return 'Pozytywna';
-      case 'suggestion': return 'Sugestia';
+      case 'risk': return 'Analiza Ryzyka';
+      case 'positive': return 'Pozytywna Obserwacja';
+      case 'suggestion': return 'Sugestia Optymalizacji';
       default: return type;
     }
-  }
+  };
   
-  // This component no longer renders a visible element, it just triggers toasts.
-  return null;
+  return (
+    <AnimatePresence>
+      {isVisible && notification && (
+        <motion.div
+          initial={{ opacity: 0, y: 50, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 50, scale: 0.9 }}
+          transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+          className="relative w-full bg-card/60 dark:bg-black/20 backdrop-blur-lg border border-primary/20 rounded-xl p-6 shadow-2xl shadow-primary/10"
+        >
+          <div className="flex items-start gap-4">
+            <BotMessageSquare className="h-8 w-8 text-primary flex-shrink-0 mt-1" />
+            <div className="flex-1">
+              <span 
+                className={`inline-block mb-2 px-3 py-1 text-xs font-semibold rounded-full ${
+                    notification.type === 'risk' ? 'bg-red-500/20 text-red-300' 
+                    : notification.type === 'positive' ? 'bg-green-500/20 text-green-300' 
+                    : 'bg-blue-500/20 text-blue-300'}`}
+              >
+                  {getBadgeText(notification.type)}
+              </span>
+              <p className="text-lg text-foreground/90">{notification.notification}</p>
+              
+              {notification.newTaskSuggestion && (
+                <div className="mt-4 p-4 bg-secondary/50 border border-border rounded-lg">
+                    <p className="text-sm font-semibold text-primary">Nowy pomysł na zadanie:</p>
+                    <p className="text-md font-bold">{notification.newTaskSuggestion.name}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{notification.newTaskSuggestion.description}</p>
+                </div>
+              )}
+            </div>
+            <Button variant="ghost" size="icon" onClick={() => setIsVisible(false)} className="absolute top-4 right-4">
+                <Icons.delete className="h-4 w-4" />
+            </Button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
 }
