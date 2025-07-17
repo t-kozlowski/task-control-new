@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useRef, type MouseEvent } from 'react';
-import type { Task } from '@/types';
+import type { Task, User } from '@/types';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { PriorityIcons } from '@/components/icons';
@@ -9,6 +9,14 @@ import { Badge } from '@/components/ui/badge';
 import { ChevronDown } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useApp } from '@/context/app-context';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+
+const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('') || '?';
 
 export default function TaskListItem({ task, allTasks = [] }: { task: Task, allTasks?: Task[] }) {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -23,10 +31,7 @@ export default function TaskListItem({ task, allTasks = [] }: { task: Task, allT
     }
   };
   
-  const assigneeUser = users.find(u => u.email === task.assignee);
-  const assigneeName = assigneeUser?.name || task.assignee;
-  const assigneeInitials = assigneeName?.split(' ').map(n => n[0]).join('') || '?';
-
+  const assignedUsers = task.assignees.map(email => users.find(u => u.email === email)).filter(Boolean) as User[];
 
   const subTasks = allTasks.filter(t => t.parentId === task.id);
   const progress = calculateWeightedProgress(task, allTasks);
@@ -62,10 +67,20 @@ export default function TaskListItem({ task, allTasks = [] }: { task: Task, allT
                             <h3 className="font-semibold text-lg">{task.name}</h3>
                         </div>
                         <div className="flex items-center gap-2 ml-4 flex-shrink-0">
-                             <Avatar className="h-6 w-6">
-                                <AvatarFallback>{assigneeInitials}</AvatarFallback>
-                            </Avatar>
-                            <span className="text-sm text-muted-foreground">{assigneeName}</span>
+                            <div className="flex -space-x-2">
+                                <TooltipProvider>
+                                {assignedUsers.map((user) => (
+                                    <Tooltip key={user.id}>
+                                        <TooltipTrigger>
+                                            <Avatar className="h-6 w-6 border-2 border-background">
+                                                <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                                            </Avatar>
+                                        </TooltipTrigger>
+                                        <TooltipContent>{user.name}</TooltipContent>
+                                    </Tooltip>
+                                ))}
+                                </TooltipProvider>
+                            </div>
                         </div>
                     </div>
 

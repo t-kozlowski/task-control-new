@@ -20,12 +20,17 @@ import * as z from 'zod';
 import { Task, Priority, Status, User } from '@/types';
 import { useEffect } from 'react';
 import { useApp } from '@/context/app-context';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Check, ChevronsUpDown } from 'lucide-react';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
 const taskSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(1, 'Nazwa zadania jest wymagana'),
   description: z.string().min(1, 'Opis jest wymagany'),
-  assignee: z.string().email('Nieprawidłowy adres email').min(1, 'Przypisana osoba jest wymagana'),
+  assignees: z.array(z.string().email()).min(1, 'Przypisz co najmniej jedną osobę'),
   priority: z.enum(['Critical', 'High', 'Medium', 'Low']),
   status: z.enum(['Todo', 'In Progress', 'Done', 'Backlog']),
   parentId: z.string().nullable().optional(),
@@ -57,7 +62,7 @@ export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved, users, ta
           id: `TASK-${Date.now()}`,
           name: '',
           description: '',
-          assignee: loggedInUser?.email || '',
+          assignees: loggedInUser ? [loggedInUser.email] : [],
           priority: 'Medium',
           status: 'Todo',
           parentId: null,
@@ -69,7 +74,6 @@ export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved, users, ta
   const onSubmit = async (data: TaskFormData) => {
     const method = task ? 'PUT' : 'POST';
     const url = task ? `/api/tasks/${task.id}` : '/api/tasks';
-    // Ensure subTasks from original object is preserved if editing
     const payload = { ...task, ...data };
 
     try {
@@ -82,7 +86,6 @@ export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved, users, ta
       onTaskSaved();
     } catch (error) {
       console.error(error);
-      // You might want to show a toast message here
     }
   };
 
@@ -128,20 +131,57 @@ export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved, users, ta
               {errors.description && <p className="text-destructive text-sm mt-1">{errors.description.message}</p>}
             </div>
             <div>
-              <Label htmlFor="assignee">Przypisany</Label>
+              <Label>Przypisani</Label>
               <Controller
-                name="assignee"
+                name="assignees"
                 control={control}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <SelectTrigger><SelectValue placeholder="Wybierz osobę" /></SelectTrigger>
-                    <SelectContent>
-                      {users.map(u => <SelectItem key={u.email} value={u.email}>{u.name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button variant="outline" role="combobox" className="w-full justify-between h-auto min-h-10">
+                                <div className="flex gap-1 flex-wrap">
+                                {field.value.length > 0 ? (
+                                    field.value.map(email => {
+                                        const user = users.find(u => u.email === email);
+                                        return <Badge key={email} variant="secondary">{user?.name || email}</Badge>
+                                    })
+                                ) : (
+                                    <span className="text-muted-foreground">Wybierz osoby...</span>
+                                )}
+                                </div>
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                            <Command>
+                                <CommandInput placeholder="Szukaj osoby..." />
+                                <CommandList>
+                                <CommandEmpty>Nie znaleziono użytkownika.</CommandEmpty>
+                                <CommandGroup>
+                                    {users.map((user) => (
+                                    <CommandItem
+                                        key={user.email}
+                                        onSelect={() => {
+                                            const currentAssignees = field.value || [];
+                                            const isSelected = currentAssignees.includes(user.email);
+                                            const newAssignees = isSelected
+                                                ? currentAssignees.filter(email => email !== user.email)
+                                                : [...currentAssignees, user.email];
+                                            field.onChange(newAssignees);
+                                        }}
+                                    >
+                                        <Check className={cn("mr-2 h-4 w-4", field.value?.includes(user.email) ? "opacity-100" : "opacity-0")} />
+                                        {user.name}
+                                    </CommandItem>
+                                    ))}
+                                </CommandGroup>
+                                </CommandList>
+                            </Command>
+                        </PopoverContent>
+                    </Popover>
                 )}
               />
-               {errors.assignee && <p className="text-destructive text-sm mt-1">{errors.assignee.message}</p>}
+               {errors.assignees && <p className="text-destructive text-sm mt-1">{errors.assignees.message}</p>}
             </div>
             <div>
               <Label htmlFor="priority">Priorytet</Label>

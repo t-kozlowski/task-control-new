@@ -2,10 +2,10 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import type { Task, User } from '@/types';
 import React, { useMemo } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, LabelList } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, Label } from 'recharts';
 import { format, parseISO, startOfMonth } from 'date-fns';
 import { pl } from 'date-fns/locale';
 
@@ -15,14 +15,9 @@ interface LiveStatsProps {
 }
 
 const USER_COLORS = [
-  'hsl(204 80% 60%)',
-  'hsl(145 65% 55%)',
-  'hsl(45 85% 60%)',
-  'hsl(280 75% 65%)',
-  'hsl(340 85% 70%)',
-  'hsl(170 70% 50%)',
-  'hsl(25 85% 60%)',
-  'hsl(0 75% 65%)',
+  'hsl(204 80% 60%)', 'hsl(145 65% 55%)', 'hsl(45 85% 60%)',
+  'hsl(280 75% 65%)', 'hsl(340 85% 70%)', 'hsl(170 70% 50%)',
+  'hsl(25 85% 60%)', 'hsl(0 75% 65%)',
 ];
 
 
@@ -47,18 +42,20 @@ export default function LiveStats({ tasks, users }: LiveStatsProps) {
 
     return sortedMonths.map(month => ({
         month,
-        tasks: countsByMonth[month],
+        zadania: countsByMonth[month],
     }));
 
   }, [tasks]);
 
   const tasksPerUserData = useMemo(() => {
-    const counts = tasks.reduce((acc, task) => {
-      const user = users.find(u => u.email === task.assignee);
-      const userName = user?.name || task.assignee;
-      acc[userName] = (acc[userName] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const counts: Record<string, number> = {};
+    tasks.forEach(task => {
+        task.assignees.forEach(assigneeEmail => {
+            const user = users.find(u => u.email === assigneeEmail);
+            const userName = user?.name || assigneeEmail;
+            counts[userName] = (counts[userName] || 0) + 1;
+        });
+    });
 
     return Object.entries(counts).map(([name, value], index) => ({
         name,
@@ -67,8 +64,10 @@ export default function LiveStats({ tasks, users }: LiveStatsProps) {
     }));
   }, [tasks, users]);
 
+  const totalTasks = useMemo(() => tasksPerUserData.reduce((acc, curr) => acc + curr.value, 0), [tasksPerUserData]);
+
   const lineChartConfig = {
-    tasks: {
+    zadania: {
       label: 'Ukończone zadania',
       color: 'hsl(var(--primary))',
     },
@@ -85,43 +84,60 @@ export default function LiveStats({ tasks, users }: LiveStatsProps) {
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <Card>
         <CardHeader>
-          <CardTitle>Postęp zadań w czasie</CardTitle>
+          <CardTitle>Wydajność Zespołu</CardTitle>
           <CardDescription>Liczba ukończonych zadań głównych w poszczególnych miesiącach.</CardDescription>
         </CardHeader>
         <CardContent>
           <ChartContainer config={lineChartConfig} className="h-[250px] w-full">
-            <LineChart data={tasksOverTimeData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
+            <AreaChart accessibilityLayer data={tasksOverTimeData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
               <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border) / 0.5)" />
               <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
               <YAxis allowDecimals={false} tickLine={false} axisLine={false} tickMargin={8} />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Line dataKey="tasks" type="monotone" stroke="var(--color-tasks)" strokeWidth={2} dot={true} />
-            </LineChart>
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent indicator="dot" />}
+              />
+              <defs>
+                <linearGradient id="fillZadania" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="var(--color-zadania)" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="var(--color-zadania)" stopOpacity={0.1} />
+                </linearGradient>
+              </defs>
+              <Area dataKey="zadania" type="natural" fill="url(#fillZadania)" stroke="var(--color-zadania)" stackId="a" />
+            </AreaChart>
           </ChartContainer>
         </CardContent>
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Obciążenie zespołu</CardTitle>
+          <CardTitle>Obciążenie Zespołu</CardTitle>
            <CardDescription>Rozkład wszystkich zadań na poszczególnych członków zespołu.</CardDescription>
         </CardHeader>
         <CardContent>
           <ChartContainer config={pieChartConfig} className="mx-auto aspect-square h-[250px]">
              <PieChart>
               <ChartTooltip content={<ChartTooltipContent nameKey="name" hideLabel />} />
-              <Pie data={tasksPerUserData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2} cornerRadius={5}>
+              <Pie data={tasksPerUserData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={2} cornerRadius={5}>
                 {tasksPerUserData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.fill} stroke={entry.fill} />
                 ))}
-                 <LabelList
-                    dataKey="value"
-                    position="outside"
-                    offset={15}
-                    className="fill-foreground font-semibold"
-                    formatter={(value: number) => value}
-                />
+                <Label
+                    content={({ viewBox }) => {
+                        if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                            return (
+                                <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle" >
+                                    <tspan x={viewBox.cx} y={viewBox.cy} className="text-3xl font-bold fill-foreground" >
+                                        {totalTasks.toLocaleString()}
+                                    </tspan>
+                                    <tspan x={viewBox.cx} y={viewBox.cy + 20} className="text-sm fill-muted-foreground" >
+                                        Zadań
+                                    </tspan>
+                                </text>
+                            );
+                        }
+                    }}
+                 />
               </Pie>
-              <ChartLegend content={<ChartLegendContent nameKey="name" />} />
             </PieChart>
           </ChartContainer>
         </CardContent>

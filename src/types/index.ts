@@ -12,7 +12,7 @@ export interface Task {
   id: string;
   name: string;
   description: string;
-  assignee: string; // email of the user
+  assignees: string[]; // email of the user
   priority: Priority;
   status: Status;
   subTasks: SubTask[]; // This might become deprecated, but keep for now to avoid breaking changes.

@@ -19,9 +19,10 @@ import { Progress } from "@/components/ui/progress";
 import { Icons, PriorityIcons } from "@/components/icons";
 import { Task, Priority, User } from "@/types";
 import { calculateWeightedProgress, getProgressGradient } from "@/lib/task-utils";
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Fragment } from "react";
 import { ChevronRight } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface TaskTableProps {
   tasks: Task[];
@@ -38,13 +39,12 @@ export function TaskTable({ tasks, onEdit, onTaskDeleted, users }: TaskTableProp
         onTaskDeleted();
     };
     
-    const getAssigneeName = (email: string) => {
-        return users.find(u => u.email === email)?.name || email;
-    }
-
-    const getAssigneeInitials = (email: string) => {
-        const name = getAssigneeName(email);
-        return name.split(' ').map(n => n[0]).join('');
+    const getAssigneeInfo = (email: string) => {
+        const user = users.find(u => u.email === email);
+        return {
+            name: user?.name || email,
+            initials: user?.name.split(' ').map(n => n[0]).join('') || '?',
+        }
     }
 
     const mainTasks = tasks.filter(task => !task.parentId);
@@ -62,6 +62,8 @@ export function TaskTable({ tasks, onEdit, onTaskDeleted, users }: TaskTableProp
       const progress = calculateWeightedProgress(task, tasks);
       const progressGradient = getProgressGradient(progress);
       const PriorityIcon = PriorityIcons[task.priority as Priority];
+      const assignedUsers = task.assignees.map(getAssigneeInfo);
+      
       return (
         <TableRow key={task.id} className={isSubTask ? "bg-secondary/50" : ""}>
           <TableCell className="font-medium">
@@ -80,11 +82,21 @@ export function TaskTable({ tasks, onEdit, onTaskDeleted, users }: TaskTableProp
             </div>
           </TableCell>
           <TableCell>
-            <div className="flex items-center gap-2">
-                <Avatar className="h-6 w-6">
-                    <AvatarFallback>{getAssigneeInitials(task.assignee)}</AvatarFallback>
-                </Avatar>
-              <span>{getAssigneeName(task.assignee)}</span>
+             <div className="flex items-center -space-x-2">
+                <TooltipProvider>
+                  {assignedUsers.map((user, index) => (
+                    <Tooltip key={`${task.id}-assignee-${index}`}>
+                      <TooltipTrigger>
+                        <Avatar className="h-6 w-6 border-2 border-background">
+                            <AvatarFallback>{user.initials}</AvatarFallback>
+                        </Avatar>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{user.name}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                </TooltipProvider>
             </div>
           </TableCell>
           <TableCell>

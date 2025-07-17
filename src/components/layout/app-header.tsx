@@ -53,7 +53,8 @@ export function AppHeader() {
   };
 
   const userInitials = loggedInUser?.name.split(' ').map(n => n[0]).join('');
-  const userTasks = tasks.filter(t => t.assignee === loggedInUser?.email && t.status !== 'Done');
+  const userTasks = loggedInUser ? tasks.filter(t => t.assignees.includes(loggedInUser.email) && t.status !== 'Done') : [];
+
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">

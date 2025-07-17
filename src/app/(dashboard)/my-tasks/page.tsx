@@ -28,7 +28,7 @@ export default function MyTasksPage() {
         refreshTasks();
     }, []);
     
-    const myTasks = tasks.filter(task => task.assignee === loggedInUser?.email);
+    const myTasks = tasks.filter(task => task.assignees.includes(loggedInUser?.email || ''));
 
     const handleEditTask = (task: Task) => {
         setEditingTask(task);

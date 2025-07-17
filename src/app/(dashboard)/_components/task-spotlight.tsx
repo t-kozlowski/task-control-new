@@ -48,8 +48,8 @@ export default function TaskSpotlight({ tasks }: { tasks: Task[] }) {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2" />
-          <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2" />
+          <CarouselPrevious />
+          <CarouselNext />
         </Carousel>
       </CardContent>
     </Card>

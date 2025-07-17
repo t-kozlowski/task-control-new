@@ -12,8 +12,8 @@ export default function TaskList({ tasks }: { tasks: Task[] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Lista Zadań Projektu</CardTitle>
-        <CardDescription>Hierarchiczny widok wszystkich zadań i ich postępów.</CardDescription>
+        <CardTitle>Główne Zadania Projektu</CardTitle>
+        <CardDescription>Hierarchiczny widok wszystkich zadań głównych i ich postępów.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {mainTasks.length > 0 ? (

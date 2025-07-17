@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { Status, Priority, Task } from '@/types';
 import React, { useMemo } from 'react';
-import { PieChart, Pie, Cell, RadialBarChart, RadialBar, PolarAngleAxis, LabelList, Legend } from 'recharts';
+import { PieChart, Pie, Cell, RadialBarChart, RadialBar, LabelList } from 'recharts';
 
 const STATUS_COLORS: Record<Status, string> = {
   'Backlog': 'hsl(215 25% 65%)',
@@ -119,7 +119,6 @@ export default function ProjectStats({ tasks }: { tasks: Task[] }) {
                 barSize={20}
               >
               <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-              <PolarAngleAxis type="number" domain={[0, 100]} dataKey="value" tick={false} />
               <RadialBar
                 dataKey="value"
                 background
@@ -136,7 +135,7 @@ export default function ProjectStats({ tasks }: { tasks: Task[] }) {
                     formatter={(value, props) => `${value}: ${props.payload.value}`}
                   />
               </RadialBar>
-              <Legend iconSize={10} width={120} height={140} layout="vertical" verticalAlign="middle" align="right" />
+              <ChartLegend content={<ChartLegendContent nameKey="name" iconType="circle" />} />
             </RadialBarChart>
           </ChartContainer>
         </CardContent>
