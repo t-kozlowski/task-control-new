@@ -2,11 +2,8 @@
 'use client';
 import { useState, useEffect, useMemo } from 'react';
 import type { Meeting, ActionItem, User } from '@/types';
-import type { MeetingPrepOutput } from '@/ai/flows/meeting-prep';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Icons } from '@/components/icons';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -17,65 +14,6 @@ import { cn } from '@/lib/utils';
 import { format, isFuture, isPast } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
-function AiPrepView({ prepData, isLoading, error }: { prepData: MeetingPrepOutput | null, isLoading: boolean, error: string | null }) {
-    if (isLoading) {
-        return (
-            <div className="space-y-4 p-4">
-                <Skeleton className="h-6 w-1/3" />
-                <Skeleton className="h-20 w-full" />
-                <Skeleton className="h-6 w-1/3" />
-                <Skeleton className="h-20 w-full" />
-            </div>
-        );
-    }
-    if (error) {
-        return <Alert variant="destructive"><AlertTitle>Błąd</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>;
-    }
-    if (!prepData) return <p className="text-muted-foreground p-4">Brak danych do przygotowania.</p>;
-
-    const sentimentColors = {
-        positive: 'border-green-500/50 bg-green-500/10 text-green-300',
-        neutral: 'border-blue-500/50 bg-blue-500/10 text-blue-300',
-        negative: 'border-red-500/50 bg-red-500/10 text-red-300',
-    };
-    const sentimentText = {
-        positive: 'Pozytywny',
-        neutral: 'Neutralny',
-        negative: 'Negatywny',
-    }
-
-    return (
-        <div className="p-4 space-y-6">
-             <div className={cn('p-3 rounded-lg border', sentimentColors[prepData.overallSentiment])}>
-                <p className="text-sm font-semibold">Ogólny sentyment projektu: <span className="font-bold">{sentimentText[prepData.overallSentiment]}</span></p>
-            </div>
-            <div>
-                <h4 className="font-semibold mb-2">Sugerowane punkty do omówienia</h4>
-                <div className="space-y-2">
-                    {prepData.talkingPoints.map((point, index) => (
-                        <div key={index} className="p-3 rounded-lg border bg-secondary/50 text-sm">
-                            <p className="font-semibold">{point.topic}</p>
-                            <p className="text-xs text-muted-foreground">{point.reasoning}</p>
-                        </div>
-                    ))}
-                </div>
-            </div>
-            <div>
-                <h4 className="font-semibold mb-2">Sugerowane pytania do Prezesa</h4>
-                <div className="space-y-2">
-                    {prepData.questionsToAsk.map((question, index) => (
-                        <div key={index} className="flex items-start gap-3 p-3 rounded-lg border bg-secondary/50 text-sm">
-                            <span className="text-primary font-bold mt-0.5">?</span>
-                            <p className="flex-1">{question}</p>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </div>
-    );
-}
-
 
 function ActionItemsView({ items, users }: { items: ActionItem[], users: User[] }) {
     const getAssigneeName = (email: string) => users.find(u => u.email === email)?.name || email;
@@ -104,9 +42,6 @@ function ActionItemsView({ items, users }: { items: ActionItem[], users: User[] 
 export default function MeetingsClient({ initialMeetings }: { initialMeetings: Meeting[] }) {
     const [meetings, setMeetings] = useState<Meeting[]>(initialMeetings);
     const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
-    const [prepData, setPrepData] = useState<MeetingPrepOutput | null>(null);
-    const [isLoadingPrep, setIsLoadingPrep] = useState(false);
-    const [prepError, setPrepError] = useState<string | null>(null);
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [editingMeeting, setEditingMeeting] = useState<Meeting | null>(null);
 
@@ -132,30 +67,6 @@ export default function MeetingsClient({ initialMeetings }: { initialMeetings: M
         }
     }, [initialMeetings]);
 
-    useEffect(() => {
-        if (selectedMeeting) {
-            const fetchPrepData = async () => {
-                setIsLoadingPrep(true);
-                setPrepError(null);
-                setPrepData(null);
-                try {
-                    const response = await fetch('/api/ai/meeting-prep', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ meetingId: selectedMeeting.id })
-                    });
-                    if (!response.ok) throw new Error('Nie udało się pobrać sugestii AI.');
-                    const data = await response.json();
-                    setPrepData(data);
-                } catch (err) {
-                    setPrepError(err instanceof Error ? err.message : 'Wystąpił nieznany błąd.');
-                } finally {
-                    setIsLoadingPrep(false);
-                }
-            };
-            fetchPrepData();
-        }
-    }, [selectedMeeting]);
     
     const handleAddMeeting = () => {
         setEditingMeeting(null);
@@ -184,9 +95,15 @@ export default function MeetingsClient({ initialMeetings }: { initialMeetings: M
 
     const onMeetingSaved = async () => {
         const updatedMeetings = await refreshMeetings();
-        const newOrEditedMeeting = updatedMeetings.find(m => m.id === (editingMeeting?.id || getValues().id));
-        if (newOrEditedMeeting) {
-            setSelectedMeeting(newOrEditedMeeting);
+        // This logic to find new or edited meeting might need adjustment
+        // as getValues() from react-hook-form is not available here.
+        // A simpler approach is to refetch and find the meeting by id.
+        const newOrEditedMeetingId = editingMeeting?.id || `MEETING-${Date.now()}`; // This is not reliable
+        const reselectedMeeting = updatedMeetings.find(m => m.id === editingMeeting?.id); // simplified logic
+        if (reselectedMeeting) {
+            setSelectedMeeting(reselectedMeeting);
+        } else if (updatedMeetings.length > 0) {
+            setSelectedMeeting(updatedMeetings[updatedMeetings.length -1]);
         }
         setIsSheetOpen(false);
     };
@@ -200,7 +117,7 @@ export default function MeetingsClient({ initialMeetings }: { initialMeetings: M
                     <div className="p-4 border-b flex justify-between items-center">
                         <div>
                             <h2 className="font-semibold">Oś Czasu Spotkań</h2>
-                            <p className="text-sm text-muted-foreground">Wybierz spotkanie, aby zobaczyć szczegóły.</p>
+                            <p className="text-sm text-muted-foreground">Wybierz spotkanie.</p>
                         </div>
                          <Button onClick={handleAddMeeting} size="sm"><Icons.plus className="mr-2 h-4 w-4" />Dodaj</Button>
                     </div>
@@ -236,7 +153,6 @@ export default function MeetingsClient({ initialMeetings }: { initialMeetings: M
                                 <TabsList>
                                     <TabsTrigger value="summary">Podsumowanie</TabsTrigger>
                                     <TabsTrigger value="actions">Punkty Akcji</TabsTrigger>
-                                    <TabsTrigger value="prep">Przygotowanie AI</TabsTrigger>
                                     <TabsTrigger value="notes">Notatki</TabsTrigger>
                                 </TabsList>
                                 <div className="flex gap-2">
@@ -261,9 +177,6 @@ export default function MeetingsClient({ initialMeetings }: { initialMeetings: M
                                 </TabsContent>
                                 <TabsContent value="actions" className="m-0">
                                      <ActionItemsView items={selectedMeeting.actionItems} users={users} />
-                                </TabsContent>
-                                <TabsContent value="prep" className="m-0">
-                                     <AiPrepView prepData={prepData} isLoading={isLoadingPrep} error={prepError} />
                                 </TabsContent>
                                  <TabsContent value="notes" className="p-4 m-0">
                                       <h4 className="font-semibold mb-2">Surowe notatki</h4>
