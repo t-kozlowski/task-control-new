@@ -15,11 +15,19 @@ export function AiNotifications() {
   useEffect(() => {
     const fetchAndShowNotification = async () => {
       try {
+        // Hide previous notification before fetching a new one to avoid overlap
+        setIsVisible(false);
+
         const res = await fetch('/api/ai/notification');
         if (!res.ok) return;
         const newNotification: AiNotificationOutput = await res.json();
-        setNotification(newNotification);
-        setIsVisible(true);
+        
+        // Use a short delay before showing the new notification for a smoother transition
+        setTimeout(() => {
+          setNotification(newNotification);
+          setIsVisible(true);
+        }, 300);
+
 
         // Hide after 15 seconds
         const hideTimer = setTimeout(() => {
