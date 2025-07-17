@@ -26,18 +26,14 @@ export default function DashboardClient({ initialTasks }: { initialTasks: Task[]
           Podsumowanie AI "Big Picture"
         </Button>
       </div>
-
-      <ProjectStats tasks={tasks} />
-      <LiveStats tasks={tasks} users={users} />
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <TaskList tasks={tasks} />
-        </div>
-        <div>
-          <TaskSpotlight tasks={tasks} />
-        </div>
+      <div className="space-y-6">
+        <ProjectStats tasks={tasks} />
+        <LiveStats tasks={tasks} users={users} />
+        <TaskList tasks={tasks} />
+        <TaskSpotlight tasks={tasks} />
       </div>
+
       <AiSummaryDialog open={isSummaryDialogOpen} onOpenChange={setIsSummaryDialogOpen} />
     </>
   );

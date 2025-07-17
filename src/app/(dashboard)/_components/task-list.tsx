@@ -3,28 +3,51 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Task } from '@/types';
 import TaskListItem from './task-list-item';
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { Icons } from '@/components/icons';
+import { Button } from '@/components/ui/button';
+import { Archive } from 'lucide-react';
 
 export default function TaskList({ tasks }: { tasks: Task[] }) {
-  const mainTasks = tasks.filter(t => !t.parentId);
+  const [showArchived, setShowArchived] = useState(false);
+
+  const { activeTasks, archivedTasks } = useMemo(() => {
+    const active: Task[] = [];
+    const archived: Task[] = [];
+    tasks.filter(t => !t.parentId).forEach(task => {
+      if (task.status === 'Done') {
+        archived.push(task);
+      } else {
+        active.push(task);
+      }
+    });
+    return { activeTasks: active, archivedTasks: archived };
+  }, [tasks]);
+
+  const displayedTasks = showArchived ? archivedTasks : activeTasks;
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Główne Zadania Projektu</CardTitle>
-        <CardDescription>Hierarchiczny widok wszystkich zadań głównych i ich postępów.</CardDescription>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle>Główne Zadania Projektu</CardTitle>
+          <CardDescription>Hierarchiczny widok wszystkich zadań głównych i ich postępów.</CardDescription>
+        </div>
+        <Button variant="outline" onClick={() => setShowArchived(!showArchived)}>
+           <Archive className="mr-2 h-4 w-4" />
+          {showArchived ? `Pokaż Aktywne (${activeTasks.length})` : `Pokaż Archiwum (${archivedTasks.length})`}
+        </Button>
       </CardHeader>
       <CardContent className="space-y-4">
-        {mainTasks.length > 0 ? (
-          mainTasks.map(task => (
+        {displayedTasks.length > 0 ? (
+          displayedTasks.map(task => (
             <TaskListItem key={task.id} task={task} allTasks={tasks} />
           ))
         ) : (
           <div className="text-center text-muted-foreground p-8 flex flex-col items-center gap-4">
             <Icons.checkCircle className="h-12 w-12 text-green-500" />
-            <h3 className="text-lg font-semibold">Wszystko gotowe!</h3>
-            <p>Brak zadań na liście. Możesz dodać nowe zadania w zakładce "Lista Zadań".</p>
+            <h3 className="text-lg font-semibold">{showArchived ? 'Archiwum jest puste' : 'Wszystko gotowe!'}</h3>
+            <p>{showArchived ? 'Brak ukończonych zadań głównych.' : 'Brak aktywnych zadań na liście.'}</p>
           </div>
         )}
       </CardContent>

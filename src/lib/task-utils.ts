@@ -37,11 +37,11 @@ export const calculateWeightedProgress = (task: Task, allTasks: Task[]): number 
 
 
 export const getProgressGradient = (progress: number): string => {
-  if (progress <= 0) {
-    return 'hsl(var(--secondary))';
-  }
+  if (progress < 0) progress = 0;
+  if (progress > 100) progress = 100;
+
   // Hue from red (0) to green (120)
-  const hue = (progress / 100) * 120;
+  const hue = progress * 1.2;
   const startColor = `hsl(${hue}, 70%, 50%)`;
   const endColor = `hsl(${hue + 20}, 70%, 60%)`;
   return `linear-gradient(to right, ${startColor}, ${endColor})`;

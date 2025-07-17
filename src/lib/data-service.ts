@@ -16,13 +16,11 @@ async function readData<T>(filePath: string): Promise<T[]> {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
       // If the file doesn't exist, create it with a default value.
       if (filePath === usersFilePath) {
-        await writeData(filePath, [{ id: '1', name: 'Admin', email: 'admin@example.com' }]);
-        return [{ id: '1', name: 'Admin', email: 'admin@example.com' }] as T[];
+        const defaultUsers = [{ id: '1', name: 'Alicja', email: 'alice@example.com' }];
+        await writeData(filePath, defaultUsers);
+        return defaultUsers as T[];
       }
-       if (filePath === meetingsFilePath) {
-        await writeData(filePath, []);
-        return [];
-      }
+      await writeData(filePath, []);
       return [];
     }
     throw error;
@@ -49,6 +47,8 @@ export const saveDirectives = (directives: AiDirective[]) => writeData<AiDirecti
 
 // User Functions
 export const getUsers = () => readData<User>(usersFilePath);
+export const saveUsers = (users: User[]) => writeData<User>(usersFilePath, users);
+
 
 // Meeting Functions
 export const getMeetings = () => readData<Meeting>(meetingsFilePath);

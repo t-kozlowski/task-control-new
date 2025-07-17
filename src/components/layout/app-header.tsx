@@ -27,6 +27,7 @@ const menuItems = [
   { href: '/backlog', label: 'Backlog', icon: Icons.backlog },
   { href: '/meetings', label: 'Spotkania', icon: Icons.meetings },
   { href: '/directives', label: 'Dyrektywy AI', icon: Icons.directives },
+  { href: '/users', label: 'Użytkownicy', icon: Icons.users },
 ];
 
 
