@@ -1,13 +1,13 @@
 'use client';
 import React, { useState, useRef, type MouseEvent } from 'react';
-import type { Task, User } from '@/types';
+import type { Task } from '@/types';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { PriorityIcons } from '@/components/icons';
 import { calculateWeightedProgress, getProgressGradient } from '@/lib/task-utils';
 import { Badge } from '@/components/ui/badge';
 import { ChevronDown } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useApp } from '@/context/app-context';
 
 export default function TaskListItem({ task, allTasks = [] }: { task: Task, allTasks?: Task[] }) {
@@ -25,7 +25,7 @@ export default function TaskListItem({ task, allTasks = [] }: { task: Task, allT
   
   const assigneeUser = users.find(u => u.email === task.assignee);
   const assigneeName = assigneeUser?.name || task.assignee;
-  const assigneeInitials = assigneeName.split(' ').map(n => n[0]).join('');
+  const assigneeInitials = assigneeName?.split(' ').map(n => n[0]).join('') || '?';
 
 
   const subTasks = allTasks.filter(t => t.parentId === task.id);
@@ -76,7 +76,7 @@ export default function TaskListItem({ task, allTasks = [] }: { task: Task, allT
                             value={progress}
                             className="w-full h-2"
                             indicatorStyle={{ background: progressGradient }}
-                            indicatorClassName={`${isInProgress ? 'animate-subtle-pulse' : ''}`}
+                            indicatorClassName={isInProgress ? 'animate-subtle-pulse' : ''}
                         />
                         <span className="font-mono text-sm font-semibold">{progress}%</span>
                     </div>
