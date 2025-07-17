@@ -1,15 +1,15 @@
 import { AppSidebar } from '@/components/layout/sidebar';
 import { AppHeader } from '@/components/layout/app-header';
-import { AppProvider } from '@/context/app-context';
 import { Toaster } from '@/components/ui/toaster';
+import { useApp } from '@/context/app-context';
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  
   return (
-    <AppProvider>
       <div className="flex min-h-screen w-full flex-col bg-muted/40">
         <AppSidebar />
         <main className="flex flex-col flex-1 sm:pl-14">
@@ -18,8 +18,7 @@ export default function DashboardLayout({
             {children}
           </div>
         </main>
+        <Toaster />
       </div>
-      <Toaster />
-    </AppProvider>
   );
 }

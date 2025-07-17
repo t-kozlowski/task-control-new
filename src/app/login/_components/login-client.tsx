@@ -14,7 +14,6 @@ export default function LoginClient({ users }: { users: User[] }) {
   const { setLoggedInUser } = useApp();
   const [selectedUser, setSelectedUser] = useState<string>('');
   const [error, setError] = useState('');
-  const router = useRouter();
 
   const handleLogin = () => {
     if (!selectedUser) {
@@ -24,7 +23,6 @@ export default function LoginClient({ users }: { users: User[] }) {
     const user = users.find(u => u.id === selectedUser);
     if (user) {
       setLoggedInUser(user);
-      router.push('/');
     } else {
       setError('Nie znaleziono użytkownika.');
     }

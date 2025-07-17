@@ -1,59 +1,55 @@
 'use client';
 
-import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect, useMemo } from 'react';
 import type { User } from '@/types';
 import { usePathname, useRouter } from 'next/navigation';
+import { Icons } from '@/components/icons';
 
 interface AppContextType {
-  isZenMode: boolean;
-  toggleZenMode: () => void;
   loggedInUser: User | null;
   setLoggedInUser: (user: User | null) => void;
   users: User[];
+  isLoading: boolean;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
-  const [isZenMode, setIsZenMode] = useState(false);
   const [loggedInUser, setLoggedInUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    const fetchUsers = async () => {
-        try {
-            const res = await fetch('/api/users');
-            if(res.ok) {
-              const data = await res.json();
-              setUsers(data);
-            }
-        } catch (error) {
-            console.error("Failed to fetch users", error);
-        }
-    };
-    fetchUsers();
-  }, [])
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
+    const initializeApp = async () => {
+      setIsLoading(true);
       try {
+        const usersRes = await fetch('/api/users');
+        const usersData = await usersRes.ok ? await usersRes.json() : [];
+        setUsers(usersData);
+
         const storedUser = localStorage.getItem('loggedInUser');
         if (storedUser) {
-          const user = JSON.parse(storedUser);
-          if (user) {
+          const user: User = JSON.parse(storedUser);
+          // Verify user exists in the fetched list
+          if (user && usersData.some((u: User) => u.id === user.id)) {
             setLoggedInUser(user);
+          } else {
+            localStorage.removeItem('loggedInUser');
+            if (pathname !== '/login') router.push('/login');
           }
-        } else if (pathname !== '/login') {
-          router.push('/login');
+        } else {
+          if (pathname !== '/login') router.push('/login');
         }
       } catch (error) {
-         if (pathname !== '/login') {
-          router.push('/login');
-        }
+        console.error("Initialization error:", error);
+        if (pathname !== '/login') router.push('/login');
+      } finally {
+        setIsLoading(false);
       }
-    }
+    };
+    initializeApp();
   }, [pathname, router]);
 
   const handleSetLoggedInUser = (user: User | null) => {
@@ -66,22 +62,21 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       router.push('/login');
     }
   };
-
-  const toggleZenMode = () => {
-    setIsZenMode(prev => !prev);
-  };
   
-  const contextValue = {
-    isZenMode,
-    toggleZenMode,
+  const contextValue = useMemo(() => ({
     loggedInUser,
     setLoggedInUser: handleSetLoggedInUser,
     users,
-  };
+    isLoading,
+  }), [loggedInUser, users, isLoading]);
 
   return (
     <AppContext.Provider value={contextValue}>
-      {children}
+      {contextValue.isLoading && pathname !== '/login' ? (
+          <div className="flex h-screen w-full items-center justify-center">
+            <Icons.spinner className="h-8 w-8 animate-spin" />
+          </div>
+      ) : children }
     </AppContext.Provider>
   );
 };
@@ -89,7 +84,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 export const useApp = () => {
   const context = useContext(AppContext);
   if (context === undefined) {
-    throw new Error('useApp musi być używane wewnątrz AppProvider');
+    throw new Error('useApp must be used within an AppProvider');
   }
   return context;
 };

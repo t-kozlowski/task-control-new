@@ -110,10 +110,11 @@ export default function MeetingsClient({ initialMeetings }: { initialMeetings: M
             if (!res.ok) throw new Error('Nie udało się usunąć spotkania');
 
             toast({ title: 'Sukces', description: 'Spotkanie usunięte.' });
-            await refreshMeetings();
-
+            
+            const updatedMeetings = await fetch('/api/meetings').then(res => res.json());
+            setMeetings(updatedMeetings);
+            
             if (selectedMeetingId === meetingId) {
-                const updatedMeetings = await fetch('/api/meetings').then(res => res.json());
                 setSelectedMeetingId(updatedMeetings[0]?.id || null);
             }
 

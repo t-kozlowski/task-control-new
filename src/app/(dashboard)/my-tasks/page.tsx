@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react';
-import { Task, User } from '@/types';
+import { Task } from '@/types';
 import { useApp } from '@/context/app-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { TaskTable } from '../backlog/_components/task-table';
@@ -14,14 +14,14 @@ export default function MyTasksPage() {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [editingTask, setEditingTask] = useState<Task | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoadingTasks, setIsLoadingTasks] = useState(true);
 
     const refreshTasks = async () => {
-        setIsLoading(true);
+        setIsLoadingTasks(true);
         const res = await fetch('/api/tasks');
         const data = await res.json();
         setTasks(data);
-        setIsLoading(false);
+        setIsLoadingTasks(false);
     };
 
     useEffect(() => {
@@ -44,7 +44,7 @@ export default function MyTasksPage() {
         refreshTasks();
     }
 
-    if (isLoading) {
+    if (isLoadingTasks) {
         return (
             <div className="space-y-4">
                 <Skeleton className="h-10 w-1/4" />
