@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import type { Task } from '@/types';
 import React, { useMemo } from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { format, differenceInDays, addDays, isBefore, startOfDay } from 'date-fns';
 
 interface LiveStatsProps {
@@ -23,23 +23,27 @@ const KpiCard = ({ title, value, unit, isPositive, description }: { title: strin
 
 export default function LiveStats({ tasks }: LiveStatsProps) {
   const { burndownData, kpis } = useMemo(() => {
-    const relevantTasks = tasks.filter(t => t.dueDate && !t.parentId);
+    // We only consider main tasks for the burndown chart
+    const relevantTasks = tasks.filter(t => !t.parentId && t.dueDate);
     if (relevantTasks.length === 0) {
       return { burndownData: [], kpis: { spi: 'N/A', prediction: 'Brak danych' } };
     }
     
     const taskCount = relevantTasks.length;
+    // Ensure all due dates are valid Date objects before comparison
     const dates = relevantTasks.map(t => new Date(t.dueDate!));
-    const startDate = startOfDay(new Date());
-    const endDate = new Date(Math.max.apply(null, dates.map(d => d.getTime())));
+    const startDate = startOfDay(new Date()); // Start from today
+    const endDate = new Date(Math.max(...dates.map(d => d.getTime())));
 
-    const totalDays = differenceInDays(endDate, startDate);
-    if (totalDays <= 0) {
-        return { burndownData: [{ day: format(startDate, 'MMM dd'), ideal: taskCount, actual: taskCount - tasks.filter(t => t.status === 'Done').length }], kpis: { spi: 'N/A', prediction: 'Zakończono' } };
-    }
-
+    // Handle case where all tasks are due in the past or today
+    const totalDays = differenceInDays(endDate, startDate) > 0 ? differenceInDays(endDate, startDate) : 1;
+    
     const idealData: { day: string; ideal: number; actual: number | null }[] = [];
     const tasksPerDay = taskCount / totalDays;
+    
+    const tasksDoneByToday = relevantTasks.filter(t => 
+        t.status === 'Done' && t.date && isBefore(startOfDay(new Date(t.date)), addDays(startDate, 1))
+    ).length;
 
     for (let i = 0; i <= totalDays; i++) {
         const currentDate = addDays(startDate, i);
@@ -48,38 +52,42 @@ export default function LiveStats({ tasks }: LiveStatsProps) {
         const tasksDoneOnDate = relevantTasks.filter(t => 
             t.status === 'Done' && t.date && isBefore(startOfDay(new Date(t.date)), currentDate)
         ).length;
-        const actualRemaining = taskCount - tasksDoneOnDate;
 
         idealData.push({
             day: format(currentDate, 'MMM dd'),
             ideal: Math.max(0, parseFloat(idealRemaining.toFixed(2))),
-            actual: i === 0 ? taskCount : actualRemaining,
+            actual: i === 0 ? taskCount : (taskCount - tasksDoneOnDate),
         });
     }
 
     const tasksCompleted = relevantTasks.filter(t => t.status === 'Done').length;
-    const plannedWork = tasksPerDay * differenceInDays(new Date(), startDate);
+    const daysElapsed = differenceInDays(new Date(), startDate) > 0 ? differenceInDays(new Date(), startDate) : 1;
+    const plannedWork = tasksPerDay * daysElapsed;
     
     // Schedule Performance Index (SPI)
-    let spi = 1;
+    let spi: number | string = 1;
     if (plannedWork > 0) {
-        const earnedValue = tasksCompleted * (taskCount / relevantTasks.length); // Simplified EV
-        spi = parseFloat((earnedValue / plannedWork).toFixed(2));
+        const earnedValue = tasksCompleted; // Simplified EV: 1 task = 1 unit of value
+        spi = isNaN(earnedValue / plannedWork) ? 'N/A' : parseFloat((earnedValue / plannedWork).toFixed(2));
     }
 
-    let prediction = "N/A";
-    const workRate = tasksCompleted / differenceInDays(new Date(), startDate);
+    let prediction: string = "N/A";
+    const workRate = tasksCompleted / daysElapsed; // tasks per day
     if (workRate > 0) {
         const remainingTasks = taskCount - tasksCompleted;
-        const remainingDays = remainingTasks / workRate;
-        prediction = format(addDays(new Date(), remainingDays), 'dd MMM yyyy');
+        if (remainingTasks > 0) {
+            const remainingDays = remainingTasks / workRate;
+            prediction = format(addDays(new Date(), remainingDays), 'dd MMM yyyy');
+        } else {
+            prediction = "Zakończono";
+        }
     }
 
 
     return { 
         burndownData: idealData, 
         kpis: { 
-            spi: isNaN(spi) ? 'N/A' : spi,
+            spi: isNaN(spi as number) ? 'N/A' : spi,
             prediction: tasksCompleted === taskCount ? 'Zakończono' : prediction,
          } 
     };
@@ -93,7 +101,7 @@ export default function LiveStats({ tasks }: LiveStatsProps) {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>Prędkość vs. Cel (Wykres Spalania)</CardTitle>
+        <CardTitle>Prędkość vs. Cel</CardTitle>
         <CardDescription>Realistyczne porównanie postępu z idealną ścieżką do celu na podstawie terminów zadań.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -102,7 +110,7 @@ export default function LiveStats({ tasks }: LiveStatsProps) {
                 title="Wskaźnik Realizacji Celu (SPI)"
                 value={kpis.spi} 
                 unit="" 
-                isPositive={typeof kpis.spi === 'number' && kpis.spi >= 1}
+                isPositive={typeof kpis.spi === 'number' ? kpis.spi >= 1 : undefined}
                 description="SPI >= 1 oznacza, że jesteś przed harmonogramem. SPI < 1 oznacza opóźnienie."
               />
               <KpiCard 

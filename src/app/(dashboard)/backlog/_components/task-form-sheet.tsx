@@ -36,7 +36,9 @@ const taskSchema = z.object({
   priority: z.enum(['Critical', 'High', 'Medium', 'Low']),
   status: z.enum(['Todo', 'In Progress', 'Done', 'Backlog']),
   parentId: z.string().nullable().optional(),
-  dueDate: z.date().optional().nullable(),
+  dueDate: z.date({
+    required_error: "Termin wykonania jest wymagany.",
+  }),
 });
 
 type TaskFormData = z.infer<typeof taskSchema>;
@@ -61,7 +63,7 @@ export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved, users, ta
       if (task) {
         reset({
           ...task,
-          dueDate: task.dueDate ? new Date(task.dueDate) : null,
+          dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
         });
       } else {
         reset({
@@ -72,7 +74,7 @@ export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved, users, ta
           priority: 'Medium',
           status: 'Todo',
           parentId: null,
-          dueDate: null,
+          dueDate: undefined,
         });
       }
     }
@@ -159,7 +161,7 @@ export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved, users, ta
                         <PopoverContent className="w-auto p-0">
                         <Calendar
                             mode="single"
-                            selected={field.value ?? undefined}
+                            selected={field.value}
                             onSelect={field.onChange}
                             initialFocus
                         />
