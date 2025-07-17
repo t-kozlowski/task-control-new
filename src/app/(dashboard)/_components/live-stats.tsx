@@ -1,10 +1,11 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import type { Task, User } from '@/types';
-import React, { useMemo } from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, Label } from 'recharts';
+import React, { useMemo, useState, useEffect } from 'react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, Label, ResponsiveContainer } from 'recharts';
 import { format, parseISO, startOfMonth } from 'date-fns';
 import { pl } from 'date-fns/locale';
 
@@ -22,7 +23,7 @@ const USER_COLORS = [
 
 export default function LiveStats({ tasks, users }: LiveStatsProps) {
 
-  const tasksOverTimeData = useMemo(() => {
+  const initialTasksOverTimeData = useMemo(() => {
     const mainTasks = tasks.filter(t => !t.parentId && t.status === 'Done' && t.date);
     const countsByMonth: Record<string, number> = {};
 
@@ -46,8 +47,28 @@ export default function LiveStats({ tasks, users }: LiveStatsProps) {
 
   }, [tasks]);
 
-  const tasksPerUserData = useMemo(() => {
+  const [tasksOverTimeData, setTasksOverTimeData] = useState<any[]>([]);
+  
+  useEffect(() => {
+      // Animate the line chart drawing
+      let currentPoint = 0;
+      const interval = setInterval(() => {
+          if(currentPoint < initialTasksOverTimeData.length) {
+              setTasksOverTimeData(prev => [...prev, initialTasksOverTimeData[currentPoint]]);
+              currentPoint++;
+          } else {
+              clearInterval(interval);
+          }
+      }, 200);
+      return () => clearInterval(interval);
+  }, [initialTasksOverTimeData]);
+
+
+  const initialTasksPerUserData = useMemo(() => {
     const counts: Record<string, number> = {};
+    users.forEach(user => {
+      counts[user.name] = 0; // Initialize all users with 0
+    });
     tasks.forEach(task => {
         task.assignees.forEach(assigneeEmail => {
             const user = users.find(u => u.email === assigneeEmail);
@@ -62,6 +83,36 @@ export default function LiveStats({ tasks, users }: LiveStatsProps) {
         fill: USER_COLORS[index % USER_COLORS.length]
     }));
   }, [tasks, users]);
+
+  const [tasksPerUserData, setTasksPerUserData] = useState(initialTasksPerUserData);
+  
+  // Simulate real-time updates for the pie chart
+  useEffect(() => {
+      const interval = setInterval(() => {
+          setTasksPerUserData(prevData => {
+              if (prevData.length < 2) return prevData;
+
+              // Clone to avoid direct mutation
+              const newData = prevData.map(item => ({...item}));
+              
+              // Find two random, different users to transfer a task
+              let fromIndex = Math.floor(Math.random() * newData.length);
+              let toIndex = Math.floor(Math.random() * newData.length);
+              while (fromIndex === toIndex || newData[fromIndex].value === 0) {
+                  fromIndex = Math.floor(Math.random() * newData.length);
+                  toIndex = Math.floor(Math.random() * newData.length);
+              }
+
+              // Simulate transferring one task
+              newData[fromIndex].value -= 1;
+              newData[toIndex].value += 1;
+              
+              return newData;
+          });
+      }, 3000); // Update every 3 seconds
+
+      return () => clearInterval(interval);
+  }, []);
 
   const totalTasks = useMemo(() => tasks.length, [tasks]);
 
@@ -94,7 +145,7 @@ export default function LiveStats({ tasks, users }: LiveStatsProps) {
             <AreaChart accessibilityLayer data={tasksOverTimeData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
               <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border) / 0.5)" />
               <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
-              <YAxis allowDecimals={false} tickLine={false} axisLine={false} tickMargin={8} />
+              <YAxis allowDecimals={false} tickLine={false} axisLine={false} tickMargin={8} domain={[0, 'dataMax + 2']}/>
               <ChartTooltip
                 cursor={false}
                 content={<ChartTooltipContent indicator="dot" />}
@@ -105,7 +156,7 @@ export default function LiveStats({ tasks, users }: LiveStatsProps) {
                   <stop offset="95%" stopColor="var(--color-zadania)" stopOpacity={0.1} />
                 </linearGradient>
               </defs>
-              <Area dataKey="zadania" type="natural" fill="url(#fillZadania)" stroke="var(--color-zadania)" stackId="a" />
+              <Area dataKey="zadania" type="natural" fill="url(#fillZadania)" stroke="var(--color-zadania)" stackId="a" isAnimationActive={false} />
             </AreaChart>
           </ChartContainer>
         </CardContent>
@@ -116,31 +167,33 @@ export default function LiveStats({ tasks, users }: LiveStatsProps) {
            <CardDescription>Rozkład wszystkich zadań na poszczególnych członków zespołu.</CardDescription>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={pieChartConfig} className="mx-auto aspect-square h-[250px]">
-             <PieChart>
-              <ChartTooltip content={<ChartTooltipContent nameKey="name" hideLabel />} />
-              <Pie data={tasksPerUserData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={2} cornerRadius={5}>
-                {tasksPerUserData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.fill} stroke={entry.fill} />
-                ))}
-                <Label
-                    content={({ viewBox }) => {
-                        if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                            return (
-                                <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle" >
-                                    <tspan x={viewBox.cx} y={viewBox.cy} className="text-3xl font-bold fill-foreground" >
-                                        {totalTasks.toLocaleString()}
-                                    </tspan>
-                                    <tspan x={viewBox.cx} y={viewBox.cy + 20} className="text-sm fill-muted-foreground" >
-                                        Zadań
-                                    </tspan>
-                                </text>
-                            );
-                        }
-                    }}
-                 />
-              </Pie>
-            </PieChart>
+           <ChartContainer config={pieChartConfig} className="mx-auto aspect-square h-[250px]">
+            <ResponsiveContainer width="100%" height="100%">
+               <PieChart>
+                <ChartTooltip content={<ChartTooltipContent nameKey="name" hideLabel />} />
+                <Pie data={tasksPerUserData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={2} cornerRadius={5} isAnimationActive={true} animationDuration={800}>
+                  {tasksPerUserData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} stroke={entry.fill} />
+                  ))}
+                  <Label
+                      content={({ viewBox }) => {
+                          if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                              return (
+                                  <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle" >
+                                      <tspan x={viewBox.cx} y={viewBox.cy} className="text-3xl font-bold fill-foreground" >
+                                          {totalTasks.toLocaleString()}
+                                      </tspan>
+                                      <tspan x={viewBox.cx} y={viewBox.cy + 20} className="text-sm fill-muted-foreground" >
+                                          Zadań
+                                      </tspan>
+                                  </text>
+                              );
+                          }
+                      }}
+                   />
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
           </ChartContainer>
         </CardContent>
       </Card>
