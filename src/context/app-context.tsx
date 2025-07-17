@@ -25,8 +25,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const fetchUsers = async () => {
         try {
             const res = await fetch('/api/users');
-            const data = await res.json();
-            setUsers(data);
+            if(res.ok) {
+              const data = await res.json();
+              setUsers(data);
+            }
         } catch (error) {
             console.error("Failed to fetch users", error);
         }
@@ -35,16 +37,21 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   }, [])
 
   useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem('loggedInUser');
-      if (storedUser) {
-        setLoggedInUser(JSON.parse(storedUser));
-      } else if (pathname !== '/login') {
-        router.push('/login');
-      }
-    } catch (error) {
-       if (pathname !== '/login') {
-        router.push('/login');
+    if (typeof window !== 'undefined') {
+      try {
+        const storedUser = localStorage.getItem('loggedInUser');
+        if (storedUser) {
+          const user = JSON.parse(storedUser);
+          if (user) {
+            setLoggedInUser(user);
+          }
+        } else if (pathname !== '/login') {
+          router.push('/login');
+        }
+      } catch (error) {
+         if (pathname !== '/login') {
+          router.push('/login');
+        }
       }
     }
   }, [pathname, router]);
@@ -63,7 +70,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const toggleZenMode = () => {
     setIsZenMode(prev => !prev);
   };
-
+  
   const contextValue = {
     isZenMode,
     toggleZenMode,

@@ -1,6 +1,9 @@
 'use client';
 
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
+  SidebarProvider,
   Sidebar,
   SidebarHeader,
   SidebarContent,
@@ -8,60 +11,74 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
-  SidebarTrigger,
-  SidebarProvider,
   SidebarInset,
 } from '@/components/ui/sidebar';
-import { BotMessageSquare, Icons } from '@/components/icons';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import React from 'react';
+import { Icons, BotMessageSquare } from '@/components/icons';
 import { AppHeader } from './app-header';
+import { useApp } from '@/context/app-context';
+import { Button } from '../ui/button';
 
 const menuItems = [
-  { href: '/', label: 'Dashboard', icon: Icons.dashboard },
-  { href: '/backlog', label: 'Backlog', icon: Icons.backlog },
-  { href: '/directives', label: 'AI Directives', icon: Icons.directives },
+  { href: '/', label: 'Pulpit', icon: Icons.dashboard },
+  { href: '/backlog', label: 'Lista Zadań', icon: Icons.backlog },
+  { href: '/meetings', label: 'Spotkania', icon: Icons.meetings },
+  { href: '/directives', label: 'Dyrektywy AI', icon: Icons.directives },
+  { href: '/cinematic', label: 'Widok Kinowy', icon: Icons.movie },
 ];
 
 export function AppSidebar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { loggedInUser, setLoggedInUser } = useApp();
+
+  if (!loggedInUser) {
+    return <>{children}</>;
+  }
+  
+  const handleLogout = () => {
+    setLoggedInUser(null);
+  };
 
   return (
     <SidebarProvider>
-      <Sidebar>
-        <SidebarHeader className="p-4">
-          <div className="flex items-center gap-2">
-            <BotMessageSquare className="size-8 text-primary" />
-            <h1 className="text-xl font-semibold text-primary">Project Sentinel</h1>
-          </div>
+      <Sidebar collapsible="icon" className="border-r">
+        <SidebarHeader className="p-4 flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-2 font-semibold">
+                <BotMessageSquare className="size-6 text-primary" />
+                <span className="group-data-[collapsible=icon]:hidden">LSP</span>
+            </Link>
         </SidebarHeader>
-        <SidebarContent>
+        <SidebarContent className="p-2 sidebar-scrollable">
           <SidebarMenu>
-            {menuItems.map(item => (
+            {menuItems.map((item) => (
               <SidebarMenuItem key={item.href}>
-                <Link href={item.href} legacyBehavior passHref>
+                <Link href={item.href}>
                   <SidebarMenuButton
                     isActive={pathname === item.href}
                     tooltip={item.label}
+                    className="justify-start"
                   >
-                    <item.icon />
-                    <span>{item.label}</span>
+                    <item.icon className="size-5" />
+                    <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
                   </SidebarMenuButton>
                 </Link>
               </SidebarMenuItem>
             ))}
           </SidebarMenu>
         </SidebarContent>
-        <SidebarFooter>
-          <div className="text-xs text-muted-foreground p-4">
-            &copy; {new Date().getFullYear()} Project Sentinel
-          </div>
+        <SidebarFooter className="p-2">
+            <Button variant="ghost" className="w-full justify-start gap-2" onClick={handleLogout}>
+                <Icons.logout className="size-5" />
+                <span className="group-data-[collapsible=icon]:hidden">Wyloguj</span>
+            </Button>
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        <AppHeader />
-        <main className="flex-1 p-4 md:p-6 animate-fade-in">{children}</main>
+        <div className="flex flex-col">
+            <AppHeader />
+            <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 animate-fade-in">
+                {children}
+            </main>
+        </div>
       </SidebarInset>
     </SidebarProvider>
   );

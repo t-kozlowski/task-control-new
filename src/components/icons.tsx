@@ -23,6 +23,7 @@ import {
   Briefcase,
   Users,
   LoaderCircle,
+  LogOut,
 } from 'lucide-react';
 
 export const Icons = {
@@ -50,6 +51,7 @@ export const Icons = {
   meetings: Briefcase,
   attendees: Users,
   spinner: LoaderCircle,
+  logout: LogOut,
 };
 
 export const PriorityIcons = {

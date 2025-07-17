@@ -31,15 +31,15 @@ export default function LoginClient({ users }: { users: User[] }) {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-secondary">
-      <Card className="w-full max-w-sm">
+    <div className="flex items-center justify-center min-h-screen bg-background">
+      <Card className="w-full max-w-sm mx-auto">
         <CardHeader className="text-center">
            <div className="flex items-center gap-2 justify-center mb-4">
             <BotMessageSquare className="size-8 text-primary" />
-            <h1 className="text-2xl font-semibold text-primary">LSP Innovationhub Todo App</h1>
+            <h1 className="text-2xl font-semibold text-foreground">LSP Innovationhub</h1>
           </div>
-          <CardTitle className="text-2xl">Logowanie</CardTitle>
-          <CardDescription>Wybierz konto, aby kontynuować.</CardDescription>
+          <CardTitle className="text-2xl">Zaloguj się</CardTitle>
+          <CardDescription>Wybierz swoje konto, aby kontynuować.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">

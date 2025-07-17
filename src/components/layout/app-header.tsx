@@ -1,10 +1,7 @@
 'use client';
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Button } from '@/components/ui/button';
 import { useApp } from '@/context/app-context';
-import { Icons, BotMessageSquare } from '../icons';
+import { Icons } from '../icons';
 import { AiNotifications } from './ai-notifications';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
@@ -17,20 +14,13 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useEffect, useState } from 'react';
 import type { Task } from '@/types';
+import { SidebarTrigger } from '../ui/sidebar';
+import { Button } from '../ui/button';
 
-
-const menuItems = [
-  { href: '/', label: 'Pulpit', icon: Icons.dashboard },
-  { href: '/backlog', label: 'Lista Zadań', icon: Icons.backlog },
-  { href: '/meetings', label: 'Spotkania z Zarządem', icon: Icons.meetings },
-  { href: '/directives', label: 'Dyrektywy AI', icon: Icons.directives },
-  { href: '/cinematic', label: 'Widok Kinowy', icon: Icons.movie },
-];
 
 export function AppHeader() {
-  const { isZenMode, toggleZenMode, loggedInUser, setLoggedInUser } = useApp();
+  const { loggedInUser, setLoggedInUser } = useApp();
   const [tasks, setTasks] = useState<Task[]>([]);
-  const pathname = usePathname();
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -48,36 +38,19 @@ export function AppHeader() {
   const userInitials = loggedInUser?.name.split(' ').map(n => n[0]).join('');
   const userTasks = tasks.filter(t => t.assignee === loggedInUser?.email && t.status !== 'Done');
 
-  if (pathname === '/login') {
-    return null; 
-  }
 
   return (
-    <header className={`sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm transition-all duration-300 md:px-6 ${isZenMode ? 'opacity-0 -translate-y-full' : 'opacity-100 translate-y-0'}`}>
-      <Link href="/" className="flex items-center gap-2 font-semibold mr-4">
-        <BotMessageSquare className="h-6 w-6 text-primary" />
-        <span className="text-lg">LSP Innovationhub</span>
-      </Link>
-      <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
-        {menuItems.map(item => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={`transition-colors hover:text-foreground ${pathname === item.href ? 'text-foreground' : 'text-muted-foreground'}`}
-          >
-            {item.label}
-          </Link>
-        ))}
-      </nav>
-      <div className="flex w-full items-center justify-end gap-4">
-        <Button variant="ghost" size="icon" onClick={toggleZenMode} title="Tryb Pełnoekranowy">
-          {isZenMode ? <Icons.zenOff /> : <Icons.zenOn />}
-          <span className="sr-only">Tryb Pełnoekranowy</span>
-        </Button>
+    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+      <SidebarTrigger className="sm:hidden" />
+      
+      <div className="flex w-full items-center justify-end gap-2 md:gap-4">
+        {/* Potentially add a search bar here in the future */}
+        <div className="flex-1" />
+
         <AiNotifications />
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                 <Button variant="outline" size="icon" className="overflow-hidden rounded-full">
                     <Avatar className="h-9 w-9">
                         <AvatarFallback>{userInitials}</AvatarFallback>
                     </Avatar>
