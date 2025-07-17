@@ -48,9 +48,9 @@ const aiNotificationPrompt = ai.definePrompt({
       - Jeśli istnieje dyrektywa, weź ją pod uwagę. Na przykład, jeśli dyrektywą jest "minimalizuj dług techniczny", skup się na tym aspekcie.
 
   2.  **Zaproponuj zupełnie NOWE zadanie (opcjonalnie, ale bardzo pożądane):**
-      - W oparciu o analizę bieżących zadań i celów projektu, wymyśl jedno innowacyjne zadanie, **którego jeszcze nie ma na liście**.
-      - Może to być refaktoryzacja, nowa funkcja, zadanie badawcze lub cokolwiek, co Twoim zdaniem przyniesie wartość projektowi.
-      - Wypełnij pole \`newTaskSuggestion\` z nazwą i krótkim uzasadnieniem. Jeśli nie masz dobrego pomysłu, możesz pominąć to pole.
+      - **Tylko jeśli podano konkretną dyrektywę**, wymyśl jedno innowacyjne zadanie inspirowane tą dyrektywą, **którego jeszcze nie ma na liście**.
+      - Może to być refaktoryzacja, nowa funkcja, zadanie badawcze lub cokolwiek, co Twoim zdaniem przyniesie wartość projektowi i jest zgodne z duchem dyrektywy.
+      - Wypełnij pole \`newTaskSuggestion\` z nazwą i krótkim uzasadnieniem. Jeśli nie masz dobrego pomysłu lub nie podano dyrektywy, pomiń to pole.
 
   **Dane wejściowe:**
   - Lista zadań: {{{tasks}}}

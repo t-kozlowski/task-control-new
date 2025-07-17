@@ -7,12 +7,16 @@ export async function GET() {
     const tasks = await getTasks();
     const directives = await getDirectives();
 
-    const projectSummary = `Current Tasks: ${tasks.length} active. Priorities range from Low to Critical. Statuses include Backlog, Todo, In Progress, and Done.`;
-    const directiveText = directives.map(d => d.text).join(' ');
+    // Select one random directive to focus on, if directives exist
+    let randomDirective = '';
+    if (directives.length > 0) {
+      const randomIndex = Math.floor(Math.random() * directives.length);
+      randomDirective = directives[randomIndex].text;
+    }
 
     const notification = await generateNotification({
-      projectSummary,
-      directive: directiveText,
+      tasks: JSON.stringify(tasks),
+      directive: randomDirective,
     });
 
     return NextResponse.json(notification);
