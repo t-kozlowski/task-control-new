@@ -1,9 +1,9 @@
 'use client';
-import { useState, useRef, type MouseEvent } from 'react';
+import React, { useState, useRef, type MouseEvent } from 'react';
 import type { Task } from '@/types';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Icons, PriorityIcons } from '@/components/icons';
+import { PriorityIcons } from '@/components/icons';
 import { calculateWeightedProgress, getProgressGradient } from '@/lib/task-utils';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
@@ -24,7 +24,6 @@ export default function TaskListItem({ task, allTasks = [] }: { task: Task, allT
   const subTasks = allTasks.filter(t => t.parentId === task.id);
   const progress = calculateWeightedProgress(task, allTasks);
   const progressGradient = getProgressGradient(progress);
-  const PriorityIcon = PriorityIcons[task.priority];
   const isInProgress = progress > 0 && progress < 100;
 
   return (
@@ -44,37 +43,43 @@ export default function TaskListItem({ task, allTasks = [] }: { task: Task, allT
       />
       <Accordion type="single" collapsible disabled={subTasks.length === 0}>
         <AccordionItem value={task.id} className="border-none">
-          <AccordionTrigger className="p-4 hover:no-underline flex-1 text-left" disabled={subTasks.length === 0}>
-            <div className='w-full'>
-                <div className="flex items-start justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                        <PriorityIcon className="size-5 text-primary" />
-                        <h3 className="font-semibold text-lg">{task.name}</h3>
+          <AccordionTrigger
+            className="p-4 hover:no-underline flex-1 text-left [&[data-state=open]>svg]:rotate-180"
+            disabled={subTasks.length === 0}
+          >
+            <div className='w-full flex items-center justify-between'>
+                <div className='flex-1'>
+                    <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                            {React.createElement(PriorityIcons[task.priority], { className: "size-5 text-primary" })}
+                            <h3 className="font-semibold text-lg">{task.name}</h3>
+                        </div>
+                        <div className="flex items-center gap-2 ml-4 flex-shrink-0">
+                            <Image
+                            src={`https://placehold.co/40x40.png`}
+                            alt={task.assignee}
+                            width={24}
+                            height={24}
+                            className="rounded-full"
+                            data-ai-hint="people avatar"
+                            />
+                            <span className="text-sm text-muted-foreground">{task.assignee}</span>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-2 ml-4 flex-shrink-0">
-                        <Image
-                        src={`https://placehold.co/40x40.png`}
-                        alt={task.assignee}
-                        width={24}
-                        height={24}
-                        className="rounded-full"
-                        data-ai-hint="people avatar"
+
+                    <p className="text-sm text-muted-foreground mb-4 pl-8 text-left">{task.description}</p>
+
+                    <div className="flex items-center gap-4 pl-8">
+                        <Progress
+                            value={progress}
+                            className="w-full h-2"
+                            indicatorStyle={{ background: progressGradient }}
+                            indicatorClassName={`${isInProgress ? 'animate-subtle-pulse' : ''}`}
                         />
-                        <span className="text-sm text-muted-foreground">{task.assignee}</span>
+                        <span className="font-mono text-sm font-semibold">{progress}%</span>
                     </div>
                 </div>
-
-                <p className="text-sm text-muted-foreground mb-4 pl-8 text-left">{task.description}</p>
-
-                <div className="flex items-center gap-4 pl-8">
-                <Progress
-                    value={progress}
-                    className="w-full h-2"
-                    indicatorStyle={{ background: progressGradient }}
-                    indicatorClassName={`${isInProgress ? 'animate-subtle-pulse' : ''}`}
-                />
-                <span className="font-mono text-sm font-semibold">{progress}%</span>
-                </div>
+                {subTasks.length > 0 && <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 ml-4" />}
             </div>
           </AccordionTrigger>
           <AccordionContent>
@@ -84,7 +89,7 @@ export default function TaskListItem({ task, allTasks = [] }: { task: Task, allT
                 subTasks.map(sub => (
                    <div key={sub.id} className="flex items-center justify-between p-2 rounded-md hover:bg-secondary/50">
                       <div className="flex items-center gap-2">
-                        <PriorityIcons[sub.priority] className={`size-4 ${sub.status === 'Done' ? 'text-muted-foreground' : 'text-primary'}`} />
+                        {React.createElement(PriorityIcons[sub.priority], { className: `size-4 ${sub.status === 'Done' ? 'text-muted-foreground' : 'text-primary'}` })}
                         <span className={`text-sm ${sub.status === 'Done' ? 'line-through text-muted-foreground' : ''}`}>{sub.name}</span>
                       </div>
                       <Badge variant={sub.status === 'Done' ? 'outline' : 'default'} className={sub.status === 'Done' ? '' : 'bg-primary/20 text-primary'}>
