@@ -5,9 +5,19 @@ import { Icons } from '../icons';
 import { Button } from '../ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
 import Link from 'next/link';
-import { ProjectIcon } from '../icons';
 import { usePathname } from 'next/navigation';
 import { Film } from 'lucide-react';
+import { Avatar, AvatarFallback } from '../ui/avatar';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { useEffect, useState } from 'react';
+import { Task } from '@/types';
 
 
 const menuItems = [
@@ -24,6 +34,28 @@ const menuItems = [
 
 export function AppHeader() {
   const pathname = usePathname();
+  const { loggedInUser, setLoggedInUser } = useApp();
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  useEffect(() => {
+    if (loggedInUser) {
+        const fetchTasks = async () => {
+          const res = await fetch('/api/tasks');
+          if (res.ok) {
+            const data = await res.json();
+            setTasks(data);
+          }
+        };
+        fetchTasks();
+    }
+  }, [loggedInUser])
+
+  const handleLogout = () => {
+    setLoggedInUser(null);
+  };
+
+  const userInitials = loggedInUser?.name.split(' ').map(n => n[0]).join('');
+  const userTasks = loggedInUser ? tasks.filter(t => t.assignees.includes(loggedInUser.email) && t.status !== 'Done') : [];
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
@@ -36,13 +68,27 @@ export function AppHeader() {
             </SheetTrigger>
             <SheetContent side="left" className="sm:max-w-xs">
               <nav className="grid gap-6 text-lg font-medium">
-                <Link
-                  href="#"
-                  className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
-                >
-                  <ProjectIcon className="h-5 w-5 transition-all group-hover:scale-110" />
-                  <span className="sr-only">Project Sentinel</span>
-                </Link>
+                {loggedInUser && (
+                   <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                           <Button variant="ghost" className="flex items-center gap-2 justify-start p-0 h-auto">
+                              <Avatar className="h-10 w-10">
+                                  <AvatarFallback>{userInitials}</AvatarFallback>
+                              </Avatar>
+                              <div className="flex flex-col items-start">
+                                <p className="text-sm font-medium leading-none">{loggedInUser.name}</p>
+                                <p className="text-xs leading-none text-muted-foreground">{loggedInUser.email}</p>
+                              </div>
+                           </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="w-56 mt-2">
+                           <DropdownMenuItem onClick={handleLogout}>
+                              <Icons.logout className="mr-2" />
+                              Wyloguj
+                           </DropdownMenuItem>
+                      </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
                 {menuItems.map(item => (
                    <Link
                     key={item.href}
