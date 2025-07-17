@@ -1,7 +1,7 @@
 // src/app/(dashboard)/meetings/_components/meetings-client.tsx
 'use client';
 import { useState, useEffect, useMemo } from 'react';
-import type { Meeting, ActionItem } from '@/types';
+import type { Meeting, ActionItem, User } from '@/types';
 import type { MeetingPrepOutput } from '@/ai/flows/meeting-prep';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -34,8 +34,22 @@ function AiPrepView({ prepData, isLoading, error }: { prepData: MeetingPrepOutpu
     }
     if (!prepData) return <p className="text-muted-foreground p-4">Brak danych do przygotowania.</p>;
 
+    const sentimentColors = {
+        positive: 'border-green-500/50 bg-green-500/10 text-green-300',
+        neutral: 'border-blue-500/50 bg-blue-500/10 text-blue-300',
+        negative: 'border-red-500/50 bg-red-500/10 text-red-300',
+    };
+    const sentimentText = {
+        positive: 'Pozytywny',
+        neutral: 'Neutralny',
+        negative: 'Negatywny',
+    }
+
     return (
         <div className="p-4 space-y-6">
+             <div className={cn('p-3 rounded-lg border', sentimentColors[prepData.overallSentiment])}>
+                <p className="text-sm font-semibold">Ogólny sentyment projektu: <span className="font-bold">{sentimentText[prepData.overallSentiment]}</span></p>
+            </div>
             <div>
                 <h4 className="font-semibold mb-2">Sugerowane punkty do omówienia</h4>
                 <div className="space-y-2">
@@ -63,7 +77,7 @@ function AiPrepView({ prepData, isLoading, error }: { prepData: MeetingPrepOutpu
 }
 
 
-function ActionItemsView({ items, users }: { items: ActionItem[], users: any[] }) {
+function ActionItemsView({ items, users }: { items: ActionItem[], users: User[] }) {
     const getAssigneeName = (email: string) => users.find(u => u.email === email)?.name || email;
     if (items.length === 0) {
         return <p className="text-muted-foreground p-4">Brak punktów akcji dla tego spotkania.</p>;
@@ -89,7 +103,7 @@ function ActionItemsView({ items, users }: { items: ActionItem[], users: any[] }
 
 export default function MeetingsClient({ initialMeetings }: { initialMeetings: Meeting[] }) {
     const [meetings, setMeetings] = useState<Meeting[]>(initialMeetings);
-    const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(initialMeetings[0] || null);
+    const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
     const [prepData, setPrepData] = useState<MeetingPrepOutput | null>(null);
     const [isLoadingPrep, setIsLoadingPrep] = useState(false);
     const [prepError, setPrepError] = useState<string | null>(null);
@@ -104,16 +118,19 @@ export default function MeetingsClient({ initialMeetings }: { initialMeetings: M
     const refreshMeetings = async () => {
         const res = await fetch('/api/meetings');
         const data = await res.json();
-        setMeetings(data);
+        const sorted = data.sort((a: Meeting, b: Meeting) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        setMeetings(sorted);
+        return sorted;
     };
 
     useEffect(() => {
-        setMeetings(initialMeetings);
-        if (!selectedMeeting && initialMeetings.length > 0) {
-            const firstMeeting = initialMeetings.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
-            setSelectedMeeting(firstMeeting);
+        const sorted = initialMeetings.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        setMeetings(sorted);
+        if (!selectedMeeting && sorted.length > 0) {
+            const upcomingOrMostRecent = sorted.find(m => isFuture(new Date(m.date))) || sorted[sorted.length - 1];
+            setSelectedMeeting(upcomingOrMostRecent);
         }
-    }, [initialMeetings, selectedMeeting]);
+    }, [initialMeetings]);
 
     useEffect(() => {
         if (selectedMeeting) {
@@ -158,8 +175,7 @@ export default function MeetingsClient({ initialMeetings }: { initialMeetings: M
             const res = await fetch(`/api/meetings/${selectedMeeting.id}`, { method: 'DELETE' });
             if (!res.ok) throw new Error('Nie udało się usunąć spotkania');
             toast({ title: 'Sukces', description: 'Spotkanie usunięte.' });
-            const updatedMeetings = await fetch('/api/meetings').then(res => res.json());
-            setMeetings(updatedMeetings);
+            const updatedMeetings = await refreshMeetings();
             setSelectedMeeting(updatedMeetings[0] || null);
         } catch (error) {
             toast({ title: 'Błąd', description: error instanceof Error ? error.message : 'Wystąpił nieznany błąd.', variant: 'destructive' });
@@ -167,7 +183,11 @@ export default function MeetingsClient({ initialMeetings }: { initialMeetings: M
     };
 
     const onMeetingSaved = async () => {
-        await refreshMeetings();
+        const updatedMeetings = await refreshMeetings();
+        const newOrEditedMeeting = updatedMeetings.find(m => m.id === (editingMeeting?.id || getValues().id));
+        if (newOrEditedMeeting) {
+            setSelectedMeeting(newOrEditedMeeting);
+        }
         setIsSheetOpen(false);
     };
     
@@ -228,7 +248,7 @@ export default function MeetingsClient({ initialMeetings }: { initialMeetings: M
                                 <TabsContent value="summary" className="p-4 m-0">
                                     <h3 className="text-lg font-bold mb-2">{selectedMeeting.title}</h3>
                                     <p className="text-sm text-muted-foreground mb-4">
-                                        {format(new Date(selectedMeeting.date), "d MMMM yyyy, HH:mm", { locale: pl })}
+                                        {format(new Date(selectedMeeting.date), "d MMMM yyyy", { locale: pl })}
                                     </p>
                                     <p className="text-sm whitespace-pre-wrap font-mono bg-secondary/30 p-4 rounded-md">{selectedMeeting.summary}</p>
 

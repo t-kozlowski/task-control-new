@@ -27,6 +27,7 @@ const ActionItemUpdateSchema = z.object({
 });
 
 const MeetingPrepOutputSchema = z.object({
+    overallSentiment: z.enum(['positive', 'neutral', 'negative']).describe('The overall sentiment of the project progress based on tasks and past action items.'),
     talkingPoints: z.array(z.object({
         topic: z.string().describe('A key topic to discuss, based on important, critical, or blocked tasks.'),
         reasoning: z.string().describe('A brief explanation of why this topic is important to discuss now.'),
@@ -49,25 +50,38 @@ const meetingPrepPrompt = ai.definePrompt({
   model: 'googleai/gemini-1.5-flash',
   input: {schema: MeetingPrepInputSchema},
   output: {schema: MeetingPrepOutputSchema},
-  prompt: `Jesteś strategicznym asystentem AI, który pomaga menedżerowi projektu przygotować się na spotkanie z prezesem.
+  prompt: `Jesteś wyjątkowo wnikliwym asystentem AI, pomagającym menedżerowi projektu przygotować się na kluczowe spotkanie z zarządem. 
 
-  Twoim zadaniem jest przeanalizowanie bieżącej listy zadań oraz, jeśli jest dostępna, notatek z poprzedniego spotkania. Na tej podstawie wygeneruj materiały przygotowawcze w języku polskim.
+  Twoim zadaniem jest przeprowadzenie kompleksowej analizy dostarczonych danych i wygenerowanie strategicznych materiałów w języku polskim.
 
-  **Kontekst:**
-  - **Aktualne zadania:** {{{tasks}}}
+  **Dostępne dane:**
+  - **Aktualna lista zadań projektowych:** {{{tasks}}}
   {{#if previousMeeting}}
-  - **Poprzednie spotkanie (w tym punkty akcji):** {{{previousMeeting}}}
+  - **Dane z poprzedniego spotkania (w tym punkty akcji do weryfikacji):** {{{previousMeeting}}}
   {{/if}}
 
-  **Twoje zadania:**
+  **Twoje zadania analityczne:**
 
-  1.  **Punkty do omówienia (Talking Points):** Zidentyfikuj 3-4 najważniejsze tematy do dyskusji. Skup się na zadaniach o statusie 'Critical' lub 'High', zadaniach, które są blokerami, lub kluczowych osiągnięciach. Dla każdego punktu podaj krótkie uzasadnienie, dlaczego jest on ważny.
-  
-  2.  **Pytania do prezesa (Questions to Ask):** Sformułuj 2-3 strategiczne pytanie, które pomogą usunąć przeszkody, uzyskać zgodę na dalsze działania lub wyjaśnić priorytety. Unikaj pytań czysto technicznych.
+  1.  **Ocena Ogólnego Sentymentu (Overall Sentiment):**
+      - Przeanalizuj postępy, opóźnienia, statusy zadań krytycznych i realizację poprzednich punktów akcji.
+      - Na tej podstawie określ ogólny sentyment projektu jako 'positive' (wszystko idzie gładko), 'neutral' (mieszane wyniki, drobne problemy) lub 'negative' (poważne ryzyka, opóźnienia).
 
-  3.  **Aktualizacja statusu punktów akcji (Action Item Updates):** Jeśli dostępne są dane z poprzedniego spotkania, przeanalizuj listę zadań, aby określić obecny status każdego punktu akcji. Dla każdego z nich podaj krótką rekomendację, co należy zakomunikować (np. "Potwierdzić ukończenie", "Wyjaśnić opóźnienie i podać nowy termin", "Poprosić o zasoby"). Jeśli statusu nie da się jednoznacznie określić, oznacz go jako "Do weryfikacji".
+  2.  **Punkty do Omówienia (Talking Points):**
+      - Zidentyfikuj 2-4 najważniejsze tematy do dyskusji. Powinny one wynikać z Twojej oceny sentymentu.
+      - Jeśli sentyment jest negatywny, skup się na blokerach i zadaniach krytycznych.
+      - Jeśli pozytywny, wskaż kluczowe sukcesy i zakończone kamienie milowe.
+      - Dla każdego punktu podaj zwięzłe uzasadnienie, dlaczego jest on kluczowy do omówienia *teraz*.
 
-  Wygeneruj odpowiedź ściśle według schematu wyjściowego.
+  3.  **Pytania do Zarządu (Questions to Ask):**
+      - Sformułuj 2-3 strategiczne pytania. Unikaj pytań technicznych.
+      - Pytania powinny być proaktywne: dążyć do usunięcia przeszkód, pozyskania zasobów, wyjaśnienia priorytetów lub uzyskania zgody na dalsze kroki.
+
+  4.  **Aktualizacja Punktów Akcji (Action Item Updates):**
+      - **Tylko jeśli dostępne są dane z poprzedniego spotkania**, przeanalizuj listę zadań, aby określić status każdego punktu akcji.
+      - Dla każdego punktu sformułuj krótką, jasną rekomendację co do komunikacji (np. "Potwierdzić ukończenie i pokazać wynik", "Wyjaśnić opóźnienie i zaproponować nowy plan", "Zgłosić brak postępów i poprosić o wsparcie").
+      - Jeśli statusu nie da się jednoznacznie określić na podstawie zadań, oznacz go jako "Do weryfikacji" i zarekomenduj pytanie o status.
+
+  Wygeneruj odpowiedź ściśle według schematu wyjściowego. Bądź zwięzły, profesjonalny i strategiczny.
   `,
 });
 
