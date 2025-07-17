@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getTasks, saveTasks } from '@/lib/data-service';
 import { Task } from '@/types';
+import { format } from 'date-fns';
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
@@ -12,6 +13,12 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     if (taskIndex === -1) {
       return NextResponse.json({ message: 'Task not found' }, { status: 404 });
     }
+    
+    // If the task is being marked as 'Done', set the completion date.
+    if (updatedTask.status === 'Done' && tasks[taskIndex].status !== 'Done') {
+      updatedTask.date = new Date().toISOString();
+    }
+
 
     tasks[taskIndex] = updatedTask;
     await saveTasks(tasks);

@@ -18,6 +18,7 @@ export interface Task {
   subTasks: SubTask[]; // This might become deprecated, but keep for now to avoid breaking changes.
   progress?: number;
   parentId?: string | null;
+  date?: string; // Add date field for completion date tracking
 }
 
 export interface AiDirective {

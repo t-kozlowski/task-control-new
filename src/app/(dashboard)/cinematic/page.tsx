@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react';
-import { Task, AiDirective } from '@/types';
-import { getTasks, getDirectives } from '@/lib/data-service';
+import { Task, AiDirective, User } from '@/types';
 import ProjectStats from '../_components/project-stats';
 import TaskSpotlight from '../_components/task-spotlight';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -9,10 +8,11 @@ import { Icons } from '@/components/icons';
 import { AiNotificationOutput } from '@/ai/flows/ai-notifications';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import LiveStats from './_components/live-stats';
 
 export default function CinematicPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [directives, setDirectives] = useState<AiDirective[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [notification, setNotification] = useState<AiNotificationOutput | null>(null);
   const [summary, setSummary] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
@@ -21,15 +21,15 @@ export default function CinematicPage() {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const [tasksData, directivesData, notificationRes, summaryRes] = await Promise.all([
+        const [tasksData, usersData, notificationRes, summaryRes] = await Promise.all([
           fetch('/api/tasks').then(res => res.json()),
-          fetch('/api/directives').then(res => res.json()),
+          fetch('/api/users').then(res => res.json()),
           fetch('/api/ai/notification'),
           fetch('/api/ai/summary').then(res => res.json())
         ]);
 
         setTasks(tasksData);
-        setDirectives(directivesData);
+        setUsers(usersData);
         setSummary(summaryRes.summary);
 
         if(notificationRes.ok) {
@@ -84,6 +84,7 @@ export default function CinematicPage() {
             </div>
             <Skeleton className="h-96 w-full" />
             <Skeleton className="h-96 w-full" />
+            <Skeleton className="h-96 w-full lg:col-span-2" />
         </div>
     );
   }
@@ -100,15 +101,15 @@ export default function CinematicPage() {
                            <Icons.bot /> Podsumowanie AI "Big Picture"
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="prose prose-invert text-foreground">
+                    <CardContent className="prose prose-invert text-foreground max-w-none">
                         {summary ? summary.split('\n').map((p, i) => <p key={i}>{p}</p>) : <p>Generowanie podsumowania...</p>}
                     </CardContent>
                 </Card>
             </div>
 
             <ProjectStats tasks={tasks} />
-
-            <TaskSpotlight tasks={tasks} />
+            
+            <LiveStats tasks={tasks} users={users} />
 
             <div className="lg:col-span-2">
                 <Card>
@@ -132,6 +133,9 @@ export default function CinematicPage() {
                         )}
                     </CardContent>
                 </Card>
+            </div>
+             <div className="lg:col-span-2">
+                <TaskSpotlight tasks={tasks} />
             </div>
         </div>
     </div>

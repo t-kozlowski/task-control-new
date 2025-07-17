@@ -15,6 +15,11 @@ export async function POST(request: Request) {
   try {
     const newTask: Task = await request.json();
     const tasks = await getTasks();
+    
+    if (newTask.status === 'Done') {
+        newTask.date = new Date().toISOString();
+    }
+    
     tasks.push(newTask);
     await saveTasks(tasks);
     return NextResponse.json(newTask, { status: 201 });
