@@ -56,7 +56,8 @@ export default function TaskListItem({ task, allTasks = [] }: { task: Task, allT
       <Accordion type="single" collapsible disabled={subTasks.length === 0}>
         <AccordionItem value={task.id} className="border-none">
           <AccordionTrigger
-            className="p-4 hover:no-underline flex-1 text-left [&[data-state=open]>svg]:rotate-180"
+            as="div"
+            className="p-4 hover:no-underline flex-1 text-left [&[data-state=open]>svg]:rotate-180 cursor-pointer"
             disabled={subTasks.length === 0}
           >
             <div className='w-full flex items-center justify-between'>
