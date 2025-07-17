@@ -26,6 +26,10 @@ export default function TaskList({ tasks }: { tasks: Task[] }) {
 
   const displayedTasks = showArchived ? archivedTasks : activeTasks;
 
+  if (!tasks || tasks.length === 0) {
+    return null;
+  }
+  
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">

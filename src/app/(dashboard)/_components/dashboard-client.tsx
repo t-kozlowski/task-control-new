@@ -6,6 +6,9 @@ import type { Task, User } from '@/types';
 import TaskSpotlight from './task-spotlight';
 import { KeyStats } from './key-stats';
 import { AiSummaryCard } from './ai-summary-card';
+import ProjectStats from './project-stats';
+import LiveStats from './live-stats';
+import TaskList from './task-list';
 
 export default function DashboardClient({ initialTasks, initialUsers }: { initialTasks: Task[], initialUsers: User[] }) {
 
@@ -15,17 +18,14 @@ export default function DashboardClient({ initialTasks, initialUsers }: { initia
         <h1 className="text-2xl font-bold tracking-tight">Pulpit Strategiczny</h1>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-         <div className="lg:col-span-3">
-            <AiSummaryCard />
-        </div>
-        <div className="lg:col-span-3">
-            <KeyStats tasks={initialTasks} users={initialUsers} />
-        </div>
-        <div className="lg:col-span-3">
+       <div className="grid gap-6">
+          <AiSummaryCard />
+          <KeyStats tasks={initialTasks} users={initialUsers} />
+          <ProjectStats tasks={initialTasks} />
+          <LiveStats tasks={initialTasks} users={initialUsers} />
           <TaskSpotlight tasks={initialTasks} />
-        </div>
-      </div>
+          <TaskList tasks={initialTasks} />
+       </div>
     </div>
   );
 }
