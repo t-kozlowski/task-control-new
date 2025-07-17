@@ -21,22 +21,23 @@ export function AiNotifications() {
         setNotification(newNotification);
         setIsVisible(true);
 
-        // Hide after 10 seconds, then fetch new one after 5 seconds
-        setTimeout(() => {
+        // Hide after 15 seconds
+        const hideTimer = setTimeout(() => {
           setIsVisible(false);
-          setTimeout(fetchAndShowNotification, 5000); 
-        }, 10000);
+        }, 15000); 
+
+        return () => clearTimeout(hideTimer);
 
       } catch (error) {
         console.error('Failed to fetch AI notification', error);
-        // Retry after a longer delay
-        setTimeout(fetchAndShowNotification, 30000);
       }
     };
+    
+    // Fetch immediately on mount, then set an interval for subsequent fetches.
+    fetchAndShowNotification();
+    const interval = setInterval(fetchAndShowNotification, 60000); // Fetch every 60 seconds
 
-    // Initial fetch after a short delay
-    const timer = setTimeout(fetchAndShowNotification, 5000);
-    return () => clearTimeout(timer);
+    return () => clearInterval(interval);
   }, []);
 
   const getBadgeText = (type: AiNotificationOutput['type']) => {
