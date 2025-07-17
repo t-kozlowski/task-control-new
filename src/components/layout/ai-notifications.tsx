@@ -38,7 +38,7 @@ export function AiNotifications() {
       }
     };
 
-    const intervalId = setInterval(fetchNotification, 30000); // every 30 seconds
+    const intervalId = setInterval(fetchNotification, 20000); // every 20 seconds
     
     // Fetch one immediately on mount
     fetchNotification();

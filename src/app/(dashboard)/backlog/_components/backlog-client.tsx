@@ -129,6 +129,7 @@ export default function BacklogClient({ initialTasks, users }: { initialTasks: T
         task={editingTask}
         onTaskSaved={onTaskSaved}
         users={users}
+        tasks={tasks}
       />
     </>
   );

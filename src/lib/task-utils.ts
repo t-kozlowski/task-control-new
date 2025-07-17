@@ -1,4 +1,4 @@
-import { Task, SubTask, Priority } from '@/types';
+import { Task, Priority } from '@/types';
 
 export const priorityWeights: Record<Priority, number> = {
   Critical: 4,
@@ -7,21 +7,34 @@ export const priorityWeights: Record<Priority, number> = {
   Low: 1,
 };
 
-export const calculateWeightedProgress = (task: Task): number => {
+// Updated to calculate progress based on sub-tasks (if any) or status
+export const calculateWeightedProgress = (task: Task, allTasks: Task[]): number => {
   if (task.status === 'Done') return 100;
-  if (!task.subTasks || task.subTasks.length === 0) {
-    return task.status === 'In Progress' ? 1 : 0;
+  
+  const subTasks = allTasks.filter(t => t.parentId === task.id);
+
+  if (subTasks.length === 0) {
+    // If no subtasks, progress is based on its own status
+    switch (task.status) {
+        case 'Done': return 100;
+        case 'In Progress': return 50; // Or some other value
+        case 'Todo': return 0;
+        case 'Backlog': return 0;
+        default: return 0;
+    }
   }
 
-  const totalWeight = task.subTasks.reduce((acc, subTask) => acc + priorityWeights[subTask.priority], 0);
-  const completedWeight = task.subTasks
+  const totalWeight = subTasks.reduce((acc, subTask) => acc + priorityWeights[subTask.priority], 0);
+  
+  if (totalWeight === 0) return 0;
+
+  const completedWeight = subTasks
     .filter(subTask => subTask.status === 'Done')
     .reduce((acc, subTask) => acc + priorityWeights[subTask.priority], 0);
 
-  if (totalWeight === 0) return 0;
-
   return Math.round((completedWeight / totalWeight) * 100);
 };
+
 
 export const getProgressGradient = (progress: number): string => {
   if (progress <= 0) {

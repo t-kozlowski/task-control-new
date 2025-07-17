@@ -15,8 +15,9 @@ export interface Task {
   assignee: string; // email of the user
   priority: Priority;
   status: Status;
-  subTasks: SubTask[];
+  subTasks: SubTask[]; // This might become deprecated, but keep for now to avoid breaking changes.
   progress?: number;
+  parentId?: string | null;
 }
 
 export interface AiDirective {

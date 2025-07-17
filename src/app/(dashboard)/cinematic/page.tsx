@@ -44,7 +44,7 @@ export default function CinematicPage() {
     };
 
     fetchData();
-    const interval = setInterval(fetchData, 30000); // Odświeżaj co 30 sekund
+    const interval = setInterval(fetchData, 20000); // Odświeżaj co 20 sekund
 
     return () => clearInterval(interval);
   }, []);

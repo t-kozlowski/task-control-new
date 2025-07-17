@@ -28,6 +28,7 @@ const taskSchema = z.object({
   assignee: z.string().email('Nieprawidłowy adres email').min(1, 'Przypisana osoba jest wymagana'),
   priority: z.enum(['Critical', 'High', 'Medium', 'Low']),
   status: z.enum(['Todo', 'In Progress', 'Done', 'Backlog']),
+  parentId: z.string().nullable().optional(),
 });
 
 type TaskFormData = z.infer<typeof taskSchema>;
@@ -38,9 +39,10 @@ interface TaskFormSheetProps {
   task: Task | null;
   onTaskSaved: () => void;
   users: User[];
+  tasks: Task[];
 }
 
-export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved, users }: TaskFormSheetProps) {
+export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved, users, tasks }: TaskFormSheetProps) {
   const { loggedInUser } = useApp();
   const { register, handleSubmit, control, reset, formState: { errors, isSubmitting } } = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
@@ -58,6 +60,7 @@ export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved, users }: 
           assignee: loggedInUser?.email || '',
           priority: 'Medium',
           status: 'Todo',
+          parentId: null,
         });
       }
     }
@@ -66,7 +69,8 @@ export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved, users }: 
   const onSubmit = async (data: TaskFormData) => {
     const method = task ? 'PUT' : 'POST';
     const url = task ? `/api/tasks/${task.id}` : '/api/tasks';
-    const payload = { ...data, subTasks: task?.subTasks || [] };
+    // Ensure subTasks from original object is preserved if editing
+    const payload = { ...task, ...data };
 
     try {
       const response = await fetch(url, {
@@ -84,6 +88,7 @@ export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved, users }: 
 
   const priorities: Priority[] = ['Critical', 'High', 'Medium', 'Low'];
   const statuses: Status[] = ['Backlog', 'Todo', 'In Progress', 'Done'];
+  const parentTasks = tasks.filter(t => !t.parentId && t.id !== task?.id);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -97,6 +102,22 @@ export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved, users }: 
           </SheetHeader>
           <div className="flex-1 overflow-y-auto py-6 px-1 space-y-4">
             <div>
+              <Label htmlFor="parentId">Zadanie Główne (opcjonalne)</Label>
+              <Controller
+                name="parentId"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={(value) => field.onChange(value === 'none' ? null : value)} value={field.value || 'none'}>
+                    <SelectTrigger><SelectValue placeholder="Wybierz zadanie nadrzędne" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Brak (to jest zadanie główne)</SelectItem>
+                      {parentTasks.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
+             <div>
               <Label htmlFor="name">Nazwa Zadania</Label>
               <Input id="name" {...register('name')} />
               {errors.name && <p className="text-destructive text-sm mt-1">{errors.name.message}</p>}

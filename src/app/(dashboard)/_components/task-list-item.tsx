@@ -7,6 +7,7 @@ import { PriorityIcons } from '@/components/icons';
 import { calculateWeightedProgress, getProgressGradient } from '@/lib/task-utils';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
+import { ChevronDown } from 'lucide-react';
 
 const SubTaskItem = ({ subTask }: { subTask: { name: string; status: string; priority: any } }) => {
   const PriorityIcon = PriorityIcons[subTask.priority as keyof typeof PriorityIcons];
@@ -23,7 +24,7 @@ const SubTaskItem = ({ subTask }: { subTask: { name: string; status: string; pri
   );
 };
 
-export default function TaskListItem({ task }: { task: Task }) {
+export default function TaskListItem({ task, allTasks = [] }: { task: Task, allTasks?: Task[] }) {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
   const itemRef = useRef<HTMLDivElement>(null);
@@ -35,36 +36,37 @@ export default function TaskListItem({ task }: { task: Task }) {
     }
   };
 
-  const progress = calculateWeightedProgress(task);
+  const subTasks = allTasks.filter(t => t.parentId === task.id);
+  const progress = calculateWeightedProgress(task, allTasks);
   const progressGradient = getProgressGradient(progress);
   const PriorityIcon = PriorityIcons[task.priority];
   const isInProgress = progress > 0 && progress < 100;
 
   return (
-    <div 
+    <div
       ref={itemRef}
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
       className="group relative rounded-lg border p-0.5 overflow-hidden transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 bg-card"
     >
-      <div 
+      <div
         className="pointer-events-none absolute -inset-px rounded-lg transition-opacity duration-300"
         style={{
           opacity: isHovering ? 1 : 0,
           background: `radial-gradient(400px circle at ${mousePos.x}px ${mousePos.y}px, hsl(var(--primary) / 0.1), transparent 40%)`,
         }}
       />
-      <Accordion type="single" collapsible>
+      <Accordion type="single" collapsible disabled={subTasks.length === 0}>
         <AccordionItem value={task.id} className="border-none">
           <div className="p-4 relative">
             <div className="flex items-center justify-between mb-2">
-              <AccordionTrigger className="p-0 hover:no-underline flex-1">
-                <div className="flex items-center gap-3">
-                  <PriorityIcon className="size-5 text-primary" />
-                  <h3 className="font-semibold text-lg">{task.name}</h3>
-                </div>
-              </AccordionTrigger>
+                <AccordionTrigger className="p-0 hover:no-underline flex-1" disabled={subTasks.length === 0}>
+                   <div className="flex items-center gap-3">
+                    <PriorityIcon className="size-5 text-primary" />
+                    <h3 className="font-semibold text-lg">{task.name}</h3>
+                  </div>
+                </AccordionTrigger>
               <div className="flex items-center gap-2 ml-4">
                 <Image
                   src={`https://placehold.co/40x40.png`}
@@ -79,9 +81,9 @@ export default function TaskListItem({ task }: { task: Task }) {
             </div>
             <p className="text-sm text-muted-foreground mb-4 pl-8">{task.description}</p>
             <div className="flex items-center gap-4 pl-8">
-              <Progress 
-                value={progress} 
-                className="w-full h-2" 
+              <Progress
+                value={progress}
+                className="w-full h-2"
                 indicatorStyle={{ background: progressGradient }}
                 indicatorClassName={`${isInProgress ? 'animate-subtle-pulse' : ''}`}
               />
@@ -89,9 +91,20 @@ export default function TaskListItem({ task }: { task: Task }) {
             </div>
           </div>
           <AccordionContent>
-            <div className="px-4 pb-4 pl-12 space-y-2">
-              {task.subTasks.length > 0 ? (
-                task.subTasks.map(sub => <SubTaskItem key={sub.id} subTask={sub} />)
+             <div className="px-4 pb-4 pl-12 space-y-2">
+              <h4 className="text-sm font-semibold mb-2">Podzadania:</h4>
+              {subTasks.length > 0 ? (
+                subTasks.map(sub => (
+                   <div key={sub.id} className="flex items-center justify-between p-2 rounded-md hover:bg-secondary/50">
+                      <div className="flex items-center gap-2">
+                        <PriorityIcons[sub.priority] className={`size-4 ${sub.status === 'Done' ? 'text-muted-foreground' : 'text-primary'}`} />
+                        <span className={`text-sm ${sub.status === 'Done' ? 'line-through text-muted-foreground' : ''}`}>{sub.name}</span>
+                      </div>
+                      <Badge variant={sub.status === 'Done' ? 'outline' : 'default'} className={sub.status === 'Done' ? '' : 'bg-primary/20 text-primary'}>
+                        {sub.status}
+                      </Badge>
+                    </div>
+                ))
               ) : (
                 <p className="text-sm text-muted-foreground text-center py-4">Brak podzadań.</p>
               )}

@@ -20,6 +20,8 @@ import { Icons, PriorityIcons } from "@/components/icons";
 import { Task, Priority, User } from "@/types";
 import { calculateWeightedProgress, getProgressGradient } from "@/lib/task-utils";
 import Image from 'next/image';
+import { Fragment } from "react";
+import { ChevronRight } from "lucide-react";
 
 interface TaskTableProps {
   tasks: Task[];
@@ -30,7 +32,7 @@ interface TaskTableProps {
 
 export function TaskTable({ tasks, onEdit, onTaskDeleted, users }: TaskTableProps) {
     const handleDelete = async (taskId: string) => {
-        if (!confirm('Czy na pewno chcesz usunąć to zadanie?')) return;
+        if (!confirm('Czy na pewno chcesz usunąć to zadanie? To usunie również wszystkie jego podzadania.')) return;
         
         await fetch(`/api/tasks/${taskId}`, { method: 'DELETE' });
         onTaskDeleted();
@@ -40,12 +42,84 @@ export function TaskTable({ tasks, onEdit, onTaskDeleted, users }: TaskTableProp
         return users.find(u => u.email === email)?.name || email;
     }
 
+    const mainTasks = tasks.filter(task => !task.parentId);
+    const subTasksByParentId = tasks.reduce((acc, task) => {
+      if (task.parentId) {
+        if (!acc[task.parentId]) {
+          acc[task.parentId] = [];
+        }
+        acc[task.parentId].push(task);
+      }
+      return acc;
+    }, {} as Record<string, Task[]>);
+
+  const renderTaskRow = (task: Task, isSubTask: boolean = false) => {
+      const progress = calculateWeightedProgress(task, tasks);
+      const progressGradient = getProgressGradient(progress);
+      const PriorityIcon = PriorityIcons[task.priority as Priority];
+      return (
+        <TableRow key={task.id} className={isSubTask ? "bg-secondary/50" : ""}>
+          <TableCell className="font-medium">
+            <div className={`flex items-center ${isSubTask ? "pl-6" : ""}`}>
+              {isSubTask && <ChevronRight className="h-4 w-4 mr-2 text-muted-foreground" />}
+              <span>{task.name}</span>
+            </div>
+          </TableCell>
+          <TableCell>
+            <Badge variant="outline">{task.status}</Badge>
+          </TableCell>
+          <TableCell>
+            <div className="flex items-center gap-2">
+              <PriorityIcon className="size-4" />
+              {task.priority}
+            </div>
+          </TableCell>
+          <TableCell>
+            <div className="flex items-center gap-2">
+               <Image
+                src={`https://placehold.co/40x40.png`}
+                alt={task.assignee}
+                width={24}
+                height={24}
+                className="rounded-full"
+                data-ai-hint="people avatar"
+              />
+              <span>{getAssigneeName(task.assignee)}</span>
+            </div>
+          </TableCell>
+          <TableCell>
+            <div className="flex items-center gap-2">
+              <Progress value={progress} className="h-2" indicatorStyle={{ background: progressGradient }} />
+              <span className="text-xs font-mono">{progress}%</span>
+            </div>
+          </TableCell>
+          <TableCell className="text-right">
+              <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                      <Icons.more />
+                  </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                  <DropdownMenuItem onSelect={() => onEdit(task)}>
+                      <Icons.edit className="mr-2 h-4 w-4" /> Edytuj
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => handleDelete(task.id)} className="text-destructive">
+                      <Icons.delete className="mr-2 h-4 w-4" /> Usuń
+                  </DropdownMenuItem>
+                  </DropdownMenuContent>
+              </DropdownMenu>
+          </TableCell>
+        </TableRow>
+      );
+  }
+
   return (
     <div className="rounded-lg border">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[250px]">Zadanie</TableHead>
+            <TableHead className="w-[350px]">Zadanie</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Priorytet</TableHead>
             <TableHead>Przypisany</TableHead>
@@ -54,61 +128,12 @@ export function TaskTable({ tasks, onEdit, onTaskDeleted, users }: TaskTableProp
           </TableRow>
         </TableHeader>
         <TableBody>
-          {tasks.map((task) => {
-            const progress = calculateWeightedProgress(task);
-            const progressGradient = getProgressGradient(progress);
-            const PriorityIcon = PriorityIcons[task.priority as Priority];
-            return (
-              <TableRow key={task.id}>
-                <TableCell className="font-medium">{task.name}</TableCell>
-                <TableCell>
-                  <Badge variant="outline">{task.status}</Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <PriorityIcon className="size-4" />
-                    {task.priority}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                     <Image
-                      src={`https://placehold.co/40x40.png`}
-                      alt={task.assignee}
-                      width={24}
-                      height={24}
-                      className="rounded-full"
-                      data-ai-hint="people avatar"
-                    />
-                    <span>{getAssigneeName(task.assignee)}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Progress value={progress} className="h-2" indicatorStyle={{ background: progressGradient }} />
-                    <span className="text-xs font-mono">{progress}%</span>
-                  </div>
-                </TableCell>
-                <TableCell className="text-right">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                            <Icons.more />
-                        </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                        <DropdownMenuItem onSelect={() => onEdit(task)}>
-                            <Icons.edit className="mr-2 h-4 w-4" /> Edytuj
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => handleDelete(task.id)} className="text-destructive">
-                            <Icons.delete className="mr-2 h-4 w-4" /> Usuń
-                        </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            );
-          })}
+          {mainTasks.map(task => (
+            <Fragment key={task.id}>
+              {renderTaskRow(task)}
+              {subTasksByParentId[task.id]?.map(subTask => renderTaskRow(subTask, true))}
+            </Fragment>
+          ))}
         </TableBody>
       </Table>
     </div>
