@@ -3,24 +3,18 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  SidebarProvider,
-  Sidebar,
-  SidebarHeader,
-  SidebarContent,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarFooter,
-  SidebarInset,
-} from '@/components/ui/sidebar';
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { Icons, BotMessageSquare } from '@/components/icons';
-import { AppHeader } from './app-header';
 import { useApp } from '@/context/app-context';
-import { Button } from '../ui/button';
 
 const menuItems = [
   { href: '/', label: 'Pulpit', icon: Icons.dashboard },
-  { href: '/backlog', label: 'Lista Zadań', icon: Icons.backlog },
+  { href: '/my-tasks', label: 'Moje Zadania', icon: Icons.userCheck },
+  { href: '/backlog', label: 'Backlog', icon: Icons.backlog },
   { href: '/meetings', label: 'Spotkania', icon: Icons.meetings },
   { href: '/directives', label: 'Dyrektywy AI', icon: Icons.directives },
   { href: '/cinematic', label: 'Widok Kinowy', icon: Icons.movie },
@@ -28,58 +22,39 @@ const menuItems = [
 
 export function AppSidebar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { loggedInUser, setLoggedInUser } = useApp();
+  const { loggedInUser } = useApp();
 
   if (!loggedInUser) {
     return <>{children}</>;
   }
   
-  const handleLogout = () => {
-    setLoggedInUser(null);
-  };
-
   return (
-    <SidebarProvider>
-      <Sidebar collapsible="icon" className="border-r">
-        <SidebarHeader className="p-4 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2 font-semibold">
-                <BotMessageSquare className="size-6 text-primary" />
-                <span className="group-data-[collapsible=icon]:hidden">LSP</span>
-            </Link>
-        </SidebarHeader>
-        <SidebarContent className="p-2 sidebar-scrollable">
-          <SidebarMenu>
-            {menuItems.map((item) => (
-              <SidebarMenuItem key={item.href}>
-                <Link href={item.href}>
-                  <SidebarMenuButton
-                    isActive={pathname === item.href}
-                    tooltip={item.label}
-                    className="justify-start"
-                  >
-                    <item.icon className="size-5" />
-                    <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
-                  </SidebarMenuButton>
+      <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
+        <TooltipProvider>
+        <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
+          <Link
+            href="/"
+            className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
+          >
+            <BotMessageSquare className="h-4 w-4 transition-all group-hover:scale-110" />
+            <span className="sr-only">LSP Innovationhub</span>
+          </Link>
+          {menuItems.map(item => (
+            <Tooltip key={item.href}>
+              <TooltipTrigger asChild>
+                <Link
+                  href={item.href}
+                  className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${pathname === item.href ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                >
+                  <item.icon className="h-5 w-5" />
+                  <span className="sr-only">{item.label}</span>
                 </Link>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </SidebarContent>
-        <SidebarFooter className="p-2">
-            <Button variant="ghost" className="w-full justify-start gap-2" onClick={handleLogout}>
-                <Icons.logout className="size-5" />
-                <span className="group-data-[collapsible=icon]:hidden">Wyloguj</span>
-            </Button>
-        </SidebarFooter>
-      </Sidebar>
-      <SidebarInset>
-        <div className="flex flex-col">
-            <AppHeader />
-            <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 animate-fade-in">
-                {children}
-            </main>
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+              </TooltipTrigger>
+              <TooltipContent side="right">{item.label}</TooltipContent>
+            </Tooltip>
+          ))}
+        </nav>
+        </TooltipProvider>
+      </aside>
   );
 }
