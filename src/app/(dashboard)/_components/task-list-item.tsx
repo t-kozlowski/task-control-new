@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useRef, type MouseEvent } from 'react';
 import type { Task, User } from '@/types';
@@ -15,6 +16,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { Button } from '@/components/ui/button';
 
 const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('') || '?';
 
@@ -55,11 +57,7 @@ export default function TaskListItem({ task, allTasks = [] }: { task: Task, allT
       />
       <Accordion type="single" collapsible disabled={subTasks.length === 0}>
         <AccordionItem value={task.id} className="border-none">
-          <AccordionTrigger
-            as="div"
-            className="p-4 hover:no-underline flex-1 text-left [&[data-state=open]>svg]:rotate-180 cursor-pointer"
-            disabled={subTasks.length === 0}
-          >
+          <div className='p-4'>
             <div className='w-full flex items-center justify-between'>
                 <div className='flex-1'>
                     <div className="flex items-start justify-between mb-2">
@@ -97,9 +95,15 @@ export default function TaskListItem({ task, allTasks = [] }: { task: Task, allT
                         <span className="font-mono text-sm font-semibold">{progress}%</span>
                     </div>
                 </div>
-                {subTasks.length > 0 && <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 ml-4" />}
+                {subTasks.length > 0 && (
+                    <AccordionTrigger asChild>
+                        <Button variant="ghost" size="icon" className="ml-4 flex-shrink-0 [&[data-state=open]>svg]:rotate-180">
+                             <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />
+                        </Button>
+                    </AccordionTrigger>
+                )}
             </div>
-          </AccordionTrigger>
+          </div>
           <AccordionContent>
             <div className="px-4 pb-4 pl-12 space-y-2">
               <h4 className="text-sm font-semibold mb-2">Podzadania:</h4>
