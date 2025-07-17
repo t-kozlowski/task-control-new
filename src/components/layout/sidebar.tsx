@@ -19,14 +19,13 @@ const menuItems = [
   { href: '/backlog', label: 'Backlog', icon: Icons.backlog },
   { href: '/meetings', label: 'Spotkania', icon: Icons.meetings },
   { href: '/directives', label: 'Dyrektywy AI', icon: Icons.directives },
-  { href: '/cinematic', label: 'Widok Kinowy', icon: Icons.movie },
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
   const { loggedInUser } = useApp();
 
-  if (!loggedInUser || pathname === '/cinematic') {
+  if (!loggedInUser) {
     return null;
   }
   
