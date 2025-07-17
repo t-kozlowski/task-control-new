@@ -94,7 +94,7 @@ export default function TaskListItem({ task, allTasks = [] }: { task: Task, allT
                         {React.createElement(PriorityIcons[sub.priority], { className: `size-4 ${sub.status === 'Done' ? 'text-muted-foreground' : 'text-primary'}` })}
                         <span className={`text-sm ${sub.status === 'Done' ? 'line-through text-muted-foreground' : ''}`}>{sub.name}</span>
                       </div>
-                      <Badge variant={sub.status === 'Done' ? 'outline' : 'default'} className={sub.status === 'Done' ? '' : 'bg-primary/20 text-primary'}>
+                      <Badge variant={sub.status === 'Done' ? 'outline' : 'secondary'} className={sub.status === 'Done' ? '' : 'text-primary-foreground'}>
                         {sub.status}
                       </Badge>
                     </div>

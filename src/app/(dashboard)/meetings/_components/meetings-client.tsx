@@ -234,9 +234,9 @@ export default function MeetingsClient({ initialMeetings }: { initialMeetings: M
                                                 <div key={index} className="p-3 rounded-lg border">
                                                     <div className="flex justify-between items-start">
                                                         <p className="flex-1 pr-4">{item.description}</p>
-                                                        <Badge variant={item.status === 'Done' ? 'default' : 'secondary'} className={item.status === 'Done' ? 'bg-accent text-accent-foreground' : ''}>{item.status}</Badge>
+                                                        <Badge variant={item.status === 'Done' ? 'default' : 'secondary'} className={item.status === 'Done' ? 'bg-green-500 text-black' : 'bg-amber-500 text-black'}>{item.status}</Badge>
                                                     </div>
-                                                    <p className="text-sm text-amber-400 mt-2">
+                                                    <p className="text-sm text-accent mt-2">
                                                         <span className="font-semibold">Rekomendacja:</span> {item.recommendation}
                                                     </p>
                                                 </div>

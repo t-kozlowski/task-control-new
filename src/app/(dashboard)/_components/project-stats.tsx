@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { Status, Priority, Task } from '@/types';
 import React, { useMemo } from 'react';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList } from 'recharts';
 
 const STATUS_COLORS: Record<Status, string> = {
   'Backlog': 'hsl(var(--muted-foreground))',
@@ -54,10 +54,17 @@ export default function ProjectStats({ tasks }: { tasks: Task[] }) {
           <ChartContainer config={chartConfig} className="mx-auto aspect-square h-[250px]">
             <PieChart>
               <ChartTooltip content={<ChartTooltipContent nameKey="name" hideLabel />} />
-              <Pie data={statusData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+              <Pie data={statusData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5} cornerRadius={5}>
                 {statusData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.fill} />
+                  <Cell key={`cell-${index}`} fill={entry.fill} stroke={entry.fill} />
                 ))}
+                <LabelList
+                    dataKey="value"
+                    position="outside"
+                    offset={15}
+                    className="fill-foreground font-semibold"
+                    formatter={(value: number) => value}
+                />
               </Pie>
               <ChartLegend content={<ChartLegendContent nameKey="name" />} />
             </PieChart>
@@ -71,10 +78,10 @@ export default function ProjectStats({ tasks }: { tasks: Task[] }) {
         <CardContent>
           <ChartContainer config={chartConfig} className="h-[250px] w-full">
             <BarChart data={priorityData} layout="vertical" margin={{ left: 10, right: 30 }}>
-              <CartesianGrid horizontal={false} />
+              <CartesianGrid horizontal={false} strokeDasharray="3 3" stroke="hsl(var(--border) / 0.5)" />
               <XAxis type="number" hide />
               <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} tickMargin={10} width={80} />
-              <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+              <ChartTooltip cursor={{ fill: 'hsl(var(--secondary))' }} content={<ChartTooltipContent hideLabel />} />
               <Bar dataKey="value" radius={5}>
                  {priorityData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill} />
