@@ -7,18 +7,17 @@ import React, { useMemo } from 'react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList } from 'recharts';
 
 const STATUS_COLORS: Record<Status, string> = {
-  'Backlog': 'hsl(var(--muted-foreground) / 0.5)',
-  'Todo': 'hsl(var(--primary) / 0.4)',
-  'In Progress': 'hsl(var(--primary))',
-  'Done': 'hsl(var(--accent))',
+  'Backlog': '#64748b',   // slate-500
+  'Todo': '#3b82f6',      // blue-500
+  'In Progress': '#f97316', // orange-500
+  'Done': '#22c55e',      // green-500
 };
 
-// New, more sophisticated and theme-aligned color palette for priorities
 const PRIORITY_COLORS: Record<Priority, string> = {
-  'Low': 'hsl(210 40% 50%)',    // Calmer Blue
-  'Medium': 'hsl(38 92% 50%)',  // Amber/Gold
-  'High': 'hsl(0 84% 60%)',     // Stronger Red
-  'Critical': 'hsl(0 90% 40%)',   // Deeper, more intense Red
+  'Low': 'hsl(210 30% 60%)',      // Lighter, calmer blue
+  'Medium': 'hsl(45 80% 60%)',    // Vibrant but not-too-bright yellow/orange
+  'High': 'hsl(10 80% 60%)',      // Strong but not-quite-alert orange-red
+  'Critical': 'hsl(0 85% 55%)',   // Clear, urgent red
 };
 
 export default function ProjectStats({ tasks }: { tasks: Task[] }) {

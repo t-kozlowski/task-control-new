@@ -132,7 +132,8 @@
     "description": "rrr",
     "assignee": "david@example.com",
     "priority": "Medium",
-    "status": "Todo",
-    "parentId": null
+    "status": "Done",
+    "parentId": "TASK-4",
+    "date": "2025-07-17T10:06:31.254Z"
   }
 ]
