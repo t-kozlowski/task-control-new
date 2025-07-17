@@ -19,6 +19,7 @@ import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
 import Link from 'next/link';
 import { BotMessageSquare } from '../icons';
 import { usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 
 const menuItems = [
@@ -56,9 +57,14 @@ export function AppHeader() {
   const userInitials = loggedInUser?.name.split(' ').map(n => n[0]).join('');
   const userTasks = tasks.filter(t => t.assignee === loggedInUser?.email && t.status !== 'Done');
 
+  const containerClasses = cn(
+    "sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6",
+    pathname !== '/cinematic' && 'sm:pl-14'
+  );
+
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+    <header className={containerClasses}>
        <Sheet>
             <SheetTrigger asChild>
               <Button size="icon" variant="outline" className="sm:hidden">

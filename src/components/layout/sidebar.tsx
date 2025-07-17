@@ -10,6 +10,8 @@ import {
 } from '@/components/ui/tooltip';
 import { Icons, BotMessageSquare } from '@/components/icons';
 import { useApp } from '@/context/app-context';
+import { cn } from '@/lib/utils';
+
 
 const menuItems = [
   { href: '/', label: 'Pulpit', icon: Icons.dashboard },
@@ -20,12 +22,12 @@ const menuItems = [
   { href: '/cinematic', label: 'Widok Kinowy', icon: Icons.movie },
 ];
 
-export function AppSidebar({ children }: { children: React.ReactNode }) {
+export function AppSidebar() {
   const pathname = usePathname();
   const { loggedInUser } = useApp();
 
-  if (!loggedInUser) {
-    return <>{children}</>;
+  if (!loggedInUser || pathname === '/cinematic') {
+    return null;
   }
   
   return (
@@ -44,7 +46,10 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
               <TooltipTrigger asChild>
                 <Link
                   href={item.href}
-                  className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${pathname === item.href ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                  className={cn(
+                    'flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8',
+                    pathname === item.href ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:text-foreground'
+                  )}
                 >
                   <item.icon className="h-5 w-5" />
                   <span className="sr-only">{item.label}</span>
