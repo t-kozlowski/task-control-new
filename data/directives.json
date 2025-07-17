@@ -1,0 +1,14 @@
+[
+  {
+    "id": "1",
+    "text": "Prioritize features that enhance user engagement and retention."
+  },
+  {
+    "id": "2",
+    "text": "Focus on minimizing technical debt during this sprint."
+  },
+  {
+    "id": "3",
+    "text": "Ensure all new features are compliant with ISO 26262 security standards."
+  }
+]
