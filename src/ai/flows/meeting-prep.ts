@@ -63,7 +63,7 @@ const meetingPrepPrompt = ai.definePrompt({
 
   1.  **Punkty do omówienia (Talking Points):** Zidentyfikuj 3-4 najważniejsze tematy do dyskusji. Skup się na zadaniach o statusie 'Critical' lub 'High', zadaniach, które są blokerami, lub kluczowych osiągnięciach. Dla każdego punktu podaj krótkie uzasadnienie, dlaczego jest on ważny.
   
-  2.  **Pytania do prezesa (Questions to Ask):** Sformułuj 2-3 strategiczne pytania, które pomogą usunąć przeszkody, uzyskać zgodę na dalsze działania lub wyjaśnić priorytety. Unikaj pytań czysto technicznych.
+  2.  **Pytania do prezesa (Questions to Ask):** Sformułuj 2-3 strategiczne pytanie, które pomogą usunąć przeszkody, uzyskać zgodę na dalsze działania lub wyjaśnić priorytety. Unikaj pytań czysto technicznych.
 
   3.  **Aktualizacja statusu punktów akcji (Action Item Updates):** Jeśli dostępne są dane z poprzedniego spotkania, przeanalizuj listę zadań, aby określić obecny status każdego punktu akcji. Dla każdego z nich podaj krótką rekomendację, co należy zakomunikować (np. "Potwierdzić ukończenie", "Wyjaśnić opóźnienie i podać nowy termin", "Poprosić o zasoby"). Jeśli statusu nie da się jednoznacznie określić, oznacz go jako "Do weryfikacji".
 
