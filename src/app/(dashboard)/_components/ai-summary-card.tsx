@@ -20,7 +20,8 @@ export function AiSummaryCard() {
       try {
         const response = await fetch('/api/ai/summary');
         if (!response.ok) {
-          throw new Error('Nie udało się pobrać podsumowania AI');
+           const errorData = await response.json().catch(() => ({ message: 'Nie udało się pobrać podsumowania AI. Sprawdź konfigurację klucza API.' }));
+          throw new Error(errorData.message || 'Wystąpił nieznany błąd serwera.');
         }
         const data = await response.json();
         setSummary(data);
@@ -59,8 +60,8 @@ export function AiSummaryCard() {
                     <AlertDescription>{error}</AlertDescription>
                 </Alert>
             )}
-            {summary && (
-                <div className="prose prose-invert text-foreground max-w-none">
+            {summary && !error && (
+                <div className="prose prose-sm md:prose-base prose-invert text-foreground max-w-none">
                     {summary.summary.split('\n').map((paragraph, index) => (
                         paragraph.trim() && <p key={index}>{paragraph}</p>
                     ))}
