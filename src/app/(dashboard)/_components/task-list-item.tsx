@@ -3,7 +3,7 @@ import React, { useState, useRef, type MouseEvent } from 'react';
 import type { Task, User } from '@/types';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { PriorityIcons } from '@/components/icons';
+import { Icons, PriorityIcons } from '@/components/icons';
 import { calculateWeightedProgress, getProgressGradient } from '@/lib/task-utils';
 import { Badge } from '@/components/ui/badge';
 import { ChevronDown } from 'lucide-react';
@@ -16,6 +16,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('') || '?';
 
@@ -45,12 +46,15 @@ export default function TaskListItem({ task, allTasks = [] }: { task: Task, allT
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
-      className="group relative rounded-lg border bg-card p-0.5 overflow-hidden transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
+      className={cn(
+        "group relative rounded-lg border bg-card p-0.5 overflow-hidden transition-all duration-300",
+         task.status === 'Done' ? 'border-transparent bg-card/50' : 'hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10'
+      )}
     >
       <div
         className="pointer-events-none absolute -inset-px rounded-lg transition-opacity duration-300"
         style={{
-          opacity: isHovering ? 1 : 0,
+          opacity: isHovering && task.status !== 'Done' ? 1 : 0,
           background: `radial-gradient(400px circle at ${mousePos.x}px ${mousePos.y}px, hsl(var(--primary) / 0.1), transparent 40%)`,
         }}
       />
@@ -61,8 +65,8 @@ export default function TaskListItem({ task, allTasks = [] }: { task: Task, allT
                 <div className='flex-1'>
                     <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-3">
-                            {React.createElement(PriorityIcons[task.priority], { className: "size-5 text-primary" })}
-                            <h3 className="font-semibold text-lg">{task.name}</h3>
+                            {task.status === 'Done' ? <Icons.checkCircle className="size-5 text-green-500" /> : React.createElement(PriorityIcons[task.priority], { className: "size-5 text-primary" })}
+                            <h3 className={cn("font-semibold text-lg", task.status === 'Done' && 'line-through text-muted-foreground')}>{task.name}</h3>
                         </div>
                         <div className="flex items-center gap-2 ml-4 flex-shrink-0">
                             <div className="flex -space-x-2">
@@ -82,14 +86,14 @@ export default function TaskListItem({ task, allTasks = [] }: { task: Task, allT
                         </div>
                     </div>
 
-                    <p className="text-sm text-muted-foreground mb-4 pl-8 text-left">{task.description}</p>
+                    <p className={cn("text-sm text-muted-foreground mb-4 pl-8 text-left", task.status === 'Done' && 'line-through')}>{task.description}</p>
 
                     <div className="flex items-center gap-4 pl-8">
                         <Progress
                             value={progress}
-                            className="w-full h-2"
+                            className="w-full h-1.5"
                             indicatorStyle={{ background: progressGradient }}
-                            indicatorClassName={isInProgress ? 'animate-subtle-pulse' : ''}
+                            indicatorClassName={isInProgress && task.status !== 'Done' ? 'animate-subtle-pulse' : ''}
                         />
                         <span className="font-mono text-sm font-semibold">{progress}%</span>
                     </div>

@@ -12,15 +12,11 @@ export default function TaskList({ tasks }: { tasks: Task[] }) {
   const [showArchived, setShowArchived] = useState(false);
 
   const { activeTasks, archivedTasks } = useMemo(() => {
-    const active: Task[] = [];
-    const archived: Task[] = [];
-    tasks.filter(t => !t.parentId).forEach(task => {
-      if (task.status === 'Done') {
-        archived.push(task);
-      } else {
-        active.push(task);
-      }
-    });
+    // Active tasks are main tasks that are not 'Done'
+    const active = tasks.filter(t => !t.parentId && t.status !== 'Done');
+    // Archived tasks are all tasks (main and sub) that are 'Done'
+    const archived = tasks.filter(t => t.status === 'Done');
+    
     return { activeTasks: active, archivedTasks: archived };
   }, [tasks]);
 
@@ -51,7 +47,7 @@ export default function TaskList({ tasks }: { tasks: Task[] }) {
           <div className="text-center text-muted-foreground p-8 flex flex-col items-center gap-4">
             <Icons.checkCircle className="h-12 w-12 text-green-500" />
             <h3 className="text-lg font-semibold">{showArchived ? 'Archiwum jest puste' : 'Wszystko gotowe!'}</h3>
-            <p>{showArchived ? 'Brak ukończonych zadań głównych.' : 'Brak aktywnych zadań na liście.'}</p>
+            <p>{showArchived ? 'Brak ukończonych zadań.' : 'Brak aktywnych zadań na liście.'}</p>
           </div>
         )}
       </CardContent>
