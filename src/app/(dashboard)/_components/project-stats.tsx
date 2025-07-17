@@ -7,18 +7,33 @@ import React, { useMemo } from 'react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList } from 'recharts';
 
 const STATUS_COLORS: Record<Status, string> = {
-  'Backlog': 'hsl(215 25% 65%)', // Muted Slate
-  'Todo': 'hsl(200 80% 60%)', // Calm Blue
-  'In Progress': 'hsl(40 85% 60%)', // Amber
-  'Done': 'hsl(140 60% 50%)', // Green
+  'Backlog': 'hsl(215 25% 65%)',
+  'Todo': 'hsl(200 80% 60%)',
+  'In Progress': 'hsl(40 85% 60%)',
+  'Done': 'hsl(140 60% 50%)',
 };
 
 const PRIORITY_COLORS: Record<Priority, string> = {
-  'Low': 'hsl(210 30% 60%)',      // Lighter, calmer blue
-  'Medium': 'hsl(45 80% 60%)',    // Vibrant but not-too-bright yellow/orange
-  'High': 'hsl(10 80% 60%)',      // Strong but not-quite-alert orange-red
-  'Critical': 'hsl(0 85% 55%)',   // Clear, urgent red
+  'Low': 'hsl(210 30% 60%)',
+  'Medium': 'hsl(45 80% 60%)',
+  'High': 'hsl(10 80% 60%)',
+  'Critical': 'hsl(0 85% 55%)',
 };
+
+const statusTranslations: Record<Status, string> = {
+  'Backlog': 'Backlog',
+  'Todo': 'Do zrobienia',
+  'In Progress': 'W toku',
+  'Done': 'Ukończone',
+};
+
+const priorityTranslations: Record<Priority, string> = {
+  'Critical': 'Krytyczny',
+  'High': 'Wysoki',
+  'Medium': 'Średni',
+  'Low': 'Niski',
+};
+
 
 export default function ProjectStats({ tasks }: { tasks: Task[] }) {
 
@@ -27,7 +42,11 @@ export default function ProjectStats({ tasks }: { tasks: Task[] }) {
       acc[task.status] = (acc[task.status] || 0) + 1;
       return acc;
     }, {} as Record<Status, number>);
-    return Object.entries(counts).map(([name, value]) => ({ name, value, fill: STATUS_COLORS[name as Status] }));
+    return Object.entries(counts).map(([name, value]) => ({
+        name: statusTranslations[name as Status] || name,
+        value, 
+        fill: STATUS_COLORS[name as Status] 
+    }));
   }, [tasks]);
 
   const priorityData = useMemo(() => {
@@ -35,7 +54,16 @@ export default function ProjectStats({ tasks }: { tasks: Task[] }) {
       acc[task.priority] = (acc[task.priority] || 0) + 1;
       return acc;
     }, {} as Record<Priority, number>);
-    return Object.entries(counts).map(([name, value]) => ({ name, value, fill: PRIORITY_COLORS[name as Priority] }));
+    
+    const priorityOrder: Priority[] = ['Critical', 'High', 'Medium', 'Low'];
+    
+    return priorityOrder
+      .filter(p => counts[p] > 0)
+      .map(p => ({
+          name: priorityTranslations[p] || p,
+          value: counts[p],
+          fill: PRIORITY_COLORS[p]
+      }));
   }, [tasks]);
 
   const chartConfig = {
