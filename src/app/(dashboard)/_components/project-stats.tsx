@@ -76,6 +76,10 @@ export default function ProjectStats({ tasks }: { tasks: Task[] }) {
       return acc;
     }, {} as any)
   };
+  
+  if (!tasks || tasks.length === 0) {
+    return null; // Don't render charts if there's no data
+  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -132,7 +136,7 @@ export default function ProjectStats({ tasks }: { tasks: Task[] }) {
                     position="inside"
                     dataKey="name"
                     className="fill-white font-bold text-sm drop-shadow-lg"
-                    formatter={(value, props) => `${value}: ${props.payload.value}`}
+                    formatter={(value: string, entry: any) => `${value}: ${entry.payload.value}`}
                   />
               </RadialBar>
               <ChartLegend content={<ChartLegendContent nameKey="name" iconType="circle" />} />
