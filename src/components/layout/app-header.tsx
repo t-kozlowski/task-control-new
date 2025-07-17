@@ -7,13 +7,12 @@ import { useApp } from '@/context/app-context';
 import { Icons, BotMessageSquare } from '../icons';
 import { AiNotifications } from './ai-notifications';
 import { User } from '@/types';
-import { Movie } from 'lucide-react';
 
 const menuItems = [
   { href: '/', label: 'Pulpit', icon: Icons.dashboard },
   { href: '/backlog', label: 'Lista Zadań', icon: Icons.backlog },
   { href: '/directives', label: 'Dyrektywy AI', icon: Icons.directives },
-  { href: '/cinematic', label: 'Widok Kinowy', icon: Movie },
+  { href: '/cinematic', label: 'Widok Kinowy', icon: Icons.movie },
 ];
 
 export function AppHeader({ users }: { users: User[] }) {

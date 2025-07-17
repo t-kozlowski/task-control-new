@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Icons, PriorityIcons } from "@/components/icons";
 import { Task, Priority, User } from "@/types";
-import { calculateWeightedProgress, getProgressColor } from "@/lib/task-utils";
+import { calculateWeightedProgress, getProgressGradient } from "@/lib/task-utils";
 import Image from 'next/image';
 
 interface TaskTableProps {
@@ -56,7 +56,7 @@ export function TaskTable({ tasks, onEdit, onTaskDeleted, users }: TaskTableProp
         <TableBody>
           {tasks.map((task) => {
             const progress = calculateWeightedProgress(task);
-            const progressColor = getProgressColor(progress);
+            const progressGradient = getProgressGradient(progress);
             const PriorityIcon = PriorityIcons[task.priority as Priority];
             return (
               <TableRow key={task.id}>
@@ -85,7 +85,7 @@ export function TaskTable({ tasks, onEdit, onTaskDeleted, users }: TaskTableProp
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    <Progress value={progress} className={`h-2 [&>*]:${progressColor}`} />
+                    <Progress value={progress} className="h-2" indicatorStyle={{ background: progressGradient }} />
                     <span className="text-xs font-mono">{progress}%</span>
                   </div>
                 </TableCell>

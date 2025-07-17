@@ -4,7 +4,7 @@ import { Task } from '@/types';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { PriorityIcons } from '@/components/icons';
-import { calculateWeightedProgress, getProgressColor } from '@/lib/task-utils';
+import { calculateWeightedProgress, getProgressGradient } from '@/lib/task-utils';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 
@@ -36,7 +36,7 @@ export default function TaskListItem({ task }: { task: Task }) {
   };
 
   const progress = calculateWeightedProgress(task);
-  const progressColor = getProgressColor(progress);
+  const progressGradient = getProgressGradient(progress);
   const PriorityIcon = PriorityIcons[task.priority];
   const isInProgress = progress > 0 && progress < 100;
 
@@ -82,7 +82,8 @@ export default function TaskListItem({ task }: { task: Task }) {
               <Progress 
                 value={progress} 
                 className="w-full h-2" 
-                indicatorClassName={`${progressColor} ${isInProgress ? 'animate-subtle-pulse' : ''}`}
+                indicatorStyle={{ background: progressGradient }}
+                indicatorClassName={`${isInProgress ? 'animate-subtle-pulse' : ''}`}
               />
               <span className="font-mono text-sm font-semibold">{progress}%</span>
             </div>
