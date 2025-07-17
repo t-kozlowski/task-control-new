@@ -19,7 +19,7 @@ import { Progress } from "@/components/ui/progress";
 import { Icons, PriorityIcons } from "@/components/icons";
 import { Task, Priority, User } from "@/types";
 import { calculateWeightedProgress, getProgressGradient } from "@/lib/task-utils";
-import Image from 'next/image';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Fragment } from "react";
 import { ChevronRight } from "lucide-react";
 
@@ -40,6 +40,11 @@ export function TaskTable({ tasks, onEdit, onTaskDeleted, users }: TaskTableProp
     
     const getAssigneeName = (email: string) => {
         return users.find(u => u.email === email)?.name || email;
+    }
+
+    const getAssigneeInitials = (email: string) => {
+        const name = getAssigneeName(email);
+        return name.split(' ').map(n => n[0]).join('');
     }
 
     const mainTasks = tasks.filter(task => !task.parentId);
@@ -76,14 +81,9 @@ export function TaskTable({ tasks, onEdit, onTaskDeleted, users }: TaskTableProp
           </TableCell>
           <TableCell>
             <div className="flex items-center gap-2">
-               <Image
-                src={`https://placehold.co/40x40.png`}
-                alt={task.assignee}
-                width={24}
-                height={24}
-                className="rounded-full"
-                data-ai-hint="people avatar"
-              />
+                <Avatar className="h-6 w-6">
+                    <AvatarFallback>{getAssigneeInitials(task.assignee)}</AvatarFallback>
+                </Avatar>
               <span>{getAssigneeName(task.assignee)}</span>
             </div>
           </TableCell>

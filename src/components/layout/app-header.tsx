@@ -6,7 +6,17 @@ import { Button } from '@/components/ui/button';
 import { useApp } from '@/context/app-context';
 import { Icons, BotMessageSquare } from '../icons';
 import { AiNotifications } from './ai-notifications';
-import { User } from '@/types';
+import { Task, User } from '@/types';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
 
 const menuItems = [
   { href: '/', label: 'Pulpit', icon: Icons.dashboard },
@@ -15,13 +25,16 @@ const menuItems = [
   { href: '/cinematic', label: 'Widok Kinowy', icon: Icons.movie },
 ];
 
-export function AppHeader({ users }: { users: User[] }) {
+export function AppHeader({ users, tasks }: { users: User[], tasks: Task[] }) {
   const { isZenMode, toggleZenMode, loggedInUser, setLoggedInUser } = useApp();
   const pathname = usePathname();
 
   const handleLogout = () => {
     setLoggedInUser(null);
   };
+
+  const userInitials = loggedInUser?.name.split(' ').map(n => n[0]).join('');
+  const userTasks = tasks.filter(t => t.assignee === loggedInUser?.email && t.status !== 'Done');
 
   if (pathname === '/login') {
     return null; 
@@ -45,19 +58,41 @@ export function AppHeader({ users }: { users: User[] }) {
         ))}
       </nav>
       <div className="flex w-full items-center justify-end gap-4">
-        {loggedInUser ? (
-          <span className="text-sm text-muted-foreground">Witaj, {loggedInUser.name}</span>
-        ) : (
-           <span className="text-sm text-muted-foreground">Zaloguj się</span>
-        )}
         <Button variant="ghost" size="icon" onClick={toggleZenMode} title="Tryb Pełnoekranowy">
           {isZenMode ? <Icons.zenOff /> : <Icons.zenOn />}
           <span className="sr-only">Tryb Pełnoekranowy</span>
         </Button>
         <AiNotifications />
-        <Button variant="outline" size="sm" onClick={loggedInUser ? handleLogout : () => window.location.href = '/login'}>
-          {loggedInUser ? 'Wyloguj' : 'Zaloguj'}
-        </Button>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-9 w-9">
+                        <AvatarFallback>{userInitials}</AvatarFallback>
+                    </Avatar>
+                 </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+                {loggedInUser && (
+                    <>
+                        <DropdownMenuLabel className="font-normal">
+                            <div className="flex flex-col space-y-1">
+                                <p className="text-sm font-medium leading-none">{loggedInUser.name}</p>
+                                <p className="text-xs leading-none text-muted-foreground">{loggedInUser.email}</p>
+                            </div>
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem>
+                            <Icons.backlog className="mr-2" />
+                            <span>Moje zadania ({userTasks.length})</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                    </>
+                )}
+                 <DropdownMenuItem onClick={loggedInUser ? handleLogout : () => window.location.href = '/login'}>
+                    {loggedInUser ? 'Wyloguj' : 'Zaloguj'}
+                 </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );

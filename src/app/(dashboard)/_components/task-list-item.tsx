@@ -1,18 +1,20 @@
 'use client';
 import React, { useState, useRef, type MouseEvent } from 'react';
-import type { Task } from '@/types';
+import type { Task, User } from '@/types';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { PriorityIcons } from '@/components/icons';
 import { calculateWeightedProgress, getProgressGradient } from '@/lib/task-utils';
 import { Badge } from '@/components/ui/badge';
-import Image from 'next/image';
 import { ChevronDown } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useApp } from '@/context/app-context';
 
 export default function TaskListItem({ task, allTasks = [] }: { task: Task, allTasks?: Task[] }) {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
   const itemRef = useRef<HTMLDivElement>(null);
+  const { users } = useApp();
 
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
     if (itemRef.current) {
@@ -20,6 +22,11 @@ export default function TaskListItem({ task, allTasks = [] }: { task: Task, allT
       setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
     }
   };
+  
+  const assigneeUser = users.find(u => u.email === task.assignee);
+  const assigneeName = assigneeUser?.name || task.assignee;
+  const assigneeInitials = assigneeName.split(' ').map(n => n[0]).join('');
+
 
   const subTasks = allTasks.filter(t => t.parentId === task.id);
   const progress = calculateWeightedProgress(task, allTasks);
@@ -55,15 +62,10 @@ export default function TaskListItem({ task, allTasks = [] }: { task: Task, allT
                             <h3 className="font-semibold text-lg">{task.name}</h3>
                         </div>
                         <div className="flex items-center gap-2 ml-4 flex-shrink-0">
-                            <Image
-                            src={`https://placehold.co/40x40.png`}
-                            alt={task.assignee}
-                            width={24}
-                            height={24}
-                            className="rounded-full"
-                            data-ai-hint="people avatar"
-                            />
-                            <span className="text-sm text-muted-foreground">{task.assignee}</span>
+                             <Avatar className="h-6 w-6">
+                                <AvatarFallback>{assigneeInitials}</AvatarFallback>
+                            </Avatar>
+                            <span className="text-sm text-muted-foreground">{assigneeName}</span>
                         </div>
                     </div>
 

@@ -9,6 +9,7 @@ interface AppContextType {
   toggleZenMode: () => void;
   loggedInUser: User | null;
   setLoggedInUser: (user: User | null) => void;
+  users: User[];
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -16,8 +17,22 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [isZenMode, setIsZenMode] = useState(false);
   const [loggedInUser, setLoggedInUser] = useState<User | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
   const router = useRouter();
   const pathname = usePathname();
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+        try {
+            const res = await fetch('/api/users');
+            const data = await res.json();
+            setUsers(data);
+        } catch (error) {
+            console.error("Failed to fetch users", error);
+        }
+    };
+    fetchUsers();
+  }, [])
 
   useEffect(() => {
     try {
@@ -54,6 +69,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     toggleZenMode,
     loggedInUser,
     setLoggedInUser: handleSetLoggedInUser,
+    users,
   };
 
   return (
