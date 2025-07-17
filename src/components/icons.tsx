@@ -50,7 +50,7 @@ export const Icons = {
   checkCircle: CheckCircle,
   folderOpen: FolderOpen,
   meetings: Briefcase,
-  attendees: Users,
+  users: Users,
   spinner: LoaderCircle,
   logout: LogOut,
   search: Search,
