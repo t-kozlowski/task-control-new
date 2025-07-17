@@ -175,16 +175,14 @@ export default function MeetingsClient({ initialMeetings }: { initialMeetings: M
 
     return (
         <div className="flex flex-col gap-6 h-[calc(100vh-100px)]">
-             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <h1 className="text-2xl font-bold tracking-tight">Centrum Spotkań</h1>
-                <Button onClick={handleAddMeeting}><Icons.plus className="mr-2" />Dodaj Spotkanie</Button>
-            </div>
-            
             <Card className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-0 overflow-hidden">
                 <div className="lg:col-span-1 lg:border-r flex flex-col">
-                    <div className="p-4 border-b">
-                        <h2 className="font-semibold">Oś Czasu Spotkań</h2>
-                        <p className="text-sm text-muted-foreground">Wybierz spotkanie, aby zobaczyć szczegóły.</p>
+                    <div className="p-4 border-b flex justify-between items-center">
+                        <div>
+                            <h2 className="font-semibold">Oś Czasu Spotkań</h2>
+                            <p className="text-sm text-muted-foreground">Wybierz spotkanie, aby zobaczyć szczegóły.</p>
+                        </div>
+                         <Button onClick={handleAddMeeting} size="sm"><Icons.plus className="mr-2 h-4 w-4" />Dodaj</Button>
                     </div>
                     <ScrollArea className="flex-1">
                        <div className="relative p-6">
