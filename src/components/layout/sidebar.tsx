@@ -8,10 +8,22 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Icons, ProjectIcon } from '@/components/icons';
 import { useApp } from '@/context/app-context';
 import { cn } from '@/lib/utils';
 import { Film } from 'lucide-react';
+import { Avatar, AvatarFallback } from '../ui/avatar';
+import { Button } from '../ui/button';
+import { useEffect, useState } from 'react';
+import { Task } from '@/types';
 
 
 const menuItems = [
@@ -27,7 +39,28 @@ const menuItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const { loggedInUser } = useApp();
+  const { loggedInUser, setLoggedInUser } = useApp();
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  useEffect(() => {
+    if (loggedInUser) {
+        const fetchTasks = async () => {
+          const res = await fetch('/api/tasks');
+          if (res.ok) {
+            const data = await res.json();
+            setTasks(data);
+          }
+        };
+        fetchTasks();
+    }
+  }, [loggedInUser])
+
+  const handleLogout = () => {
+    setLoggedInUser(null);
+  };
+
+  const userInitials = loggedInUser?.name.split(' ').map(n => n[0]).join('');
+  const userTasks = loggedInUser ? tasks.filter(t => t.assignees.includes(loggedInUser.email) && t.status !== 'Done') : [];
 
   if (!loggedInUser) {
     return null;
@@ -61,6 +94,41 @@ export function AppSidebar() {
               <TooltipContent side="right">{item.label}</TooltipContent>
             </Tooltip>
           ))}
+        </nav>
+        <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
+           <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                 <Button variant="ghost" size="icon" className="overflow-hidden rounded-full h-8 w-8">
+                    <Avatar className="h-8 w-8">
+                        <AvatarFallback>{userInitials}</AvatarFallback>
+                    </Avatar>
+                 </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" side="right" className="w-56">
+                {loggedInUser && (
+                    <>
+                        <DropdownMenuLabel className="font-normal">
+                            <div className="flex flex-col space-y-1">
+                                <p className="text-sm font-medium leading-none">{loggedInUser.name}</p>
+                                <p className="text-xs leading-none text-muted-foreground">{loggedInUser.email}</p>
+                            </div>
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                            <Link href="/my-tasks">
+                                <Icons.backlog className="mr-2" />
+                                <span>Moje zadania ({userTasks.length})</span>
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                    </>
+                )}
+                 <DropdownMenuItem onClick={loggedInUser ? handleLogout : () => window.location.href = '/login'}>
+                    <Icons.logout className="mr-2" />
+                    {loggedInUser ? 'Wyloguj' : 'Zaloguj'}
+                 </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
         </nav>
         </TooltipProvider>
       </aside>
