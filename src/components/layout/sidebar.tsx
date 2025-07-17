@@ -19,7 +19,6 @@ import {
 import { Icons } from '@/components/icons';
 import { useApp } from '@/context/app-context';
 import { cn } from '@/lib/utils';
-import { Film } from 'lucide-react';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Button } from '../ui/button';
 import { useEffect, useState } from 'react';
@@ -28,7 +27,6 @@ import { Task } from '@/types';
 
 const menuItems = [
   { href: '/', label: 'Pulpit', icon: Icons.dashboard },
-  { href: '/cinematic', label: 'Widok Kinowy', icon: Film },
   { href: '/my-tasks', label: 'Moje Zadania', icon: Icons.userCheck },
   { href: '/backlog', label: 'Backlog', icon: Icons.backlog },
   { href: '/meetings', label: 'Spotkania', icon: Icons.meetings },

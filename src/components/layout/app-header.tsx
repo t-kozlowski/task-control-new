@@ -6,14 +6,11 @@ import { Button } from '../ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Film } from 'lucide-react';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useEffect, useState } from 'react';
@@ -22,7 +19,6 @@ import { Task } from '@/types';
 
 const menuItems = [
   { href: '/', label: 'Pulpit', icon: Icons.dashboard },
-  { href: '/cinematic', label: 'Widok Kinowy', icon: Film },
   { href: '/my-tasks', label: 'Moje Zadania', icon: Icons.userCheck },
   { href: '/backlog', label: 'Backlog', icon: Icons.backlog },
   { href: '/meetings', label: 'Spotkania', icon: Icons.meetings },
@@ -55,7 +51,6 @@ export function AppHeader() {
   };
 
   const userInitials = loggedInUser?.name.split(' ').map(n => n[0]).join('');
-  const userTasks = loggedInUser ? tasks.filter(t => t.assignees.includes(loggedInUser.email) && t.status !== 'Done') : [];
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
