@@ -42,6 +42,7 @@ export interface Meeting {
     id: string;
     date: string;
     title: string;
+    rawNotes?: string;
     summary: string;
     attendees: string[]; // emails
     actionItems: ActionItem[];

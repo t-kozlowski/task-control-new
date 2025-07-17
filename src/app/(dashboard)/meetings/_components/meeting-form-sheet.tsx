@@ -17,20 +17,22 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Meeting, User } from '@/types';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, Sparkles } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
+import { Icons } from '@/components/icons';
 
 const meetingSchema = z.object({
   id: z.string().optional(),
   title: z.string().min(1, 'Tytuł jest wymagany.'),
   date: z.date({ required_error: 'Data jest wymagana.' }),
-  summary: z.string().min(1, 'Podsumowanie jest wymagane.'),
+  summary: z.string(), // AI-generated, so no validation needed here
+  rawNotes: z.string().optional(),
   attendees: z.array(z.string().email()).min(1, 'Musi być co najmniej jeden uczestnik.'),
   actionItems: z.array(z.any()).optional(), // Simplified for now
 });
@@ -47,8 +49,13 @@ interface MeetingFormSheetProps {
 
 export function MeetingFormSheet({ open, onOpenChange, meeting, onMeetingSaved, users }: MeetingFormSheetProps) {
   const { toast } = useToast();
-  const { register, handleSubmit, control, reset, formState: { errors, isSubmitting } } = useForm<MeetingFormData>({
+  const [isRedacting, setIsRedacting] = useState(false);
+  const { register, handleSubmit, control, reset, getValues, setValue, formState: { errors, isSubmitting } } = useForm<MeetingFormData>({
     resolver: zodResolver(meetingSchema),
+    defaultValues: {
+      summary: '',
+      rawNotes: '',
+    }
   });
 
   useEffect(() => {
@@ -64,12 +71,47 @@ export function MeetingFormSheet({ open, onOpenChange, meeting, onMeetingSaved, 
           title: '',
           date: new Date(),
           summary: '',
+          rawNotes: '',
           attendees: [],
           actionItems: [],
         });
       }
     }
   }, [meeting, open, reset]);
+
+  const handleRedact = async () => {
+    const rawNotes = getValues('rawNotes');
+    if (!rawNotes || rawNotes.trim().length === 0) {
+      toast({
+        title: 'Brak notatek',
+        description: 'Wpisz najpierw swoje notatki, aby AI mogło je zredagować.',
+        variant: 'destructive'
+      });
+      return;
+    }
+    setIsRedacting(true);
+    try {
+      const response = await fetch('/api/ai/redact-notes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes: rawNotes })
+      });
+      if (!response.ok) {
+        throw new Error('Nie udało się zredagować notatek.');
+      }
+      const data = await response.json();
+      setValue('summary', data.redactedSummary, { shouldValidate: true });
+      toast({
+        title: 'Sukces!',
+        description: 'Podsumowanie zostało wygenerowane przez AI.'
+      });
+    } catch (error) {
+      toast({ title: 'Błąd', description: error instanceof Error ? error.message : 'Wystąpił nieznany błąd.', variant: 'destructive' });
+    } finally {
+      setIsRedacting(false);
+    }
+  };
+
 
   const onSubmit = async (data: MeetingFormData) => {
     const payload = {
@@ -174,9 +216,18 @@ export function MeetingFormSheet({ open, onOpenChange, meeting, onMeetingSaved, 
               {errors.attendees && <p className="text-destructive text-sm mt-1">{errors.attendees.message}</p>}
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="rawNotes">Szybkie Notatki</Label>
+              <Textarea id="rawNotes" {...register('rawNotes')} rows={5} placeholder="Wpisz luźne notatki, punkty, pomysły... AI je uporządkuje." />
+              <Button type="button" variant="outline" size="sm" onClick={handleRedact} disabled={isRedacting}>
+                {isRedacting ? <Icons.spinner className="mr-2 animate-spin" /> : <Sparkles className="mr-2" />}
+                Redaguj z AI
+              </Button>
+            </div>
+
             <div>
-              <Label htmlFor="summary">Podsumowanie</Label>
-              <Textarea id="summary" {...register('summary')} rows={5} />
+              <Label htmlFor="summary">Oficjalne Podsumowanie (wygenerowane przez AI)</Label>
+              <Textarea id="summary" {...register('summary')} rows={8} readOnly className="bg-secondary/50" />
               {errors.summary && <p className="text-destructive text-sm mt-1">{errors.summary.message}</p>}
             </div>
           </div>
