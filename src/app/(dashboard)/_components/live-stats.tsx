@@ -1,3 +1,4 @@
+// src/app/(dashboard)/_components/live-stats.tsx
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -14,8 +15,16 @@ interface LiveStatsProps {
 }
 
 const USER_COLORS = [
-  '#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe', '#00c49f', '#ffbb28', '#ff82a9'
+  'hsl(204 80% 60%)',
+  'hsl(145 65% 55%)',
+  'hsl(45 85% 60%)',
+  'hsl(280 75% 65%)',
+  'hsl(340 85% 70%)',
+  'hsl(170 70% 50%)',
+  'hsl(25 85% 60%)',
+  'hsl(0 75% 65%)',
 ];
+
 
 export default function LiveStats({ tasks, users }: LiveStatsProps) {
 

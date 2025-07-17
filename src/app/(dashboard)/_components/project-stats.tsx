@@ -7,10 +7,10 @@ import React, { useMemo } from 'react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList } from 'recharts';
 
 const STATUS_COLORS: Record<Status, string> = {
-  'Backlog': '#64748b',   // slate-500
-  'Todo': '#3b82f6',      // blue-500
-  'In Progress': '#f97316', // orange-500
-  'Done': '#22c55e',      // green-500
+  'Backlog': 'hsl(215 25% 65%)', // Muted Slate
+  'Todo': 'hsl(200 80% 60%)', // Calm Blue
+  'In Progress': 'hsl(40 85% 60%)', // Amber
+  'Done': 'hsl(140 60% 50%)', // Green
 };
 
 const PRIORITY_COLORS: Record<Priority, string> = {
