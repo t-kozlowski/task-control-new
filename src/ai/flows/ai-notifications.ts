@@ -2,6 +2,7 @@
 'use server';
 /**
  * @fileOverview A flow for generating intelligent AI notifications about project status.
+ * It now also suggests brand new tasks to innovate on the project.
  *
  * - generateNotification - A function that generates an AI notification.
  * - AiNotificationInput - The input type for the generateNotification function.
@@ -12,14 +13,18 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const AiNotificationInputSchema = z.object({
-  projectSummary: z.string().describe('A summary of the current project status.'),
-  directive: z.string().optional().describe('A directive to consider when generating the notification.'),
+  tasks: z.string().describe('A JSON string of all current tasks in the project.'),
+  directive: z.string().optional().describe('A high-level directive to consider.'),
 });
 export type AiNotificationInput = z.infer<typeof AiNotificationInputSchema>;
 
 const AiNotificationOutputSchema = z.object({
-  notification: z.string().describe('The AI-generated notification message.'),
+  notification: z.string().describe('The AI-generated notification message, focusing on status, risks, or suggestions for existing tasks.'),
   type: z.enum(['risk', 'positive', 'suggestion']).describe('The type of notification.'),
+  newTaskSuggestion: z.object({
+      name: z.string().describe("The name of a brand new, innovative task that isn't on the current list."),
+      description: z.string().describe("A brief description of why this new task is a good idea and what it involves."),
+  }).optional().describe("A suggestion for a completely new task to add to the project, based on current progress and goals."),
 });
 export type AiNotificationOutput = z.infer<typeof AiNotificationOutputSchema>;
 
@@ -32,17 +37,24 @@ const aiNotificationPrompt = ai.definePrompt({
   model: 'googleai/gemini-1.5-flash',
   input: {schema: AiNotificationInputSchema},
   output: {schema: AiNotificationOutputSchema},
-  prompt: `Jesteś asystentem AI, który generuje powiadomienia dla panelu zarządzania projektami. 
+  prompt: `Jesteś strategicznym asystentem AI dla panelu zarządzania projektami. Twoim zadaniem jest dostarczanie wnikliwych spostrzeżeń.
 
-  Na podstawie bieżącego podsumowania projektu i wszelkich dostarczonych dyrektyw, stwórz zwięzłe i pouczające powiadomienie w języku polskim. 
-  Powiadomienie powinno być skategoryzowane jako 'ryzyko', 'pozytywna' obserwacja lub 'sugestia' optymalizacji.
+  Przeanalizuj bieżącą listę zadań i podaną dyrektywę (jeśli istnieje).
 
-  Podsumowanie Projektu: {{{projectSummary}}}
-  Dyrektywa (jeśli istnieje): {{{directive}}}
+  **Twoje zadania (wykonaj oba):**
 
-  Weź pod uwagę dyrektywę, jeśli jest obecna, podczas generowania powiadomienia. Na przykład, jeśli dyrektywą jest 'Skup się na minimalizacji długu technicznego', priorytetyzuj sugestie, które redukują dług techniczny.
-  Jeśli istnieje ryzyko, upewnij się, że je wyjaśnisz.
-  Powiadomienie powinno składać się z maksymalnie 2 zdań.
+  1.  **Wygeneruj zwięzłe powiadomienie (1-2 zdania) w języku polskim:**
+      - Skategoryzuj je jako 'ryzyko' (jeśli widzisz problem), 'pozytywna' obserwacja (jeśli coś idzie dobrze) lub 'sugestia' (jeśli masz pomysł na optymalizację istniejących zadań).
+      - Jeśli istnieje dyrektywa, weź ją pod uwagę. Na przykład, jeśli dyrektywą jest "minimalizuj dług techniczny", skup się na tym aspekcie.
+
+  2.  **Zaproponuj zupełnie NOWE zadanie (opcjonalnie, ale bardzo pożądane):**
+      - W oparciu o analizę bieżących zadań i celów projektu, wymyśl jedno innowacyjne zadanie, **którego jeszcze nie ma na liście**.
+      - Może to być refaktoryzacja, nowa funkcja, zadanie badawcze lub cokolwiek, co Twoim zdaniem przyniesie wartość projektowi.
+      - Wypełnij pole \`newTaskSuggestion\` z nazwą i krótkim uzasadnieniem. Jeśli nie masz dobrego pomysłu, możesz pominąć to pole.
+
+  **Dane wejściowe:**
+  - Lista zadań: {{{tasks}}}
+  - Dyrektywa: {{{directive}}}
   `,
 });
 
