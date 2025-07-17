@@ -1,10 +1,11 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { Status, Priority, Task } from '@/types';
 import React, { useMemo } from 'react';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList } from 'recharts';
+import { PieChart, Pie, Cell, RadialBarChart, RadialBar, PolarAngleAxis, LabelList } from 'recharts';
 
 const STATUS_COLORS: Record<Status, string> = {
   'Backlog': 'hsl(215 25% 65%)',
@@ -70,6 +71,10 @@ export default function ProjectStats({ tasks }: { tasks: Task[] }) {
     tasks: {
       label: 'Zadania',
     },
+     ...priorityData.reduce((acc, item) => {
+      acc[item.name] = { label: item.name, color: item.fill };
+      return acc;
+    }, {} as any)
   };
 
   return (
@@ -105,23 +110,38 @@ export default function ProjectStats({ tasks }: { tasks: Task[] }) {
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="h-[300px] w-full">
-            <BarChart data={priorityData} layout="vertical" margin={{ left: 10, right: 40 }}>
-              <CartesianGrid horizontal={false} strokeDasharray="3 3" stroke="hsl(var(--border) / 0.5)" />
-              <XAxis type="number" hide />
-              <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} tickMargin={10} width={80} />
-              <ChartTooltip cursor={{ fill: 'hsl(var(--secondary))' }} content={<ChartTooltipContent hideLabel />} />
-              <Bar dataKey="value" radius={5}>
-                <LabelList 
-                  dataKey="value" 
-                  position="right" 
-                  offset={10} 
-                  className="fill-foreground font-semibold" 
-                />
-                 {priorityData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                ))}
-              </Bar>
-            </BarChart>
+             <RadialBarChart 
+                data={priorityData}
+                innerRadius="30%"
+                outerRadius="100%"
+                startAngle={90}
+                endAngle={450}
+              >
+              <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
+              <PolarAngleAxis type="number" domain={[0, 100]} dataKey="value" tick={false} />
+              <RadialBar
+                dataKey="value"
+                background
+                cornerRadius={10}
+              >
+                  {priorityData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                   <LabelList
+                    position="insideStart"
+                    dataKey="name"
+                    className="fill-white font-bold text-sm"
+                    offset={10}
+                  />
+                  <LabelList
+                    position="insideEnd"
+                    dataKey="value"
+                    className="fill-white/80 text-xs"
+                    offset={10}
+                  />
+              </RadialBar>
+              <ChartLegend content={<ChartLegendContent nameKey="name" />} />
+            </RadialBarChart>
           </ChartContainer>
         </CardContent>
       </Card>
