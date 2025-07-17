@@ -34,7 +34,7 @@ export async function getProjectSummary(input: ProjectSummaryInput): Promise<Pro
 // Define the prompt
 const projectSummaryPrompt = ai.definePrompt({
   name: 'projectSummaryPrompt',
-  model: 'googleai/gemini-1.5-flash-preview-0514',
+  model: 'googleai/gemini-1.5-flash',
   input: {schema: ProjectSummaryInputSchema},
   output: {schema: ProjectSummaryOutputSchema},
   prompt: `Jesteś menedżerem projektu AI, którego zadaniem jest podsumowanie statusu projektu.

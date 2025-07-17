@@ -29,7 +29,7 @@ export async function generateNotification(input: AiNotificationInput): Promise<
 
 const aiNotificationPrompt = ai.definePrompt({
   name: 'aiNotificationPrompt',
-  model: 'googleai/gemini-1.5-flash-preview-0514',
+  model: 'googleai/gemini-1.5-flash',
   input: {schema: AiNotificationInputSchema},
   output: {schema: AiNotificationOutputSchema},
   prompt: `Jesteś asystentem AI, który generuje powiadomienia dla panelu zarządzania projektami. 

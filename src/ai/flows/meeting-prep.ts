@@ -46,7 +46,7 @@ export async function prepareForMeeting(input: MeetingPrepInput): Promise<Meetin
 // Define the prompt
 const meetingPrepPrompt = ai.definePrompt({
   name: 'meetingPrepPrompt',
-  model: 'googleai/gemini-1.5-flash-preview-0514',
+  model: 'googleai/gemini-1.5-flash',
   input: {schema: MeetingPrepInputSchema},
   output: {schema: MeetingPrepOutputSchema},
   prompt: `Jesteś strategicznym asystentem AI, który pomaga menedżerowi projektu przygotować się na spotkanie z prezesem.
