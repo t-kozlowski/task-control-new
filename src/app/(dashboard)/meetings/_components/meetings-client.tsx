@@ -9,6 +9,16 @@ import { Icons } from '@/components/icons';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { MeetingFormSheet } from './meeting-form-sheet';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useApp } from '@/context/app-context';
 
 function AiPrepSkeleton() {
     return (
@@ -36,6 +46,25 @@ export default function MeetingsClient({ initialMeetings }: { initialMeetings: M
     const [prepData, setPrepData] = useState<MeetingPrepOutput | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isSheetOpen, setIsSheetOpen] = useState(false);
+    const [editingMeeting, setEditingMeeting] = useState<Meeting | null>(null);
+    const { toast } = useToast();
+    const { users } = useApp();
+
+    const selectedMeeting = meetings.find(m => m.id === selectedMeetingId);
+
+    const refreshMeetings = async () => {
+        const res = await fetch('/api/meetings');
+        const data = await res.json();
+        setMeetings(data);
+    };
+
+    useEffect(() => {
+        setMeetings(initialMeetings);
+        if (!selectedMeetingId && initialMeetings.length > 0) {
+            setSelectedMeetingId(initialMeetings[0].id);
+        }
+    }, [initialMeetings, selectedMeetingId]);
 
     useEffect(() => {
         if (selectedMeetingId) {
@@ -64,47 +93,110 @@ export default function MeetingsClient({ initialMeetings }: { initialMeetings: M
         }
     }, [selectedMeetingId]);
     
-    const selectedMeeting = meetings.find(m => m.id === selectedMeetingId);
+    const handleAddMeeting = () => {
+        setEditingMeeting(null);
+        setIsSheetOpen(true);
+    };
+
+    const handleEditMeeting = (meeting: Meeting) => {
+        setEditingMeeting(meeting);
+        setIsSheetOpen(true);
+    };
+
+    const handleDeleteMeeting = async (meetingId: string) => {
+        if (!confirm('Czy na pewno chcesz usunąć to spotkanie?')) return;
+        try {
+            const res = await fetch(`/api/meetings/${meetingId}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Nie udało się usunąć spotkania');
+
+            toast({ title: 'Sukces', description: 'Spotkanie usunięte.' });
+            await refreshMeetings();
+
+            if (selectedMeetingId === meetingId) {
+                const updatedMeetings = await fetch('/api/meetings').then(res => res.json());
+                setSelectedMeetingId(updatedMeetings[0]?.id || null);
+            }
+
+        } catch (error) {
+            toast({ title: 'Błąd', description: error instanceof Error ? error.message : 'Wystąpił nieznany błąd.', variant: 'destructive' });
+        }
+    };
+
+    const onMeetingSaved = async () => {
+        await refreshMeetings();
+        setIsSheetOpen(false);
+    };
 
     return (
         <div className="flex flex-col gap-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <h1 className="text-2xl font-bold tracking-tight">Spotkania z Zarządem</h1>
-                <div className="w-full sm:w-72">
-                    <Select onValueChange={setSelectedMeetingId} value={selectedMeetingId || undefined}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Wybierz spotkanie..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {meetings.map(meeting => (
-                                <SelectItem key={meeting.id} value={meeting.id}>
-                                    {new Date(meeting.date).toLocaleDateString('pl-PL')} - {meeting.title}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                <div className="flex gap-2 items-center">
+                    <div className="w-full sm:w-72">
+                        <Select onValueChange={setSelectedMeetingId} value={selectedMeetingId || undefined}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Wybierz spotkanie..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {meetings.map(meeting => (
+                                    <SelectItem key={meeting.id} value={meeting.id}>
+                                        {new Date(meeting.date).toLocaleDateString('pl-PL')} - {meeting.title}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                     <Button onClick={handleAddMeeting}><Icons.plus className="mr-2" />Dodaj</Button>
                 </div>
             </div>
 
             <Card>
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Icons.bot className="text-primary" />
-                        Przygotowanie do spotkania
-                    </CardTitle>
-                    <CardDescription>
-                        Strategiczne sugestie od AI na podstawie aktualnych zadań i poprzednich ustaleń.
-                    </CardDescription>
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <CardTitle className="flex items-center gap-2">
+                                <Icons.bot className="text-primary" />
+                                Przygotowanie do spotkania
+                            </CardTitle>
+                            <CardDescription>
+                                Strategiczne sugestie od AI na podstawie aktualnych zadań i poprzednich ustaleń.
+                            </CardDescription>
+                        </div>
+                        {selectedMeeting && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon">
+                                        <Icons.more />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <DropdownMenuItem onSelect={() => handleEditMeeting(selectedMeeting)}>
+                                        <Icons.edit className="mr-2" /> Edytuj
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={() => handleDeleteMeeting(selectedMeeting.id)} className="text-destructive">
+                                        <Icons.delete className="mr-2" /> Usuń
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
+                    </div>
                 </CardHeader>
                 <CardContent>
                     {isLoading && <AiPrepSkeleton />}
-                    {error && (
+                    {error && !isLoading && (
                         <Alert variant="destructive">
                             <AlertTitle>Błąd</AlertTitle>
                             <AlertDescription>{error}</AlertDescription>
                         </Alert>
                     )}
-                    {prepData && (
+                    {!selectedMeeting && !isLoading && (
+                         <div className="text-center text-muted-foreground p-8 flex flex-col items-center gap-4">
+                            <Icons.meetings className="h-12 w-12" />
+                            <h3 className="text-lg font-semibold">Brak spotkań</h3>
+                            <p>Dodaj nowe spotkanie, aby rozpocząć pracę.</p>
+                        </div>
+                    )}
+                    {prepData && selectedMeeting && !isLoading && (
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-6">
                             {/* Left Column */}
                             <div className="space-y-6">
@@ -164,7 +256,7 @@ export default function MeetingsClient({ initialMeetings }: { initialMeetings: M
                                             <div className="flex items-start gap-2">
                                                 <strong className="font-semibold pt-0.5">Uczestnicy:</strong>
                                                 <div className="flex flex-wrap gap-1">
-                                                    {selectedMeeting.attendees.map(email => <Badge key={email} variant="outline">{email}</Badge>)}
+                                                    {selectedMeeting.attendees.map(email => <Badge key={email} variant="outline">{users.find(u=>u.email === email)?.name || email}</Badge>)}
                                                 </div>
                                             </div>
                                             <p><strong className="font-semibold">Podsumowanie:</strong> {selectedMeeting.summary}</p>
@@ -176,6 +268,14 @@ export default function MeetingsClient({ initialMeetings }: { initialMeetings: M
                     )}
                 </CardContent>
             </Card>
+
+             <MeetingFormSheet
+                open={isSheetOpen}
+                onOpenChange={setIsSheetOpen}
+                meeting={editingMeeting}
+                onMeetingSaved={onMeetingSaved}
+                users={users}
+            />
         </div>
     );
 }
