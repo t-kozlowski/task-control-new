@@ -1,62 +1,127 @@
 [
   {
     "id": "TASK-1",
-    "name": "Implement User Authentication",
-    "description": "Develop and integrate a secure user authentication system using JWT and OAuth 2.0.",
-    "assignee": "Alice",
+    "name": "Implementacja uwierzytelniania użytkowników",
+    "description": "Opracowanie i integracja bezpiecznego systemu uwierzytelniania użytkowników z wykorzystaniem JWT i OAuth 2.0.",
+    "assignee": "alice@example.com",
     "priority": "Critical",
     "status": "In Progress",
     "subTasks": [
-      { "id": "SUB-1.1", "name": "Design database schema for users", "status": "Done", "priority": "High" },
-      { "id": "SUB-1.2", "name": "Implement JWT generation and validation", "status": "In Progress", "priority": "Critical" },
-      { "id": "SUB-1.3", "name": "Create login and registration pages", "status": "Todo", "priority": "High" }
+      {
+        "id": "SUB-1.1",
+        "name": "Projekt schematu bazy danych dla użytkowników",
+        "status": "Done",
+        "priority": "High"
+      },
+      {
+        "id": "SUB-1.2",
+        "name": "Implementacja generowania i walidacji JWT",
+        "status": "In Progress",
+        "priority": "Critical"
+      },
+      {
+        "id": "SUB-1.3",
+        "name": "Stworzenie stron logowania i rejestracji",
+        "status": "Todo",
+        "priority": "High"
+      }
     ]
   },
   {
     "id": "TASK-2",
-    "name": "Build Dashboard UI",
-    "description": "Create the main dashboard interface with all required widgets and components.",
-    "assignee": "Bob",
+    "name": "Budowa interfejsu pulpitu",
+    "description": "Stworzenie głównego interfejsu pulpitu z wszystkimi wymaganymi widżetami i komponentami.",
+    "assignee": "bob@example.com",
     "priority": "High",
     "status": "In Progress",
     "subTasks": [
-      { "id": "SUB-2.1", "name": "Develop task list component", "status": "Done", "priority": "High" },
-      { "id": "SUB-2.2", "name": "Integrate charting library for stats", "status": "Done", "priority": "Medium" },
-      { "id": "SUB-2.3", "name": "Create task spotlight carousel", "status": "In Progress", "priority": "Medium" },
-      { "id": "SUB-2.4", "name": "Implement Zen mode", "status": "Todo", "priority": "Low" }
+      {
+        "id": "SUB-2.1",
+        "name": "Opracowanie komponentu listy zadań",
+        "status": "Done",
+        "priority": "High"
+      },
+      {
+        "id": "SUB-2.2",
+        "name": "Integracja biblioteki do wykresów statystyk",
+        "status": "Done",
+        "priority": "Medium"
+      },
+      {
+        "id": "SUB-2.3",
+        "name": "Stworzenie karuzeli wyróżnionych zadań",
+        "status": "In Progress",
+        "priority": "Medium"
+      },
+      {
+        "id": "SUB-2.4",
+        "name": "Implementacja trybu Zen",
+        "status": "Todo",
+        "priority": "Low"
+      }
     ]
   },
   {
     "id": "TASK-3",
-    "name": "Setup AI Analysis Endpoint",
-    "description": "Create the backend service to handle AI analysis requests using Genkit.",
-    "assignee": "Charlie",
+    "name": "Konfiguracja punktu końcowego analizy AI",
+    "description": "Stworzenie usługi backendowej do obsługi żądań analizy AI z użyciem Genkit.",
+    "assignee": "charlie@example.com",
     "priority": "High",
     "status": "Done",
     "subTasks": [
-      { "id": "SUB-3.1", "name": "Define Genkit flow for project summary", "status": "Done", "priority": "Critical" },
-      { "id": "SUB-3.2", "name": "Connect flow to Google Gemini model", "status": "Done", "priority": "High" },
-      { "id": "SUB-3.3", "name": "Create API route in Next.js", "status": "Done", "priority": "Medium" }
+      {
+        "id": "SUB-3.1",
+        "name": "Definicja przepływu Genkit dla podsumowania projektu",
+        "status": "Done",
+        "priority": "Critical"
+      },
+      {
+        "id": "SUB-3.2",
+        "name": "Połączenie przepływu z modelem Google Gemini",
+        "status": "Done",
+        "priority": "High"
+      },
+      {
+        "id": "SUB-3.3",
+        "name": "Stworzenie trasy API w Next.js",
+        "status": "Done",
+        "priority": "Medium"
+      }
     ]
   },
   {
     "id": "TASK-4",
-    "name": "Refactor Legacy Code",
-    "description": "Improve performance and maintainability by refactoring the old codebase.",
-    "assignee": "David",
+    "name": "Refaktoryzacja starszego kodu",
+    "description": "Poprawa wydajności i łatwości utrzymania poprzez refaktoryzację starej bazy kodu.",
+    "assignee": "david@example.com",
     "priority": "Medium",
     "status": "Todo",
     "subTasks": [
-      { "id": "SUB-4.1", "name": "Identify code smells and bottlenecks", "status": "Todo", "priority": "Medium" },
-      { "id": "SUB-4.2", "name": "Write unit tests for existing logic", "status": "Todo", "priority": "High" },
-      { "id": "SUB-4.3", "name": "Update deprecated dependencies", "status": "Todo", "priority": "Low" }
+      {
+        "id": "SUB-4.1",
+        "name": "Identyfikacja \"code smells\" i wąskich gardeł",
+        "status": "Todo",
+        "priority": "Medium"
+      },
+      {
+        "id": "SUB-4.2",
+        "name": "Napisanie testów jednostkowych dla istniejącej logiki",
+        "status": "Todo",
+        "priority": "High"
+      },
+      {
+        "id": "SUB-4.3",
+        "name": "Aktualizacja przestarzałych zależności",
+        "status": "Todo",
+        "priority": "Low"
+      }
     ]
   },
   {
     "id": "TASK-5",
-    "name": "User Documentation",
-    "description": "Write comprehensive documentation for end-users.",
-    "assignee": "Eve",
+    "name": "Dokumentacja dla użytkownika",
+    "description": "Napisanie obszernej dokumentacji dla użytkowników końcowych.",
+    "assignee": "eve@example.com",
     "priority": "Low",
     "status": "Backlog",
     "subTasks": []

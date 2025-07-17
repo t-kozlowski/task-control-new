@@ -12,7 +12,7 @@ export interface Task {
   id: string;
   name: string;
   description: string;
-  assignee: string;
+  assignee: string; // email of the user
   priority: Priority;
   status: Status;
   subTasks: SubTask[];
@@ -22,4 +22,10 @@ export interface Task {
 export interface AiDirective {
   id: string;
   text: string;
+}
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
 }

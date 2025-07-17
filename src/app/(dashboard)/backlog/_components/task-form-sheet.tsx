@@ -17,14 +17,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Task, Priority, Status } from '@/types';
+import { Task, Priority, Status, User } from '@/types';
 import { useEffect } from 'react';
+import { useApp } from '@/context/app-context';
 
 const taskSchema = z.object({
   id: z.string().optional(),
-  name: z.string().min(1, 'Task name is required'),
-  description: z.string().min(1, 'Description is required'),
-  assignee: z.string().min(1, 'Assignee is required'),
+  name: z.string().min(1, 'Nazwa zadania jest wymagana'),
+  description: z.string().min(1, 'Opis jest wymagany'),
+  assignee: z.string().email('Nieprawidłowy adres email').min(1, 'Przypisana osoba jest wymagana'),
   priority: z.enum(['Critical', 'High', 'Medium', 'Low']),
   status: z.enum(['Todo', 'In Progress', 'Done', 'Backlog']),
 });
@@ -36,27 +37,31 @@ interface TaskFormSheetProps {
   onOpenChange: (open: boolean) => void;
   task: Task | null;
   onTaskSaved: () => void;
+  users: User[];
 }
 
-export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved }: TaskFormSheetProps) {
+export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved, users }: TaskFormSheetProps) {
+  const { loggedInUser } = useApp();
   const { register, handleSubmit, control, reset, formState: { errors, isSubmitting } } = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
   });
 
   useEffect(() => {
-    if (task) {
-      reset(task);
-    } else {
-      reset({
-        id: `TASK-${Date.now()}`,
-        name: '',
-        description: '',
-        assignee: '',
-        priority: 'Medium',
-        status: 'Todo',
-      });
+    if (open) {
+      if (task) {
+        reset(task);
+      } else {
+        reset({
+          id: `TASK-${Date.now()}`,
+          name: '',
+          description: '',
+          assignee: loggedInUser?.email || '',
+          priority: 'Medium',
+          status: 'Todo',
+        });
+      }
     }
-  }, [task, open, reset]);
+  }, [task, open, reset, loggedInUser]);
 
   const onSubmit = async (data: TaskFormData) => {
     const method = task ? 'PUT' : 'POST';
@@ -69,10 +74,11 @@ export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved }: TaskFor
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      if (!response.ok) throw new Error('Failed to save task');
+      if (!response.ok) throw new Error('Nie udało się zapisać zadania');
       onTaskSaved();
     } catch (error) {
       console.error(error);
+      // You might want to show a toast message here
     }
   };
 
@@ -84,29 +90,40 @@ export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved }: TaskFor
       <SheetContent className="sm:max-w-lg w-[90vw]">
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full">
           <SheetHeader>
-            <SheetTitle>{task ? 'Edit Task' : 'Add New Task'}</SheetTitle>
+            <SheetTitle>{task ? 'Edytuj Zadanie' : 'Dodaj Nowe Zadanie'}</SheetTitle>
             <SheetDescription>
-              {task ? 'Update the details of the existing task.' : 'Fill in the details for the new task.'}
+              {task ? 'Zaktualizuj szczegóły istniejącego zadania.' : 'Wypełnij szczegóły nowego zadania.'}
             </SheetDescription>
           </SheetHeader>
           <div className="flex-1 overflow-y-auto py-6 px-1 space-y-4">
             <div>
-              <Label htmlFor="name">Task Name</Label>
+              <Label htmlFor="name">Nazwa Zadania</Label>
               <Input id="name" {...register('name')} />
               {errors.name && <p className="text-destructive text-sm mt-1">{errors.name.message}</p>}
             </div>
             <div>
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">Opis</Label>
               <Textarea id="description" {...register('description')} />
               {errors.description && <p className="text-destructive text-sm mt-1">{errors.description.message}</p>}
             </div>
             <div>
-              <Label htmlFor="assignee">Assignee</Label>
-              <Input id="assignee" {...register('assignee')} />
-              {errors.assignee && <p className="text-destructive text-sm mt-1">{errors.assignee.message}</p>}
+              <Label htmlFor="assignee">Przypisany</Label>
+              <Controller
+                name="assignee"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <SelectTrigger><SelectValue placeholder="Wybierz osobę" /></SelectTrigger>
+                    <SelectContent>
+                      {users.map(u => <SelectItem key={u.email} value={u.email}>{u.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+               {errors.assignee && <p className="text-destructive text-sm mt-1">{errors.assignee.message}</p>}
             </div>
             <div>
-              <Label htmlFor="priority">Priority</Label>
+              <Label htmlFor="priority">Priorytet</Label>
               <Controller
                 name="priority"
                 control={control}
@@ -138,10 +155,10 @@ export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved }: TaskFor
           </div>
           <SheetFooter>
             <SheetClose asChild>
-              <Button type="button" variant="outline">Cancel</Button>
+              <Button type="button" variant="outline">Anuluj</Button>
             </SheetClose>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : 'Save Task'}
+              {isSubmitting ? 'Zapisywanie...' : 'Zapisz Zadanie'}
             </Button>
           </SheetFooter>
         </form>
