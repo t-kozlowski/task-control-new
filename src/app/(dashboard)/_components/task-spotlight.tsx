@@ -4,8 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Task } from '@/types';
 import React, { useMemo } from 'react';
-import TaskListItem from './task-list-item';
 import Autoplay from "embla-carousel-autoplay"
+import { TaskSpotlightItem } from './task-spotlight-item';
 
 export default function TaskSpotlight({ tasks }: { tasks: Task[] }) {
   const spotlightTasks = useMemo(() => {
@@ -20,10 +20,10 @@ export default function TaskSpotlight({ tasks }: { tasks: Task[] }) {
   }
 
   return (
-    <Card>
+    <Card className="overflow-hidden">
       <CardHeader>
-        <CardTitle>Wyróżnione Zadania</CardTitle>
-        <CardDescription>Automatyczna rotacja zadań głównych o wysokim i krytycznym priorytecie.</CardDescription>
+        <CardTitle>Zadania w Centrum Uwagi</CardTitle>
+        <CardDescription>Automatyczna rotacja zadań o najwyższym priorytecie.</CardDescription>
       </CardHeader>
       <CardContent>
         <Carousel 
@@ -31,12 +31,10 @@ export default function TaskSpotlight({ tasks }: { tasks: Task[] }) {
             plugins={[Autoplay({ delay: 5000, stopOnInteraction: true })]}
             className="w-full"
         >
-          <CarouselContent>
+          <CarouselContent className="-ml-4">
             {spotlightTasks.map(task => (
-              <CarouselItem key={task.id} className="md:basis-1/2 lg:basis-1/3">
-                <div className="p-1">
-                    <TaskListItem task={task} allTasks={tasks} />
-                </div>
+              <CarouselItem key={task.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                  <TaskSpotlightItem task={task} allTasks={tasks} />
               </CarouselItem>
             ))}
           </CarouselContent>
