@@ -36,18 +36,18 @@ const projectSummaryPrompt = ai.definePrompt({
   name: 'projectSummaryPrompt',
   input: {schema: ProjectSummaryInputSchema},
   output: {schema: ProjectSummaryOutputSchema},
-  prompt: `You are an AI project manager tasked with summarizing the status of a project.
+  prompt: `Jesteś menedżerem projektu AI, którego zadaniem jest podsumowanie statusu projektu.
 
-  Based on the provided task list and AI directives, generate a strategic summary that includes:
+  Na podstawie dostarczonej listy zadań i dyrektyw AI, wygeneruj strategiczne podsumowanie w języku polskim, które zawiera:
 
-  - Overall project progress
-  - Key risks and potential bottlenecks
-  - Actionable recommendations
+  - Ogólny postęp projektu
+  - Kluczowe ryzyka i potencjalne wąskie gardła
+  - Praktyczne rekomendacje
 
-  Task List: {{{tasks}}}
-  AI Directives: {{{aiDirectives}}}
+  Lista Zadań: {{{tasks}}}
+  Dyrektywy AI: {{{aiDirectives}}}
 
-  Summary:
+  Podsumowanie:
   `,
 });
 

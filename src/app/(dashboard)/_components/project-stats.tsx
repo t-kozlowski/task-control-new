@@ -40,7 +40,7 @@ export default function ProjectStats({ tasks }: { tasks: Task[] }) {
 
   const chartConfig = {
     tasks: {
-      label: 'Tasks',
+      label: 'Zadania',
     },
   };
 
@@ -48,7 +48,7 @@ export default function ProjectStats({ tasks }: { tasks: Task[] }) {
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <Card>
         <CardHeader>
-          <CardTitle>Tasks by Status</CardTitle>
+          <CardTitle>Zadania według statusu</CardTitle>
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="mx-auto aspect-square h-[250px]">
@@ -66,7 +66,7 @@ export default function ProjectStats({ tasks }: { tasks: Task[] }) {
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Tasks by Priority</CardTitle>
+          <CardTitle>Zadania według priorytetu</CardTitle>
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="h-[250px] w-full">

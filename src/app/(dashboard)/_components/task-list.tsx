@@ -9,15 +9,15 @@ export default function TaskList({ tasks }: { tasks: Task[] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Project Backlog</CardTitle>
-        <CardDescription>A hierarchical view of all tasks and their progress.</CardDescription>
+        <CardTitle>Lista Zadań Projektu</CardTitle>
+        <CardDescription>Hierarchiczny widok wszystkich zadań i ich postępów.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-2">
         {tasks.map(task => (
           <TaskListItem key={task.id} task={task} />
         ))}
         {tasks.length === 0 && (
-            <div className="text-center text-muted-foreground p-8">No tasks in the backlog.</div>
+            <div className="text-center text-muted-foreground p-8">Brak zadań na liście.</div>
         )}
       </CardContent>
     </Card>

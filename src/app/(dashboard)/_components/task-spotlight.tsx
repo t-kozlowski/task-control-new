@@ -18,11 +18,11 @@ export default function TaskSpotlight({ tasks }: { tasks: Task[] }) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Task Spotlight</CardTitle>
-          <CardDescription>No critical or high priority tasks are active.</CardDescription>
+          <CardTitle>Wyróżnione Zadania</CardTitle>
+          <CardDescription>Brak aktywnych zadań o wysokim lub krytycznym priorytecie.</CardDescription>
         </CardHeader>
         <CardContent className="flex items-center justify-center h-full min-h-[200px]">
-          <p className="text-muted-foreground">All clear!</p>
+          <p className="text-muted-foreground">Wszystko w porządku!</p>
         </CardContent>
       </Card>
     );
@@ -31,8 +31,8 @@ export default function TaskSpotlight({ tasks }: { tasks: Task[] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Task Spotlight</CardTitle>
-        <CardDescription>Auto-rotating critical & high priority tasks.</CardDescription>
+        <CardTitle>Wyróżnione Zadania</CardTitle>
+        <CardDescription>Automatyczna rotacja zadań o wysokim i krytycznym priorytecie.</CardDescription>
       </CardHeader>
       <CardContent>
         <Carousel 

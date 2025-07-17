@@ -26,12 +26,12 @@ export default function AiSummaryDialog({ open, onOpenChange }: AiSummaryDialogP
         try {
           const response = await fetch('/api/ai/summary');
           if (!response.ok) {
-            throw new Error('Failed to fetch AI summary');
+            throw new Error('Nie udało się pobrać podsumowania AI');
           }
           const data = await response.json();
           setSummary(data);
         } catch (err) {
-          setError(err instanceof Error ? err.message : 'An unknown error occurred');
+          setError(err instanceof Error ? err.message : 'Wystąpił nieznany błąd');
         } finally {
           setIsLoading(false);
         }
@@ -46,10 +46,10 @@ export default function AiSummaryDialog({ open, onOpenChange }: AiSummaryDialogP
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <Icons.bot className="text-primary" />
-            AI Big Picture Summary
+            Podsumowanie "Big Picture" od AI
           </DialogTitle>
           <DialogDescription>
-            A strategic analysis of the project's progress, risks, and bottlenecks.
+            Strategiczna analiza postępów, ryzyk i wąskich gardeł w projekcie.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
@@ -63,7 +63,7 @@ export default function AiSummaryDialog({ open, onOpenChange }: AiSummaryDialogP
           )}
           {error && (
             <Alert variant="destructive">
-              <AlertTitle>Error</AlertTitle>
+              <AlertTitle>Błąd</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}

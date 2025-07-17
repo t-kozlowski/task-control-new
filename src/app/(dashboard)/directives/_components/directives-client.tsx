@@ -19,15 +19,15 @@ export default function DirectivesClient({ initialDirectives }: { initialDirecti
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(directives),
       });
-      if (!response.ok) throw new Error('Failed to save directives');
+      if (!response.ok) throw new Error('Nie udało się zapisać dyrektyw');
       toast({
-        title: 'Success',
-        description: 'AI directives have been updated successfully.',
+        title: 'Sukces',
+        description: 'Dyrektywy AI zostały pomyślnie zaktualizowane.',
       });
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Could not save directives.',
+        title: 'Błąd',
+        description: 'Nie można zapisać dyrektyw.',
         variant: 'destructive',
       });
     } finally {
@@ -38,14 +38,14 @@ export default function DirectivesClient({ initialDirectives }: { initialDirecti
   return (
     <>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-2xl font-bold tracking-tight">AI Directives</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Dyrektywy AI</h1>
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>Program AI Behavior</CardTitle>
+          <CardTitle>Programuj zachowanie AI</CardTitle>
           <CardDescription>
-            Provide global guidelines for the AI. These directives will influence its analysis and recommendations.
-            Enter one directive per line.
+            Ustal globalne wytyczne dla AI. Te dyrektywy wpłyną na jej analizy i rekomendacje.
+            Wprowadź jedną dyrektywę w każdej linii.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -60,12 +60,12 @@ export default function DirectivesClient({ initialDirectives }: { initialDirecti
               }));
               setDirectives(newDirectives);
             }}
-            placeholder="e.g., Prioritize security compliance (ISO 26262)."
+            placeholder="np. Priorytetyzuj zgodność z normami bezpieczeństwa (ISO 26262)."
           />
         </CardContent>
         <CardFooter className="flex justify-end">
           <Button onClick={handleSave} disabled={isLoading}>
-            {isLoading ? 'Saving...' : 'Save Directives'}
+            {isLoading ? 'Zapisywanie...' : 'Zapisz Dyrektywy'}
           </Button>
         </CardFooter>
       </Card>

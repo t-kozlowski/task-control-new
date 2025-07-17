@@ -27,7 +27,7 @@ export function AiNotifications() {
           title: (
             <div className="flex items-center gap-2">
               <Icons.bot className="text-primary" />
-              <span className="capitalize">{newNotification.type} Alert</span>
+              <span className="capitalize">{newNotification.type === 'risk' ? 'Ryzyko' : newNotification.type === 'positive' ? 'Pozytywne' : 'Sugestia'}</span>
             </div>
           ),
           description: newNotification.notification,
@@ -60,6 +60,16 @@ export function AiNotifications() {
     return '';
   }
 
+  const getBadgeText = (type: AiNotificationOutput['type']) => {
+    switch(type) {
+      case 'risk': return 'Ryzyko';
+      case 'positive': return 'Pozytywne';
+      case 'suggestion': return 'Sugestia';
+      default: return type;
+    }
+  }
+
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -71,13 +81,13 @@ export function AiNotifications() {
               <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
             </span>
           )}
-          <span className="sr-only">Toggle notifications</span>
+          <span className="sr-only">Pokaż powiadomienia</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80" align="end">
         <Card className="border-none shadow-none">
           <CardHeader>
-            <CardTitle>AI Notifications</CardTitle>
+            <CardTitle>Powiadomienia AI</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             {notifications.length > 0 ? (
@@ -85,13 +95,13 @@ export function AiNotifications() {
                 <div key={i} className="flex gap-3">
                   <Icons.bot className="flex-shrink-0 mt-1 text-primary" />
                   <div>
-                    <Badge variant={getBadgeVariant(n.type)} className={getBadgeColor(n.type)}>{n.type}</Badge>
+                    <Badge variant={getBadgeVariant(n.type)} className={getBadgeColor(n.type)}>{getBadgeText(n.type)}</Badge>
                     <p className="text-sm text-muted-foreground mt-1">{n.notification}</p>
                   </div>
                 </div>
               ))
             ) : (
-              <p className="text-sm text-muted-foreground text-center">No new notifications.</p>
+              <p className="text-sm text-muted-foreground text-center">Brak nowych powiadomień.</p>
             )}
           </CardContent>
         </Card>

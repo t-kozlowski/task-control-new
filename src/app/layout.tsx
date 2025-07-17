@@ -4,8 +4,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { AppProvider } from '@/context/app-context';
 
 export const metadata: Metadata = {
-  title: 'Project Sentinel',
-  description: 'An advanced dashboard for real-time project management and AI-driven strategic analysis.',
+  title: 'LSP Innovationhub Todo App',
+  description: 'Zaawansowany pulpit do zarządzania projektami w czasie rzeczywistym i strategicznej analizy AI.',
 };
 
 export default function RootLayout({
@@ -14,7 +14,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="pl" className="dark">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />

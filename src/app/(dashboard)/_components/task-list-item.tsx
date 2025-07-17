@@ -92,7 +92,7 @@ export default function TaskListItem({ task }: { task: Task }) {
               {task.subTasks.length > 0 ? (
                 task.subTasks.map(sub => <SubTaskItem key={sub.id} subTask={sub} />)
               ) : (
-                <p className="text-sm text-muted-foreground text-center py-4">No sub-tasks.</p>
+                <p className="text-sm text-muted-foreground text-center py-4">Brak podzadań.</p>
               )}
             </div>
           </AccordionContent>

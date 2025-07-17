@@ -16,7 +16,8 @@ import {
   Eye,
   MoreVertical,
   Trash2,
-  Edit
+  Edit,
+  Movie,
 } from 'lucide-react';
 
 export const Icons = {
@@ -38,6 +39,7 @@ export const Icons = {
   more: MoreVertical,
   delete: Trash2,
   edit: Edit,
+  movie: Movie,
 };
 
 export const PriorityIcons = {

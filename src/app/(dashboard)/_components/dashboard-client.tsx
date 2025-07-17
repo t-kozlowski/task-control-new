@@ -16,10 +16,10 @@ export default function DashboardClient({ initialTasks }: { initialTasks: Task[]
   return (
     <>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Pulpit</h1>
         <Button onClick={() => setIsSummaryDialogOpen(true)}>
           <Icons.bot className="mr-2" />
-          AI Big Picture Summary
+          Podsumowanie AI "Big Picture"
         </Button>
       </div>
 

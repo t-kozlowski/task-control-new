@@ -36,7 +36,7 @@ export default function LoginClient({ users }: { users: User[] }) {
         <CardHeader className="text-center">
            <div className="flex items-center gap-2 justify-center mb-4">
             <BotMessageSquare className="size-8 text-primary" />
-            <h1 className="text-2xl font-semibold text-primary">Project Sentinel</h1>
+            <h1 className="text-2xl font-semibold text-primary">LSP Innovationhub Todo App</h1>
           </div>
           <CardTitle className="text-2xl">Logowanie</CardTitle>
           <CardDescription>Wybierz konto, aby kontynuować.</CardDescription>

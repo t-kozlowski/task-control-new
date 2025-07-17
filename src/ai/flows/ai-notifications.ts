@@ -31,17 +31,17 @@ const aiNotificationPrompt = ai.definePrompt({
   name: 'aiNotificationPrompt',
   input: {schema: AiNotificationInputSchema},
   output: {schema: AiNotificationOutputSchema},
-  prompt: `You are an AI assistant that generates notifications for a project management dashboard. 
+  prompt: `Jesteś asystentem AI, który generuje powiadomienia dla panelu zarządzania projektami. 
 
-  Based on the current project summary and any provided directives, create a concise and informative notification. 
-  The notification should be categorized as either a 'risk', 'positive' observation, or a 'suggestion' for optimization.
+  Na podstawie bieżącego podsumowania projektu i wszelkich dostarczonych dyrektyw, stwórz zwięzłe i pouczające powiadomienie w języku polskim. 
+  Powiadomienie powinno być skategoryzowane jako 'ryzyko', 'pozytywna' obserwacja lub 'sugestia' optymalizacji.
 
-  Project Summary: {{{projectSummary}}}
-  Directive (if any): {{{directive}}}
+  Podsumowanie Projektu: {{{projectSummary}}}
+  Dyrektywa (jeśli istnieje): {{{directive}}}
 
-  Consider the directive, if present, when generating the notification. For example, if the directive is 'Focus on minimizing technical debt,' prioritize suggestions that reduce technical debt.
-  If there's a risk, make sure to explain it.
-  The notification should be no more than 2 sentences.
+  Weź pod uwagę dyrektywę, jeśli jest obecna, podczas generowania powiadomienia. Na przykład, jeśli dyrektywą jest 'Skup się na minimalizacji długu technicznego', priorytetyzuj sugestie, które redukują dług techniczny.
+  Jeśli istnieje ryzyko, upewnij się, że je wyjaśnisz.
+  Powiadomienie powinno składać się z maksymalnie 2 zdań.
   `,
 });
 
