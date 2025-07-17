@@ -1,209 +1,300 @@
+
 [
   {
-    "id": "TASK-1",
-    "name": "Implementacja uwierzytelniania użytkowników",
-    "description": "Opracowanie i integracja bezpiecznego systemu uwierzytelniania użytkowników z wykorzystaniem JWT i OAuth 2.0.",
+    "id": "TASK-BE",
+    "name": "Zarządzanie Danymi i Backend",
+    "description": "Zadania związane z bazą danych, logiką backendową i przetwarzaniem danych.",
     "assignees": [
       "alice@example.com"
     ],
     "priority": "Critical",
     "status": "In Progress",
-    "subTasks": [
-      {
-        "id": "SUB-1.1",
-        "name": "Projekt schematu bazy danych dla użytkowników",
-        "status": "Done",
-        "priority": "High"
-      },
-      {
-        "id": "SUB-1.2",
-        "name": "Implementacja generowania i walidacji JWT",
-        "status": "In Progress",
-        "priority": "Critical"
-      },
-      {
-        "id": "SUB-1.3",
-        "name": "Stworzenie stron logowania i rejestracji",
-        "status": "Todo",
-        "priority": "High"
-      }
-    ]
-  },
-  {
-    "id": "TASK-2",
-    "name": "Budowa interfejsu pulpitu",
-    "description": "Stworzenie głównego interfejsu pulpitu z wszystkimi wymaganymi widżetami i komponentami.",
-    "assignees": [
-      "bob@example.com",
-      "alice@example.com"
-    ],
-    "priority": "High",
-    "status": "In Progress",
-    "subTasks": [
-      {
-        "id": "SUB-2.1",
-        "name": "Opracowanie komponentu listy zadań",
-        "status": "Done",
-        "priority": "High"
-      },
-      {
-        "id": "SUB-2.2",
-        "name": "Integracja biblioteki do wykresów statystyk",
-        "status": "Done",
-        "priority": "Medium"
-      },
-      {
-        "id": "SUB-2.3",
-        "name": "Stworzenie karuzeli wyróżnionych zadań",
-        "status": "In Progress",
-        "priority": "Medium"
-      },
-      {
-        "id": "SUB-2.4",
-        "name": "Implementacja trybu Zen",
-        "status": "Todo",
-        "priority": "Low"
-      }
-    ]
-  },
-  {
-    "id": "TASK-3",
-    "name": "Konfiguracja punktu końcowego analizy AI",
-    "description": "Stworzenie usługi backendowej do obsługi żądań analizy AI z użyciem Genkit.",
-    "assignees": [
-      "charlie@example.com"
-    ],
-    "priority": "High",
-    "status": "Done",
-    "subTasks": [
-      {
-        "id": "SUB-3.1",
-        "name": "Definicja przepływu Genkit dla podsumowania projektu",
-        "status": "Done",
-        "priority": "Critical"
-      },
-      {
-        "id": "SUB-3.2",
-        "name": "Połączenie przepływu z modelem Google Gemini",
-        "status": "Done",
-        "priority": "High"
-      },
-      {
-        "id": "SUB-3.3",
-        "name": "Stworzenie trasy API w Next.js",
-        "status": "Done",
-        "priority": "Medium"
-      }
-    ]
-  },
-  {
-    "id": "TASK-4",
-    "name": "Refaktoryzacja starszego kodu",
-    "description": "Poprawa wydajności i łatwości utrzymania poprzez refaktoryzację starej bazy kodu.",
-    "assignees": [
-      "david@example.com"
-    ],
-    "priority": "Medium",
-    "status": "In Progress",
-    "subTasks": [
-      {
-        "id": "SUB-4.1",
-        "name": "Identyfikacja \"code smells\" i wąskich gardeł",
-        "status": "Todo",
-        "priority": "Medium"
-      },
-      {
-        "id": "SUB-4.2",
-        "name": "Napisanie testów jednostkowych dla istniejącej logiki",
-        "status": "Todo",
-        "priority": "High"
-      },
-      {
-        "id": "SUB-4.3",
-        "name": "Aktualizacja przestarzałych zależności",
-        "status": "Todo",
-        "priority": "Low"
-      }
-    ]
-  },
-  {
-    "id": "TASK-5",
-    "name": "Dokumentacja dla użytkownika",
-    "description": "Napisanie obszernej dokumentacji dla użytkowników końcowych.",
-    "assignees": [
-      "eve@example.com"
-    ],
-    "priority": "Low",
-    "status": "Backlog",
     "subTasks": []
   },
   {
-    "id": "TASK-1752745199145",
-    "name": "Aktualizacja UI/UX",
-    "description": "Odświeżenie interfejsu użytkownika aplikacji.",
+    "id": "task-1752493625105",
+    "parentId": "TASK-BE",
+    "name": "Poprawa SQL",
+    "description": "final scania 3",
     "assignees": [
-      "david@example.com",
+      "andrzej@example.com"
+    ],
+    "priority": "Medium",
+    "status": "In Progress",
+    "subTasks": [],
+    "date": "2025-07-14T11:47:05.105Z"
+  },
+  {
+    "id": "task-1752493588315",
+    "parentId": "TASK-BE",
+    "name": "Backend do obliczania spalania rzeczywistego",
+    "description": "Obsługa zapytań do bazy danych, opcje rozwijania dla pojazdu jak i kierowcy, poszczególne dane dla każdego pojazdu łączone z kierowcą",
+    "assignees": [
+      "andrzej@example.com",
+      "tomek@example.com"
+    ],
+    "priority": "Critical",
+    "status": "In Progress",
+    "subTasks": [],
+    "date": "2025-07-14T11:46:28.315Z"
+  },
+  {
+    "id": "task-1752062088312",
+    "parentId": "TASK-BE",
+    "name": "Obsługa danych kierowców z bazy",
+    "description": "Obsługa zapytań bazy danych robiona pod integrację z API OpenAI",
+    "assignees": [
+      "tomek@example.com"
+    ],
+    "priority": "Medium",
+    "status": "In Progress",
+    "subTasks": [],
+    "date": "2025-07-09T11:54:48.312Z"
+  },
+  {
+    "id": "task-9",
+    "parentId": "TASK-BE",
+    "name": "Backend: Implementacja logiki przetwarzania danych",
+    "description": "Rozwój głównej logiki backendowej odpowiedzialnej za przetwarzanie, agregację i analizę danych o spalaniu.",
+    "assignees": [
+      "lukasz@example.com"
+    ],
+    "priority": "High",
+    "status": "In Progress",
+    "subTasks": [],
+    "date": "2025-07-08T07:05:44.589Z"
+  },
+  {
+    "id": "task-3",
+    "parentId": "TASK-BE",
+    "name": "DB: Konfiguracja i wdrożenie bazy danych",
+    "description": "Zainicjowanie, skonfigurowanie i wdrożenie produkcyjnej bazy danych do przechowywania danych telemetrycznych i analitycznych.",
+    "assignees": [
+      "tomek@example.com"
+    ],
+    "priority": "Critical",
+    "status": "Done",
+    "subTasks": [],
+    "date": "2025-07-14T11:41:40.869Z"
+  },
+  {
+    "id": "task-4",
+    "parentId": "TASK-BE",
+    "name": "DB: Implementacja skryptów do ekstrakcji danych",
+    "description": "Przygotowanie skryptów SQL/NoSQL do efektywnego wyciągania i agregowania danych na potrzeby analiz i raportów.",
+    "assignees": [
+      "tomek@example.com"
+    ],
+    "priority": "High",
+    "status": "Done",
+    "subTasks": [],
+    "date": "2025-07-09T11:03:20.800Z"
+  },
+  {
+    "id": "TASK-FE",
+    "name": "Interfejs Użytkownika i Frontend",
+    "description": "Zadania związane z warstwą wizualną aplikacji, CSS, HTML i JavaScript.",
+    "assignees": [
+      "alice@example.com"
+    ],
+    "priority": "High",
+    "status": "In Progress",
+    "subTasks": []
+  },
+  {
+    "id": "task-1752493665621",
+    "parentId": "TASK-FE",
+    "name": "Poprawki wyświetlania i redukcja linijek CSS",
+    "description": "Za dużo niepotrzebnego CSS",
+    "assignees": [
       "bob@example.com"
+    ],
+    "priority": "Low",
+    "status": "In Progress",
+    "subTasks": [],
+    "date": "2025-07-14T11:47:45.621Z"
+  },
+  {
+    "id": "task-1751958278394",
+    "parentId": "TASK-FE",
+    "name": "Frontend Aplikacji",
+    "description": "JS, CSS, HTML",
+    "assignees": [
+      "copilot@example.com"
+    ],
+    "priority": "High",
+    "status": "In Progress",
+    "subTasks": [],
+    "date": "2025-07-09T12:50:38.233Z"
+  },
+  {
+    "id": "task-12",
+    "parentId": "TASK-FE",
+    "name": "UI: Stworzenie widoku tabelarycznego z numerami VIN",
+    "description": "Zaprojektowanie i wdrożenie komponentu tabeli, który wyświetla kluczowe dane pojazdów, w tym numery VIN.",
+    "assignees": [
+      "robert@example.com"
+    ],
+    "priority": "Low",
+    "status": "Done",
+    "subTasks": [],
+    "date": "2025-07-10T08:06:38.256Z"
+  },
+  {
+    "id": "TASK-DATA",
+    "name": "Integracja i Analiza Danych Zewnętrznych",
+    "description": "Zadania dotyczące pobierania, przetwarzania i analizy danych z systemów zewnętrznych (Scania, BP) oraz integracji z AI.",
+    "assignees": [
+      "alice@example.com"
+    ],
+    "priority": "Critical",
+    "status": "In Progress",
+    "subTasks": []
+  },
+  {
+    "id": "task-1752135729839",
+    "parentId": "TASK-DATA",
+    "name": "Codzienny odometer",
+    "description": "codzienny odometer",
+    "assignees": [
+      "robert@example.com"
+    ],
+    "priority": "High",
+    "status": "Todo",
+    "subTasks": [],
+    "date": "2025-07-10T08:22:09.839Z"
+  },
+  {
+    "id": "task-1752132650132",
+    "parentId": "TASK-DATA",
+    "name": "Uszczegółowienie rozdziału tankowań",
+    "description": "Rozbijanie tankowań z tego samego dnia na dwa. ",
+    "assignees": [
+      "andrzej@example.com",
+      "mikolaj@example.com"
+    ],
+    "priority": "Medium",
+    "status": "In Progress",
+    "subTasks": [],
+    "date": "2025-07-10T07:30:50.132Z"
+  },
+  {
+    "id": "task-1752065373234",
+    "parentId": "TASK-DATA",
+    "name": "Odometer",
+    "description": "odometer lalalalal",
+    "assignees": [
+      "robert@example.com"
+    ],
+    "priority": "Critical",
+    "status": "In Progress",
+    "subTasks": [],
+    "date": "2025-07-09T12:49:33.234Z"
+  },
+  {
+    "id": "task-8",
+    "parentId": "TASK-DATA",
+    "name": "AI: Integracja z API OpenAI",
+    "description": "Podłączenie aplikacji do API OpenAI w celu generowania zaawansowanych analiz i sugestii na podstawie zebranych danych.",
+    "assignees": [
+      "tomek@example.com"
+    ],
+    "priority": "Medium",
+    "status": "In Progress",
+    "subTasks": [],
+    "date": "2025-07-09T11:54:04.022Z"
+  },
+  {
+    "id": "task-1751982614435",
+    "parentId": "TASK-DATA",
+    "name": "Automatyzacja pobieranie kluczy API",
+    "description": "Pobieranie kluczy do api scania i dodanie ich do bazy",
+    "assignees": [
+      "mikolaj@example.com"
+    ],
+    "priority": "Low",
+    "status": "In Progress",
+    "subTasks": [],
+    "date": "2025-07-09T08:44:58.040Z"
+  },
+  {
+    "id": "task-6",
+    "parentId": "TASK-DATA",
+    "name": "Analiza: Przetwarzanie kolumn z danych Scania",
+    "description": "Analiza i implementacja logiki do parsowania i interpretacji kluczowych kolumn z danych dostarczanych przez system Scania.",
+    "assignees": [
+      "andrzej@example.com"
+    ],
+    "priority": "High",
+    "status": "In Progress",
+    "subTasks": [],
+    "date": "2025-07-08T13:36:04.790Z"
+  },
+  {
+    "id": "task-11",
+    "parentId": "TASK-DATA",
+    "name": "Analiza: Obliczanie średniej konsumpcji per pojazd",
+    "description": "Implementacja modułu analitycznego do obliczania i prezentacji średniego zużycia paliwa dla każdej ciężarówki.",
+    "assignees": [
+      "robert@example.com"
+    ],
+    "priority": "Medium",
+    "status": "In Progress",
+    "subTasks": [],
+    "date": "2025-07-08T07:05:34.410Z"
+  },
+  {
+    "id": "task-2",
+    "parentId": "TASK-DATA",
+    "name": "Skrypt: Raportowanie dziennego zużycia paliwa",
+    "description": "Stworzenie skryptu generującego dzienne raporty zużycia paliwa dla każdego kierowcy na podstawie danych telemetrycznych.",
+    "assignees": [
+      "mikolaj@example.com"
+    ],
+    "priority": "High",
+    "status": "In Progress",
+    "subTasks": [],
+    "date": "2025-07-08T07:05:23.606Z"
+  },
+  {
+    "id": "task-1",
+    "parentId": "TASK-DATA",
+    "name": "Backend: Pobieranie i mapowanie danych z systemu BP",
+    "description": "Implementacja logiki do pobierania danych z systemu BP i mapowania ich na wewnętrzny model danych aplikacji.",
+    "assignees": [
+      "mikolaj@example.com"
+    ],
+    "priority": "Critical",
+    "status": "In Progress",
+    "subTasks": [],
+    "date": "2025-07-08T07:05:20.138Z"
+  },
+  {
+    "id": "task-10",
+    "parentId": "TASK-DATA",
+    "name": "Analiza: Obliczanie średniej konsumpcji per kierowca",
+    "description": "Implementacja modułu analitycznego do obliczania i prezentacji średniego zużycia paliwa dla każdego kierowcy.",
+    "assignees": [
+      "robert@example.com"
     ],
     "priority": "Medium",
     "status": "Done",
-    "parentId": "TASK-4",
-    "date": "2025-07-17T10:06:31.254Z"
+    "subTasks": [],
+    "date": "2025-07-10T08:06:28.137Z"
   },
   {
-    "id": "TASK-1752748342001",
-    "name": "Pobieranie Danych BP",
-    "description": "u6srgb",
+    "id": "task-7",
+    "parentId": "TASK-DATA",
+    "name": "Integracja: Połączenie danych BP (XLSX) z danymi Scania",
+    "description": "Stworzenie mechanizmu (np. przez Flask API), który łączy dane z plików XLSX od BP z danymi telemetrycznymi ze Scanii.",
     "assignees": [
-      "david@example.com"
+      "mikolaj@example.com"
     ],
-    "priority": "Low",
-    "status": "Todo",
-    "parentId": "TASK-5"
-  },
-  {
-    "id": "TASK-1752748364749",
-    "name": "j,jh",
-    "description": "jjj",
-    "assignees": [
-      "david@example.com"
-    ],
-    "priority": "Low",
+    "priority": "Critical",
     "status": "Done",
-    "parentId": "TASK-5",
-    "date": "2025-07-17T10:33:00.904Z"
-  },
-  {
-    "id": "TASK-1752748406131",
-    "name": "bhjn",
-    "description": "kml",
-    "assignees": [
-      "david@example.com"
-    ],
-    "priority": "Critical",
-    "status": "Todo",
-    "parentId": "TASK-5"
-  },
-  {
-    "id": "TASK-1752748420705",
-    "name": "n nm,",
-    "description": " bnm",
-    "assignees": [
-      "david@example.com"
-    ],
-    "priority": "Critical",
-    "status": "Todo",
-    "parentId": "TASK-5"
-  },
-  {
-    "id": "TASK-1752748420705",
-    "name": "n nm,",
-    "description": " bnm",
-    "assignees": [
-      "david@example.com"
-    ],
-    "priority": "Critical",
-    "status": "Todo",
-    "parentId": "TASK-5"
+    "subTasks": [],
+    "date": "2025-07-09T08:44:49.504Z"
   }
 ]
+
+    
