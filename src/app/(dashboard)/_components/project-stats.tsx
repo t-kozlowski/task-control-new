@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { Status, Priority, Task } from '@/types';
 import React, { useMemo } from 'react';
-import { PieChart, Pie, Cell, RadialBarChart, RadialBar, LabelList } from 'recharts';
+import { PieChart, Pie, Cell, Label } from 'recharts';
 
 const STATUS_COLORS: Record<Status, string> = {
   'Backlog': 'hsl(215 25% 65%)',
@@ -66,6 +66,8 @@ export default function ProjectStats({ tasks }: { tasks: Task[] }) {
           fill: PRIORITY_COLORS[p]
       }));
   }, [tasks]);
+  
+  const totalTasks = useMemo(() => tasks.length, [tasks]);
 
   const chartConfig = {
     tasks: {
@@ -74,11 +76,15 @@ export default function ProjectStats({ tasks }: { tasks: Task[] }) {
      ...priorityData.reduce((acc, item) => {
       acc[item.name] = { label: item.name, color: item.fill };
       return acc;
-    }, {} as any)
+    }, {} as any),
+    ...statusData.reduce((acc, item) => {
+      acc[item.name] = { label: item.name, color: item.fill };
+      return acc;
+    }, {} as any),
   };
   
   if (!tasks || tasks.length === 0) {
-    return null; // Don't render charts if there's no data
+    return null;
   }
 
   return (
@@ -91,17 +97,26 @@ export default function ProjectStats({ tasks }: { tasks: Task[] }) {
           <ChartContainer config={chartConfig} className="mx-auto aspect-square h-[300px]">
             <PieChart>
               <ChartTooltip content={<ChartTooltipContent nameKey="name" hideLabel />} />
-              <Pie data={statusData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} cornerRadius={5}>
+              <Pie data={statusData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={2} cornerRadius={5}>
                 {statusData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.fill} stroke={entry.fill} />
                 ))}
-                <LabelList
-                    dataKey="value"
-                    position="outside"
-                    offset={20}
-                    className="fill-foreground font-semibold text-lg"
-                    formatter={(value: number) => value}
-                />
+                 <Label
+                    content={({ viewBox }) => {
+                        if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                            return (
+                                <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle" >
+                                    <tspan x={viewBox.cx} y={viewBox.cy} className="text-3xl font-bold fill-foreground" >
+                                        {totalTasks.toLocaleString()}
+                                    </tspan>
+                                    <tspan x={viewBox.cx} y={viewBox.cy + 20} className="text-sm fill-muted-foreground" >
+                                        Zadań
+                                    </tspan>
+                                </text>
+                            );
+                        }
+                    }}
+                 />
               </Pie>
               <ChartLegend content={<ChartLegendContent nameKey="name" />} />
             </PieChart>
@@ -113,34 +128,16 @@ export default function ProjectStats({ tasks }: { tasks: Task[] }) {
           <CardTitle>Zadania według priorytetu</CardTitle>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="h-[300px] w-full">
-             <RadialBarChart 
-                data={priorityData}
-                innerRadius="25%"
-                outerRadius="100%"
-                startAngle={180}
-                endAngle={-180}
-                barSize={20}
-              >
-              <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-              <RadialBar
-                dataKey="value"
-                background
-                cornerRadius={10}
-                animationDuration={900}
-              >
-                  {priorityData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
-                  ))}
-                   <LabelList
-                    position="inside"
-                    dataKey="name"
-                    className="fill-white font-bold text-sm drop-shadow-lg"
-                    formatter={(value: string, entry: any) => `${value}: ${entry.value}`}
-                  />
-              </RadialBar>
-              <ChartLegend content={<ChartLegendContent nameKey="name" iconType="circle" />} />
-            </RadialBarChart>
+           <ChartContainer config={chartConfig} className="mx-auto aspect-square h-[300px]">
+            <PieChart>
+              <ChartTooltip content={<ChartTooltipContent nameKey="name" hideLabel />} />
+              <Pie data={priorityData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} paddingAngle={2} cornerRadius={5}>
+                {priorityData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.fill} stroke={entry.fill} />
+                ))}
+              </Pie>
+              <ChartLegend content={<ChartLegendContent nameKey="name" />} />
+            </PieChart>
           </ChartContainer>
         </CardContent>
       </Card>

@@ -64,7 +64,7 @@ export default function LiveStats({ tasks, users }: LiveStatsProps) {
     }));
   }, [tasks, users]);
 
-  const totalTasks = useMemo(() => tasksPerUserData.reduce((acc, curr) => acc + curr.value, 0), [tasksPerUserData]);
+  const totalTasks = useMemo(() => tasks.length, [tasks]);
 
   const lineChartConfig = {
     zadania: {
