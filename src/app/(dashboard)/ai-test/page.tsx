@@ -22,11 +22,10 @@ export default function AiTestPage() {
 
     try {
       const response = await fetch('/api/ai/summary');
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Wystąpił nieoczekiwany błąd serwera. Sprawdź konsolę po stronie serwera, aby uzyskać więcej informacji.' }));
-        throw new Error(errorData.message || 'Nie udało się uzyskać odpowiedzi od AI.');
-      }
       const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Wystąpił nieoczekiwany błąd serwera.');
+      }
       setResult(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Wystąpił nieznany błąd');
@@ -74,7 +73,11 @@ export default function AiTestPage() {
             {error && (
               <Alert variant="destructive">
                  <AlertTitle>Test nie powiódł się</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
+                <AlertDescription>
+                  <pre className="mt-2 w-full whitespace-pre-wrap rounded-md bg-destructive/20 p-2 font-mono text-xs">
+                    {error}
+                  </pre>
+                </AlertDescription>
               </Alert>
             )}
 

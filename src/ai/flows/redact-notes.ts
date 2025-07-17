@@ -30,6 +30,7 @@ export async function redactNotes(input: RedactNotesInput): Promise<RedactNotesO
 // Prompt Definition
 const redactNotesPrompt = ai.definePrompt({
   name: 'redactNotesPrompt',
+  model: 'googleai/gemini-1.5-flash-preview-0514',
   input: { schema: RedactNotesInputSchema },
   output: { schema: RedactNotesOutputSchema },
   prompt: `Jesteś asystentem AI specjalizującym się w tworzeniu profesjonalnych notatek ze spotkań. Twoim zadaniem jest przekształcenie surowych, nieformalnych notatek w zwięzłe, dobrze zorganizowane i profesjonalne podsumowanie spotkania w języku polskim.
