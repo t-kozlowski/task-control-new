@@ -128,12 +128,24 @@ export function TaskTable({ tasks, onEdit, onTaskDeleted, users }: TaskTableProp
           </TableRow>
         </TableHeader>
         <TableBody>
-          {mainTasks.map(task => (
-            <Fragment key={task.id}>
-              {renderTaskRow(task)}
-              {subTasksByParentId[task.id]?.map(subTask => renderTaskRow(subTask, true))}
-            </Fragment>
-          ))}
+          {tasks.length > 0 ? (
+            mainTasks.map(task => (
+              <Fragment key={task.id}>
+                {renderTaskRow(task)}
+                {subTasksByParentId[task.id]?.map(subTask => renderTaskRow(subTask, true))}
+              </Fragment>
+            ))
+           ) : (
+            <TableRow>
+              <TableCell colSpan={6}>
+                <div className="text-center text-muted-foreground p-8 flex flex-col items-center gap-4">
+                  <Icons.folderOpen className="h-12 w-12" />
+                  <h3 className="text-lg font-semibold">Brak zadań do wyświetlenia</h3>
+                  <p>Kliknij "Dodaj Zadanie", aby rozpocząć pracę.</p>
+                </div>
+              </TableCell>
+            </TableRow>
+           )}
         </TableBody>
       </Table>
     </div>

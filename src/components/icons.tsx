@@ -18,6 +18,8 @@ import {
   Trash2,
   Edit,
   Clapperboard,
+  CheckCircle,
+  FolderOpen,
 } from 'lucide-react';
 
 export const Icons = {
@@ -40,6 +42,8 @@ export const Icons = {
   delete: Trash2,
   edit: Edit,
   movie: Clapperboard,
+  checkCircle: CheckCircle,
+  folderOpen: FolderOpen,
 };
 
 export const PriorityIcons = {
