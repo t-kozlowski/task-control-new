@@ -8,7 +8,7 @@ import { Icons } from '@/components/icons';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { ProjectSummaryOutput } from '@/ai/flows/project-summary';
-import { TestTube2 } from 'lucide-react';
+import { TestTube2, AlertTriangle, Lightbulb, FileText, CheckCircle } from 'lucide-react';
 
 export default function AiTestPage() {
   const [result, setResult] = useState<ProjectSummaryOutput | null>(null);
@@ -22,10 +22,11 @@ export default function AiTestPage() {
 
     try {
       const response = await fetch('/api/ai/summary');
-      const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.message || 'Wystąpił nieoczekiwany błąd serwera.');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Wystąpił nieoczekiwany błąd serwera.');
       }
+      const data = await response.json();
       setResult(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Wystąpił nieznany błąd');
@@ -42,9 +43,9 @@ export default function AiTestPage() {
         </div>
       <Card>
         <CardHeader>
-          <CardTitle>Test Połączenia z AI</CardTitle>
+          <CardTitle>Test Głównego Przepływu Analitycznego</CardTitle>
           <CardDescription>
-            Kliknij przycisk poniżej, aby wywołać przepływ AI `getProjectSummary` i sprawdzić, czy otrzymujemy poprawną odpowiedź od modelu językowego Gemini.
+            Kliknij przycisk poniżej, aby wywołać przepływ AI `getProjectSummary` i sprawdzić, czy otrzymujemy poprawną, ustrukturyzowaną odpowiedź od modelu Gemini.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -82,10 +83,26 @@ export default function AiTestPage() {
             )}
 
             {result && (
-                <Alert variant="default" className="border-green-500/50 bg-green-500/10">
+                <Alert variant="default" className="border-green-500/50 bg-green-500/10 text-foreground">
+                    <CheckCircle className="h-4 w-4 text-green-400" />
                     <AlertTitle className="text-green-400">Test zakończony sukcesem!</AlertTitle>
-                    <AlertDescription className="prose prose-sm prose-invert text-foreground max-w-none mt-2">
-                        <p>{result.summary}</p>
+                    <AlertDescription className="space-y-4 mt-2">
+                        <div className="space-y-2">
+                            <h4 className="font-semibold flex items-center gap-2"><FileText className="h-4 w-4" />Podsumowanie</h4>
+                            <p className="text-sm pl-6">{result.summary}</p>
+                        </div>
+                        <div className="space-y-2">
+                            <h4 className="font-semibold flex items-center gap-2"><AlertTriangle className="h-4 w-4" />Zidentyfikowane Ryzyka</h4>
+                            <ul className="list-disc pl-11 space-y-1 text-sm">
+                                {result.risks.map((risk, i) => <li key={i}>{risk}</li>)}
+                            </ul>
+                        </div>
+                         <div className="space-y-2">
+                            <h4 className="font-semibold flex items-center gap-2"><Lightbulb className="h-4 w-4" />Rekomendacje</h4>
+                            <ul className="list-disc pl-11 space-y-1 text-sm">
+                                {result.recommendations.map((rec, i) => <li key={i}>{rec}</li>)}
+                            </ul>
+                        </div>
                     </AlertDescription>
                 </Alert>
             )}
