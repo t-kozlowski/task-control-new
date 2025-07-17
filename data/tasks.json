@@ -95,7 +95,7 @@
     "description": "Poprawa wydajności i łatwości utrzymania poprzez refaktoryzację starej bazy kodu.",
     "assignee": "david@example.com",
     "priority": "Medium",
-    "status": "Todo",
+    "status": "In Progress",
     "subTasks": [
       {
         "id": "SUB-4.1",
