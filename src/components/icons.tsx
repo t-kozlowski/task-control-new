@@ -20,6 +20,8 @@ import {
   Clapperboard,
   CheckCircle,
   FolderOpen,
+  Briefcase,
+  Users,
 } from 'lucide-react';
 
 export const Icons = {
@@ -44,6 +46,8 @@ export const Icons = {
   movie: Clapperboard,
   checkCircle: CheckCircle,
   folderOpen: FolderOpen,
+  meetings: Briefcase,
+  attendees: Users,
 };
 
 export const PriorityIcons = {

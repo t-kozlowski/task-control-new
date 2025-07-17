@@ -3,3 +3,4 @@ config();
 
 import '@/ai/flows/ai-notifications.ts';
 import '@/ai/flows/project-summary.ts';
+import '@/ai/flows/meeting-prep.ts';

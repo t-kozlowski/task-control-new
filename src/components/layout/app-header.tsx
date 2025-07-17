@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { useApp } from '@/context/app-context';
 import { Icons, BotMessageSquare } from '../icons';
 import { AiNotifications } from './ai-notifications';
-import { Task, User } from '@/types';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
     DropdownMenu,
@@ -16,18 +15,31 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useEffect, useState } from 'react';
+import type { Task } from '@/types';
 
 
 const menuItems = [
   { href: '/', label: 'Pulpit', icon: Icons.dashboard },
   { href: '/backlog', label: 'Lista Zadań', icon: Icons.backlog },
+  { href: '/meetings', label: 'Spotkania z Zarządem', icon: Icons.meetings },
   { href: '/directives', label: 'Dyrektywy AI', icon: Icons.directives },
   { href: '/cinematic', label: 'Widok Kinowy', icon: Icons.movie },
 ];
 
-export function AppHeader({ users, tasks }: { users: User[], tasks: Task[] }) {
+export function AppHeader() {
   const { isZenMode, toggleZenMode, loggedInUser, setLoggedInUser } = useApp();
+  const [tasks, setTasks] = useState<Task[]>([]);
   const pathname = usePathname();
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      const res = await fetch('/api/tasks');
+      const data = await res.json();
+      setTasks(data);
+    };
+    fetchTasks();
+  }, [])
 
   const handleLogout = () => {
     setLoggedInUser(null);

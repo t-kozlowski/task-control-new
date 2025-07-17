@@ -30,3 +30,19 @@ export interface User {
   name: string;
   email: string;
 }
+
+export interface ActionItem {
+    id: string;
+    description: string;
+    owner: string; // email
+    status: Status | 'Done' | 'In Progress' | 'Todo' | 'Backlog';
+}
+
+export interface Meeting {
+    id: string;
+    date: string;
+    title: string;
+    summary: string;
+    attendees: string[]; // emails
+    actionItems: ActionItem[];
+}

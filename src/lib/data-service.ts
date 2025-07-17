@@ -1,11 +1,12 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { Task, AiDirective, User } from '@/types';
+import { Task, AiDirective, User, Meeting } from '@/types';
 
 const dataDirectory = path.join(process.cwd(), 'data');
 const tasksFilePath = path.join(dataDirectory, 'tasks.json');
 const directivesFilePath = path.join(dataDirectory, 'directives.json');
 const usersFilePath = path.join(dataDirectory, 'users.json');
+const meetingsFilePath = path.join(dataDirectory, 'meetings.json');
 
 async function readData<T>(filePath: string): Promise<T[]> {
   try {
@@ -17,6 +18,10 @@ async function readData<T>(filePath: string): Promise<T[]> {
       if (filePath === usersFilePath) {
         await writeData(filePath, [{ id: '1', name: 'Admin', email: 'admin@example.com' }]);
         return [{ id: '1', name: 'Admin', email: 'admin@example.com' }] as T[];
+      }
+       if (filePath === meetingsFilePath) {
+        await writeData(filePath, []);
+        return [];
       }
       return [];
     }
@@ -44,3 +49,7 @@ export const saveDirectives = (directives: AiDirective[]) => writeData<AiDirecti
 
 // User Functions
 export const getUsers = () => readData<User>(usersFilePath);
+
+// Meeting Functions
+export const getMeetings = () => readData<Meeting>(meetingsFilePath);
+export const saveMeetings = (meetings: Meeting[]) => writeData<Meeting>(meetingsFilePath, meetings);
