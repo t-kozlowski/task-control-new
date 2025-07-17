@@ -26,6 +26,7 @@ import {
   Search,
   PanelLeft,
   UserCheck,
+  TestTube2,
 } from 'lucide-react';
 
 export const Icons = {
@@ -56,6 +57,7 @@ export const Icons = {
   search: Search,
   menu: PanelLeft,
   userCheck: UserCheck,
+  aiTest: TestTube2,
 };
 
 export const PriorityIcons = {

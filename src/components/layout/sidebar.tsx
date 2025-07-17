@@ -22,6 +22,7 @@ const menuItems = [
   { href: '/meetings', label: 'Spotkania', icon: Icons.meetings },
   { href: '/directives', label: 'Dyrektywy AI', icon: Icons.directives },
   { href: '/users', label: 'Użytkownicy', icon: Icons.users },
+  { href: '/ai-test', label: 'Test AI', icon: Icons.aiTest },
 ];
 
 export function AppSidebar() {
