@@ -2,7 +2,6 @@
 
 import { useApp } from '@/context/app-context';
 import { Icons } from '../icons';
-import { AiNotifications } from './ai-notifications';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
     DropdownMenu,
@@ -19,10 +18,12 @@ import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
 import Link from 'next/link';
 import { BotMessageSquare } from '../icons';
 import { usePathname } from 'next/navigation';
+import { Film } from 'lucide-react';
 
 
 const menuItems = [
   { href: '/', label: 'Pulpit', icon: Icons.dashboard },
+  { href: '/cinematic', label: 'Widok Kinowy', icon: Film },
   { href: '/my-tasks', label: 'Moje Zadania', icon: Icons.userCheck },
   { href: '/backlog', label: 'Backlog', icon: Icons.backlog },
   { href: '/meetings', label: 'Spotkania', icon: Icons.meetings },
@@ -92,7 +93,6 @@ export function AppHeader() {
       <div className="flex w-full items-center justify-end gap-2 md:gap-4">
         <div className="flex-1" />
 
-        <AiNotifications />
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                  <Button variant="outline" size="icon" className="overflow-hidden rounded-full">

@@ -2,13 +2,11 @@
 
 import React, { useState } from 'react';
 import type { Task, User } from '@/types';
-import ProjectStats from './project-stats';
 import TaskList from './task-list';
 import TaskSpotlight from './task-spotlight';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/icons';
 import AiSummaryDialog from './ai-summary-dialog';
-import LiveStats from './live-stats';
 import { useApp } from '@/context/app-context';
 
 export default function DashboardClient({ initialTasks }: { initialTasks: Task[] }) {
@@ -28,8 +26,6 @@ export default function DashboardClient({ initialTasks }: { initialTasks: Task[]
       </div>
       
       <div className="space-y-6">
-        <ProjectStats tasks={tasks} />
-        <LiveStats tasks={tasks} users={users} />
         <TaskList tasks={tasks} />
         <TaskSpotlight tasks={tasks} />
       </div>

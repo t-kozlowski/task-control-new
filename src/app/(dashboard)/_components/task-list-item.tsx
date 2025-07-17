@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useRef, type MouseEvent } from 'react';
 import type { Task, User } from '@/types';
@@ -97,7 +96,7 @@ export default function TaskListItem({ task, allTasks = [] }: { task: Task, allT
                 </div>
                 {subTasks.length > 0 && (
                     <AccordionTrigger asChild>
-                        <Button variant="ghost" size="icon" className="ml-4 flex-shrink-0 [&[data-state=open]>svg]:rotate-180">
+                         <Button variant="ghost" size="icon" className="ml-4 flex-shrink-0 [&[data-state=open]>svg]:rotate-180">
                              <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />
                         </Button>
                     </AccordionTrigger>

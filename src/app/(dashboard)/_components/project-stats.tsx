@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -39,6 +38,7 @@ const priorityTranslations: Record<Priority, string> = {
 export default function ProjectStats({ tasks }: { tasks: Task[] }) {
 
   const statusData = useMemo(() => {
+    if (!tasks) return [];
     const counts = tasks.reduce((acc, task) => {
       acc[task.status] = (acc[task.status] || 0) + 1;
       return acc;
@@ -51,6 +51,7 @@ export default function ProjectStats({ tasks }: { tasks: Task[] }) {
   }, [tasks]);
 
   const priorityData = useMemo(() => {
+    if (!tasks) return [];
     const counts = tasks.reduce((acc, task) => {
       acc[task.priority] = (acc[task.priority] || 0) + 1;
       return acc;
@@ -67,7 +68,7 @@ export default function ProjectStats({ tasks }: { tasks: Task[] }) {
       }));
   }, [tasks]);
   
-  const totalTasks = useMemo(() => tasks.length, [tasks]);
+  const totalTasks = useMemo(() => tasks?.length || 0, [tasks]);
 
   const chartConfig = {
     tasks: {

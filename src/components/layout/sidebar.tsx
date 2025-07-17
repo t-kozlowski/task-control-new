@@ -11,10 +11,12 @@ import {
 import { Icons, BotMessageSquare } from '@/components/icons';
 import { useApp } from '@/context/app-context';
 import { cn } from '@/lib/utils';
+import { Film } from 'lucide-react';
 
 
 const menuItems = [
   { href: '/', label: 'Pulpit', icon: Icons.dashboard },
+  { href: '/cinematic', label: 'Widok Kinowy', icon: Film },
   { href: '/my-tasks', label: 'Moje Zadania', icon: Icons.userCheck },
   { href: '/backlog', label: 'Backlog', icon: Icons.backlog },
   { href: '/meetings', label: 'Spotkania', icon: Icons.meetings },

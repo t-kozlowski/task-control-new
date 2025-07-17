@@ -28,6 +28,11 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ message: 'Meeting not found' }, { status: 404 });
     }
 
+    // Preserve existing action items if not provided in the payload
+    if (!updatedMeeting.actionItems) {
+      updatedMeeting.actionItems = meetings[meetingIndex].actionItems || [];
+    }
+
     meetings[meetingIndex] = updatedMeeting;
     await saveMeetings(meetings);
     return NextResponse.json(updatedMeeting);

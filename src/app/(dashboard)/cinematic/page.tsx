@@ -8,7 +8,8 @@ import { Icons } from '@/components/icons';
 import { AiNotificationOutput } from '@/ai/flows/ai-notifications';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import LiveStats from './_components/live-stats';
+import LiveStats from '../_components/live-stats';
+import { Film } from 'lucide-react';
 
 export default function CinematicPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -60,7 +61,8 @@ export default function CinematicPage() {
   }
   
   const getBadgeColor = (type: AiNotificationOutput['type'] | undefined) => {
-    if (type === 'positive') return 'bg-accent text-accent-foreground';
+    if (type === 'positive') return 'bg-green-500/20 text-green-400 border-green-500/30';
+    if (type === 'risk') return 'bg-red-500/20 text-red-400 border-red-500/30';
     return '';
   }
 
@@ -91,7 +93,10 @@ export default function CinematicPage() {
 
   return (
     <div className="flex flex-col gap-6 animate-fade-in">
-        <h1 className="text-3xl font-bold tracking-tight">Widok Kinowy</h1>
+        <div className="flex items-center gap-3">
+          <Film className="h-8 w-8 text-primary" />
+          <h1 className="text-3xl font-bold tracking-tight">Widok Kinowy</h1>
+        </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="lg:col-span-2">
@@ -121,11 +126,11 @@ export default function CinematicPage() {
                     </CardHeader>
                     <CardContent>
                         {notification ? (
-                             <div className="flex gap-3 items-start">
+                             <div className="flex gap-3 items-start p-4 rounded-lg bg-secondary/50 border border-border">
                                 <Icons.bot className="flex-shrink-0 mt-1 text-primary" />
                                 <div>
                                     <Badge variant={getBadgeVariant(notification.type)} className={getBadgeColor(notification.type)}>{getBadgeText(notification.type)}</Badge>
-                                    <p className="text-md text-muted-foreground mt-2">{notification.notification}</p>
+                                    <p className="text-md text-foreground mt-2">{notification.notification}</p>
                                 </div>
                             </div>
                         ): (
