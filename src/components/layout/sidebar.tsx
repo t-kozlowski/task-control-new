@@ -8,7 +8,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Icons, BotMessageSquare } from '@/components/icons';
+import { Icons, ProjectIcon } from '@/components/icons';
 import { useApp } from '@/context/app-context';
 import { cn } from '@/lib/utils';
 import { Film } from 'lucide-react';
@@ -40,8 +40,8 @@ export function AppSidebar() {
             href="/"
             className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
           >
-            <BotMessageSquare className="h-4 w-4 transition-all group-hover:scale-110" />
-            <span className="sr-only">LSP Innovationhub</span>
+            <ProjectIcon className="h-4 w-4 transition-all group-hover:scale-110" />
+            <span className="sr-only">Project Sentinel</span>
           </Link>
           {menuItems.map(item => (
             <Tooltip key={item.href}>

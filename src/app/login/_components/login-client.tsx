@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { BotMessageSquare } from '@/components/icons';
+import { ProjectIcon } from '@/components/icons';
 
 export default function LoginClient({ users }: { users: User[] }) {
   const { setLoggedInUser } = useApp();
@@ -35,8 +35,8 @@ export default function LoginClient({ users }: { users: User[] }) {
       <Card className="w-full max-w-sm mx-auto">
         <CardHeader className="text-center">
            <div className="flex items-center gap-2 justify-center mb-4">
-            <BotMessageSquare className="size-8 text-primary" />
-            <h1 className="text-2xl font-semibold text-foreground">LSP Innovationhub</h1>
+            <ProjectIcon className="size-8 text-primary" />
+            <h1 className="text-2xl font-semibold text-foreground">Project Sentinel</h1>
           </div>
           <CardTitle className="text-2xl">Zaloguj się</CardTitle>
           <CardDescription>Wybierz swoje konto, aby kontynuować.</CardDescription>

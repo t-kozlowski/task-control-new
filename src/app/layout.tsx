@@ -5,7 +5,7 @@ import { Inter as FontSans } from "next/font/google"
 import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
-  title: 'LSP Innovationhub Todo App',
+  title: 'Project Sentinel',
   description: 'Zaawansowany pulpit do zarządzania projektami w czasie rzeczywistym i strategicznej analizy AI.',
 };
 

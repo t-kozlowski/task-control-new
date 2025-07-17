@@ -16,7 +16,7 @@ import type { Task } from '@/types';
 import { Button } from '../ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
 import Link from 'next/link';
-import { BotMessageSquare } from '../icons';
+import { ProjectIcon } from '../icons';
 import { usePathname } from 'next/navigation';
 import { Film } from 'lucide-react';
 
@@ -73,8 +73,8 @@ export function AppHeader() {
                   href="#"
                   className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
                 >
-                  <BotMessageSquare className="h-5 w-5 transition-all group-hover:scale-110" />
-                  <span className="sr-only">LSP Innovationhub</span>
+                  <ProjectIcon className="h-5 w-5 transition-all group-hover:scale-110" />
+                  <span className="sr-only">Project Sentinel</span>
                 </Link>
                 {menuItems.map(item => (
                    <Link
