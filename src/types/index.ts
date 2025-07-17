@@ -19,6 +19,7 @@ export interface Task {
   progress?: number;
   parentId?: string | null;
   date?: string; // Add date field for completion date tracking
+  dueDate?: string | null; // Add due date field for burndown chart
 }
 
 export interface AiDirective {

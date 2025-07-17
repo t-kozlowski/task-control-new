@@ -21,10 +21,12 @@ import { Task, Priority, Status, User } from '@/types';
 import { useEffect } from 'react';
 import { useApp } from '@/context/app-context';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Check, ChevronsUpDown } from 'lucide-react';
+import { CalendarIcon, Check, ChevronsUpDown } from 'lucide-react';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
 
 const taskSchema = z.object({
   id: z.string().optional(),
@@ -34,6 +36,7 @@ const taskSchema = z.object({
   priority: z.enum(['Critical', 'High', 'Medium', 'Low']),
   status: z.enum(['Todo', 'In Progress', 'Done', 'Backlog']),
   parentId: z.string().nullable().optional(),
+  dueDate: z.date().optional().nullable(),
 });
 
 type TaskFormData = z.infer<typeof taskSchema>;
@@ -56,16 +59,20 @@ export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved, users, ta
   useEffect(() => {
     if (open) {
       if (task) {
-        reset(task);
+        reset({
+          ...task,
+          dueDate: task.dueDate ? new Date(task.dueDate) : null,
+        });
       } else {
         reset({
-          id: `TASK-${Date.now()}`,
+          id: `task-${Date.now()}`,
           name: '',
           description: '',
           assignees: loggedInUser ? [loggedInUser.email] : [],
           priority: 'Medium',
           status: 'Todo',
           parentId: null,
+          dueDate: null,
         });
       }
     }
@@ -74,7 +81,10 @@ export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved, users, ta
   const onSubmit = async (data: TaskFormData) => {
     const method = task ? 'PUT' : 'POST';
     const url = task ? `/api/tasks/${task.id}` : '/api/tasks';
-    const payload = { ...task, ...data };
+    const payload = { 
+      ...data,
+      dueDate: data.dueDate ? data.dueDate.toISOString() : null
+    };
 
     try {
       const response = await fetch(url, {
@@ -129,6 +139,35 @@ export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved, users, ta
               <Label htmlFor="description">Opis</Label>
               <Textarea id="description" {...register('description')} />
               {errors.description && <p className="text-destructive text-sm mt-1">{errors.description.message}</p>}
+            </div>
+             <div>
+                <Label htmlFor="dueDate">Termin wykonania</Label>
+                <Controller
+                    name="dueDate"
+                    control={control}
+                    render={({ field }) => (
+                    <Popover>
+                        <PopoverTrigger asChild>
+                        <Button
+                            variant={"outline"}
+                            className={cn("w-full justify-start text-left font-normal", !field.value && "text-muted-foreground")}
+                        >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {field.value ? format(field.value, "PPP") : <span>Wybierz datę</span>}
+                        </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                        <Calendar
+                            mode="single"
+                            selected={field.value ?? undefined}
+                            onSelect={field.onChange}
+                            initialFocus
+                        />
+                        </PopoverContent>
+                    </Popover>
+                    )}
+                />
+                {errors.dueDate && <p className="text-destructive text-sm mt-1">{errors.dueDate.message}</p>}
             </div>
             <div>
               <Label>Przypisani</Label>
