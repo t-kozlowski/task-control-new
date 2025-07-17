@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { Status, Priority, Task } from '@/types';
 import React, { useMemo } from 'react';
-import { PieChart, Pie, Cell, RadialBarChart, RadialBar, PolarAngleAxis, LabelList } from 'recharts';
+import { PieChart, Pie, Cell, RadialBarChart, RadialBar, PolarAngleAxis, LabelList, Legend } from 'recharts';
 
 const STATUS_COLORS: Record<Status, string> = {
   'Backlog': 'hsl(215 25% 65%)',
@@ -112,10 +112,11 @@ export default function ProjectStats({ tasks }: { tasks: Task[] }) {
           <ChartContainer config={chartConfig} className="h-[300px] w-full">
              <RadialBarChart 
                 data={priorityData}
-                innerRadius="30%"
+                innerRadius="25%"
                 outerRadius="100%"
-                startAngle={90}
-                endAngle={450}
+                startAngle={180}
+                endAngle={-180}
+                barSize={20}
               >
               <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
               <PolarAngleAxis type="number" domain={[0, 100]} dataKey="value" tick={false} />
@@ -123,24 +124,19 @@ export default function ProjectStats({ tasks }: { tasks: Task[] }) {
                 dataKey="value"
                 background
                 cornerRadius={10}
+                animationDuration={900}
               >
                   {priorityData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.fill} />
                   ))}
                    <LabelList
-                    position="insideStart"
+                    position="inside"
                     dataKey="name"
-                    className="fill-white font-bold text-sm"
-                    offset={10}
-                  />
-                  <LabelList
-                    position="insideEnd"
-                    dataKey="value"
-                    className="fill-white/80 text-xs"
-                    offset={10}
+                    className="fill-white font-bold text-sm drop-shadow-lg"
+                    formatter={(value, props) => `${value}: ${props.payload.value}`}
                   />
               </RadialBar>
-              <ChartLegend content={<ChartLegendContent nameKey="name" />} />
+              <Legend iconSize={10} width={120} height={140} layout="vertical" verticalAlign="middle" align="right" />
             </RadialBarChart>
           </ChartContainer>
         </CardContent>
