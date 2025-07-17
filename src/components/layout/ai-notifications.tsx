@@ -35,7 +35,7 @@ export function AiNotifications() {
     
     // Fetch immediately on mount, then set an interval for subsequent fetches.
     fetchAndShowNotification();
-    const interval = setInterval(fetchAndShowNotification, 60000); // Fetch every 60 seconds
+    const interval = setInterval(fetchAndShowNotification, 600000); // Fetch every 10 minutes (10 * 60 * 1000)
 
     return () => clearInterval(interval);
   }, []);
