@@ -32,7 +32,7 @@ const menuItems = [
   { href: '/meetings', label: 'Spotkania', icon: Icons.meetings },
   { href: '/project-manager', label: 'Project Manager', icon: Icons.projectManager, requiredEmail: 'tomek@example.com' },
   { href: '/directives', label: 'Dyrektywy AI', icon: Icons.directives },
-  { href: '/users', label: 'Użytkownicy', icon: Icons.users },
+  { href: '/users', label: 'Użytkownicy', icon: Icons.users, requiredEmail: 'tomek@example.com' },
 ];
 
 export function AppSidebar() {
