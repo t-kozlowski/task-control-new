@@ -19,8 +19,8 @@ export function AiNotifications() {
     setError(null);
     setNotification(null);
     try {
-      // Wywołujemy nowy endpoint, który będzie proxy do serwera Pythona
-      const res = await fetch('/api/python-proxy');
+      // Wywołujemy nowy, dynamiczny endpoint proxy
+      const res = await fetch('/api/proxy/generate_summary');
       if (!res.ok) {
         let errorData;
         try {
