@@ -16,16 +16,23 @@ export function AiNotifications() {
     setError(null);
     setNotification(null);
     try {
-      // Wywołujemy nowy, prosty i dedykowany endpoint
-      const res = await fetch('/api/ask-python');
+      // Bezpośrednie wywołanie serwera Flask
+      // Upewnij się, że Twój serwer Flask ma włączony CORS!
+      const res = await fetch('http://127.0.0.1:5000/generate_summary');
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({ message: 'Serwer Pythona odpowiedział błędem bez formatu JSON.' }));
-        throw new Error(errorData.message || `Serwer odpowiedział statusem: ${res.status}`);
+        const errorText = await res.text().catch(() => 'Serwer odpowiedział błędem bez szczegółów.');
+        throw new Error(`Błąd serwera Flask (${res.status}): ${errorText}`);
       }
       const newNotification = await res.json();
       setNotification(newNotification);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Wystąpił nieznany błąd.');
+      if (err instanceof TypeError) {
+         setError('Błąd połączenia. Upewnij się, że serwer Flask jest uruchomiony i obsługuje CORS.');
+      } else if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Wystąpił nieznany błąd.');
+      }
       setNotification(null);
     } finally {
       setIsLoading(false);
