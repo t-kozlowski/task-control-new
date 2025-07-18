@@ -1,15 +1,15 @@
-
 [
   {
     "id": "TASK-BE",
     "name": "Zarządzanie Danymi i Backend",
     "description": "Zadania związane z bazą danych, logiką backendową i przetwarzaniem danych.",
     "assignees": [
-      "alice@example.com"
+      "alice@example.com",
+      "tomek@example.com"
     ],
     "priority": "Critical",
     "status": "In Progress",
-    "subTasks": []
+    "dueDate": "2025-07-18T22:00:00.000Z"
   },
   {
     "id": "task-1752493625105",
@@ -296,5 +296,3 @@
     "date": "2025-07-09T08:44:49.504Z"
   }
 ]
-
-    

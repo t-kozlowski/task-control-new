@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Briefcase, Users, ListChecks, CheckCircle, Package } from 'lucide-react';
 import ProtectedRoute from './_components/protected-route';
 import { Progress } from '@/components/ui/progress';
-import LiveStats from '../_components/live-stats';
 import { Label } from '@/components/ui/label';
 
 
@@ -64,8 +63,6 @@ export default async function ProjectManagerPage() {
                     </div>
                 </CardContent>
              </Card>
-
-            <LiveStats tasks={tasks} />
 
             <Card>
                 <CardHeader>
