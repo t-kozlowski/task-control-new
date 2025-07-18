@@ -8,6 +8,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ReferenceLine } from 'recharts';
 import { format, differenceInDays, addDays, isBefore, startOfDay, parseISO } from 'date-fns';
 import { Icons } from '@/components/icons';
+import { cn } from '@/lib/utils';
 
 
 interface LiveStatsProps {
@@ -15,9 +16,14 @@ interface LiveStatsProps {
 }
 
 const KpiCard = ({ title, value, unit, isPositive, description }: { title: string; value: string | number; unit: string, isPositive?: boolean, description?: string }) => (
-    <div className="rounded-lg bg-secondary/50 p-4 text-center">
+    <div className="rounded-lg bg-secondary/50 p-4 text-center border">
       <p className="text-sm text-muted-foreground" title={description}>{title}</p>
-      <p className={`text-3xl font-bold ${isPositive === true ? 'text-green-400' : isPositive === false ? 'text-red-400' : 'text-foreground'}`}>
+      <p className={cn(
+          'text-3xl font-bold', 
+          isPositive === true && 'text-green-400', 
+          isPositive === false && 'text-red-400',
+          !isPositive && 'text-foreground'
+      )}>
         {value}<span className="text-lg font-normal ml-1">{unit}</span>
       </p>
     </div>
@@ -65,29 +71,34 @@ export default function LiveStats({ tasks }: LiveStatsProps) {
     const idealData: { day: string; ideal: number; actual: number | null }[] = [];
     const tasksPerDay = taskCount / totalDays;
     
+    let cumulativeTasksDone = 0;
+    const completionDates = relevantTasks
+        .filter(t => t.status === 'Done' && t.date)
+        .map(t => startOfDay(parseISO(t.date)))
+        .sort((a,b) => a.getTime() - b.getTime());
+
     for (let i = 0; i <= totalDays; i++) {
         const currentDate = addDays(startDate, i);
+        
         const idealRemaining = taskCount - (tasksPerDay * i);
 
-        const tasksDoneOnDate = relevantTasks.filter(t => 
-            t.status === 'Done' && t.date && isBefore(startOfDay(parseISO(t.date)), addDays(currentDate, 1))
-        ).length;
-
+        const tasksDoneByThisDate = completionDates.filter(d => !isBefore(currentDate, d)).length;
+        
         idealData.push({
             day: format(currentDate, 'MMM dd'),
             ideal: Math.max(0, parseFloat(idealRemaining.toFixed(2))),
-            actual: taskCount - tasksDoneOnDate,
+            actual: taskCount - tasksDoneByThisDate,
         });
     }
 
     const tasksCompleted = relevantTasks.filter(t => t.status === 'Done').length;
-    const daysElapsed = differenceInDays(new Date(), startDate);
+    const daysElapsed = Math.max(1, differenceInDays(new Date(), startDate));
     const plannedWork = tasksPerDay * daysElapsed;
     
     let spi: number | string = 1;
     if (plannedWork > 0) {
         const earnedValue = tasksCompleted;
-        spi = isNaN(earnedValue / plannedWork) ? 'N/A' : parseFloat((earnedValue / plannedWork).toFixed(2));
+        spi = isNaN(earnedValue / plannedWork) ? 1.0 : parseFloat((earnedValue / plannedWork).toFixed(2));
     } else if (plannedWork <= 0 && daysElapsed <= 1) {
         spi = 1.0;
     }
