@@ -26,12 +26,15 @@ export default function AiTestPage() {
       const response = await fetch('/api/ai/summary');
       
       const responseBody = await response.text();
+      
       if (!response.ok) {
         let errorData;
         try {
+          // Try to parse the error response as JSON
           errorData = JSON.parse(responseBody);
         } catch (e) {
-            throw new Error(`Server returned non-JSON error (status: ${response.status}): ${responseBody}`);
+            // If it's not JSON, it's an unexpected server error (e.g., HTML error page)
+            throw new Error(`Server returned non-JSON error (status: ${response.status}): ${responseBody.substring(0, 100)}...`);
         }
         throw new Error(errorData.message || `An unknown server error occurred (status: ${response.status}).`);
       }

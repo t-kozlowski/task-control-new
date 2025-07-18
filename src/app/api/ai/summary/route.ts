@@ -19,8 +19,9 @@ export async function GET(request: Request) {
       console.error('AI Summary Error:', error);
       const errorMessage = error.message || 'Error generating AI summary';
       const status = error.status || 500;
+      // Ensure a proper JSON response is sent on error
       return NextResponse.json(
-        { message: errorMessage }, 
+        { message: errorMessage },
         { status: status }
       );
     }
