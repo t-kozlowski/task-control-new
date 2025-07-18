@@ -2,10 +2,10 @@
 // src/app/api/ai/suggest-description/route.ts
 import { NextResponse } from 'next/server';
 import { suggestTaskDescription } from '@/ai/flows/suggest-task-description';
-import { genkit } from '@/ai/genkit';
+import { configureGenkit } from '@/ai/genkit';
 
 export async function POST(request: Request) {
-  return await genkit(request, async () => {
+  return await configureGenkit(request, async () => {
     try {
       const { taskName } = await request.json();
 

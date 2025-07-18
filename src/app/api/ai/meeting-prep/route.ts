@@ -3,10 +3,10 @@ import { NextResponse } from 'next/server';
 import { getMeetings, getTasks, getDirectives } from '@/lib/data-service';
 import { getMeetingPrep } from '@/ai/flows/meeting-prep';
 import type { ActionItem } from '@/types';
-import { genkit } from '@/ai/genkit';
+import { configureGenkit } from '@/ai/genkit';
 
 export async function POST(request: Request) {
-  return await genkit(request, async () => {
+  return await configureGenkit(request, async () => {
     try {
       const { meetingId, attendeeEmails } = await request.json();
 

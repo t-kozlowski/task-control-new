@@ -1,11 +1,11 @@
 // src/app/api/ai/redact-notes/route.ts
 import { NextResponse } from 'next/server';
 import { redactNotes } from '@/ai/flows/redact-notes';
-import { genkit } from '@/ai/genkit';
+import { configureGenkit } from '@/ai/genkit';
 
 
 export async function POST(request: Request) {
-  return await genkit(request, async () => {
+  return await configureGenkit(request, async () => {
     try {
       const { notes } = await request.json();
 

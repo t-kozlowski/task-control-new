@@ -2,10 +2,10 @@
 import { NextResponse } from 'next/server';
 import { getTasks } from '@/lib/data-service';
 import { suggestBurndownValues } from '@/ai/flows/suggest-burndown-values';
-import { genkit } from '@/ai/genkit';
+import { configureGenkit } from '@/ai/genkit';
 
 export async function POST(request: Request) {
-  return await genkit(request, async () => {
+  return await configureGenkit(request, async () => {
     try {
       const tasks = await getTasks();
       

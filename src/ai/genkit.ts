@@ -4,7 +4,7 @@ import {NextRequest} from 'next/server';
 
 const DYNAMIC_API_KEY_HEADER = 'x-google-api-key';
 
-export function genkit(
+export function configureGenkit(
   request: Request,
   next: () => Promise<Response>
 ): Promise<Response> {

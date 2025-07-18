@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import { getTasks, getDirectives } from '@/lib/data-service';
 import { generateNotification } from '@/ai/flows/ai-notifications';
-import { genkit } from '@/ai/genkit';
+import { configureGenkit } from '@/ai/genkit';
 
 export async function GET(request: Request) {
-  return await genkit(request, async () => {
+  return await configureGenkit(request, async () => {
     try {
       const tasks = await getTasks();
       const directives = await getDirectives();
