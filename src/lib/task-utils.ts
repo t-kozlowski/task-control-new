@@ -1,10 +1,25 @@
-import { Task, Priority } from '@/types';
+
+import { Task, Priority, Status } from '@/types';
 
 export const priorityWeights: Record<Priority, number> = {
   Critical: 4,
   High: 3,
   Medium: 2,
   Low: 1,
+};
+
+export const statusTranslations: Record<Status, string> = {
+  'Backlog': 'Backlog',
+  'Todo': 'Do zrobienia',
+  'In Progress': 'W toku',
+  'Done': 'Ukończone',
+};
+
+export const priorityTranslations: Record<Priority, string> = {
+  'Critical': 'Krytyczny',
+  'High': 'Wysoki',
+  'Medium': 'Średni',
+  'Low': 'Niski',
 };
 
 // Updated to calculate progress based on sub-tasks (if any) or status

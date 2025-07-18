@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Table,
@@ -29,7 +30,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Icons, PriorityIcons } from "@/components/icons";
 import { Task, Priority, User } from "@/types";
-import { calculateWeightedProgress, getProgressGradient } from "@/lib/task-utils";
+import { calculateWeightedProgress, getProgressGradient, statusTranslations, priorityTranslations } from "@/lib/task-utils";
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Fragment } from "react";
 import { ChevronRight } from "lucide-react";
@@ -82,12 +83,12 @@ export function TaskTable({ tasks, onEdit, onTaskDeleted, users }: TaskTableProp
             </div>
           </TableCell>
           <TableCell>
-            <Badge variant="outline">{task.status}</Badge>
+            <Badge variant="outline">{statusTranslations[task.status]}</Badge>
           </TableCell>
           <TableCell>
             <div className="flex items-center gap-2">
               <PriorityIcon className="size-4" />
-              {task.priority}
+              {priorityTranslations[task.priority]}
             </div>
           </TableCell>
           <TableCell>

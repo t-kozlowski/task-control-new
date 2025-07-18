@@ -30,6 +30,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { Icons } from '@/components/icons';
+import { priorityTranslations, statusTranslations } from '@/lib/task-utils';
 
 const taskSchema = z.object({
   id: z.string().optional(),
@@ -281,7 +282,7 @@ export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved, users, ta
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {priorities.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                      {priorities.map(p => <SelectItem key={p} value={p}>{priorityTranslations[p]}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 )}
@@ -296,7 +297,7 @@ export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved, users, ta
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {statuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                      {statuses.map(s => <SelectItem key={s} value={s}>{statusTranslations[s]}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 )}

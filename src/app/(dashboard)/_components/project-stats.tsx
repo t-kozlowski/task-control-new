@@ -1,8 +1,10 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { Status, Priority, Task } from '@/types';
+import { statusTranslations, priorityTranslations } from '@/lib/task-utils';
 import React, { useMemo } from 'react';
 import { PieChart, Pie, Cell, Label } from 'recharts';
 
@@ -19,21 +21,6 @@ const PRIORITY_COLORS: Record<Priority, string> = {
   'High': 'hsl(10 80% 60%)',
   'Critical': 'hsl(0 85% 55%)',
 };
-
-const statusTranslations: Record<Status, string> = {
-  'Backlog': 'Backlog',
-  'Todo': 'Do zrobienia',
-  'In Progress': 'W toku',
-  'Done': 'Ukończone',
-};
-
-const priorityTranslations: Record<Priority, string> = {
-  'Critical': 'Krytyczny',
-  'High': 'Wysoki',
-  'Medium': 'Średni',
-  'Low': 'Niski',
-};
-
 
 export default function ProjectStats({ tasks }: { tasks: Task[] }) {
 

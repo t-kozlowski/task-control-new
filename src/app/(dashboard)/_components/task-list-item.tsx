@@ -1,10 +1,11 @@
+
 'use client';
 import React, { useState, useRef, type MouseEvent } from 'react';
 import type { Task, User } from '@/types';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Icons, PriorityIcons } from '@/components/icons';
-import { calculateWeightedProgress, getProgressGradient } from '@/lib/task-utils';
+import { calculateWeightedProgress, getProgressGradient, statusTranslations } from '@/lib/task-utils';
 import { Badge } from '@/components/ui/badge';
 import { ChevronDown } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -118,7 +119,7 @@ export default function TaskListItem({ task, allTasks = [] }: { task: Task, allT
                         <span className={`text-sm ${sub.status === 'Done' ? 'line-through text-muted-foreground' : ''}`}>{sub.name}</span>
                       </div>
                       <Badge variant={sub.status === 'Done' ? 'outline' : 'secondary'} className={sub.status === 'Done' ? '' : 'text-primary-foreground'}>
-                        {sub.status}
+                        {statusTranslations[sub.status]}
                       </Badge>
                     </div>
                 ))
