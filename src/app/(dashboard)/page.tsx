@@ -4,6 +4,7 @@ import DashboardClient from './_components/dashboard-client';
 import NoticeBoard from './_components/notice-board';
 import ProjectStats from './_components/project-stats';
 import { KeyStats } from './_components/key-stats';
+import { AiNotifications } from '@/components/layout/ai-notifications';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,6 +16,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <AiNotifications />
       <NoticeBoard tasks={tasks} initialVision={vision.text} />
       <KeyStats tasks={tasks} users={users} />
       <ProjectStats tasks={tasks} />

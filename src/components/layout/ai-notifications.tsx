@@ -9,7 +9,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useSettings } from '@/context/settings-context';
 
 export function AiNotifications() {
-  const [notification, setNotification] = useState<AiNotificationOutput | null>(null);
+  const [notification, setNotification] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { apiKey } = useSettings();
@@ -19,27 +19,24 @@ export function AiNotifications() {
     setError(null);
     setNotification(null);
     try {
-      const res = await fetch('/api/ai/notification');
+      // Wywołujemy nowy, dynamiczny endpoint proxy
+      const res = await fetch('/api/proxy/generate_summary');
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Nie udało się pobrać analizy AI.');
+        let errorData;
+        try {
+          errorData = await res.json();
+        } catch (e) {
+          throw new Error(`Server returned non-JSON error (status: ${res.status})`);
+        }
+        throw new Error(errorData.message || `An unknown server error occurred (status: ${res.status}).`);
       }
-      const newNotification: AiNotificationOutput = await res.json();
+      const newNotification = await res.json();
       setNotification(newNotification);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Wystąpił nieznany błąd.');
       setNotification(null);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const getBadgeText = (type: AiNotificationOutput['type']) => {
-    switch (type) {
-      case 'risk': return 'Analiza Ryzyka';
-      case 'positive': return 'Pozytywna Obserwacja';
-      case 'suggestion': return 'Sugestia Optymalizacji';
-      default: return type;
     }
   };
   
@@ -54,7 +51,7 @@ export function AiNotifications() {
             <p className="text-sm text-muted-foreground mb-4">
               Poproś AI o przeanalizowanie stanu projektu, zidentyfikowanie ryzyk i zasugerowanie nowych, innowacyjnych zadań.
             </p>
-            <Button onClick={handleFetchNotification} disabled={isLoading || !apiKey}>
+            <Button onClick={handleFetchNotification} disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
@@ -67,8 +64,7 @@ export function AiNotifications() {
                 </>
               )}
             </Button>
-            {!apiKey && <p className="text-xs text-muted-foreground mt-2">Wprowadź klucz API w <a href="/settings" className="underline">ustawieniach</a>, aby włączyć tę funkcję.</p>}
-
+            
             <AnimatePresence>
               {hasContent && (
                   <motion.div
@@ -79,24 +75,11 @@ export function AiNotifications() {
                     className="overflow-hidden"
                   >
                   {notification && (
-                    <div className="mt-4">
-                      <span 
-                        className={`inline-block mb-2 px-3 py-1 text-xs font-semibold rounded-full ${
-                            notification.type === 'risk' ? 'bg-red-500/20 text-red-300' 
-                            : notification.type === 'positive' ? 'bg-green-500/20 text-green-300' 
-                            : 'bg-blue-500/20 text-blue-300'}`}
-                      >
-                          {getBadgeText(notification.type)}
-                      </span>
-                      <p className="text-lg text-foreground/90">{notification.notification}</p>
-                      
-                      {notification.newTaskSuggestion && (
-                        <div className="mt-4 p-4 bg-secondary/50 border border-border rounded-lg">
-                            <p className="text-sm font-semibold text-primary">Nowy pomysł na zadanie:</p>
-                            <p className="text-md font-bold">{notification.newTaskSuggestion.name}</p>
-                            <p className="text-sm text-muted-foreground mt-1">{notification.newTaskSuggestion.description}</p>
-                        </div>
-                      )}
+                     <div className="mt-4 p-4 bg-secondary/50 border border-border rounded-lg">
+                        <p className="text-sm font-semibold text-primary">Odpowiedź z serwera Python:</p>
+                        <pre className="mt-2 w-full whitespace-pre-wrap rounded-md bg-background/50 p-2 font-mono text-xs">
+                          {JSON.stringify(notification, null, 2)}
+                        </pre>
                     </div>
                   )}
 
