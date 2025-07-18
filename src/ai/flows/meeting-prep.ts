@@ -32,7 +32,7 @@ export async function getMeetingPrep(input: MeetingPrepInput): Promise<MeetingPr
 
 const meetingPrepPrompt = ai.definePrompt({
   name: 'meetingPrepPrompt',
-  model: 'googleai/gemini-1.5-flash',
+  model: 'googleai/gemini-1.5-flash-latest',
   input: { schema: MeetingPrepInputSchema },
   output: { schema: MeetingPrepOutputSchema },
   prompt: `Jesteś asystentem AI, który pomaga menedżerowi projektu przygotować się do spotkania zespołu. Twoim zadaniem jest analiza danych i wygenerowanie strategicznych punktów do rozmowy. Odpowiedzi muszą być w języku polskim.

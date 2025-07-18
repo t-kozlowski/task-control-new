@@ -5,7 +5,6 @@ export const ai = genkit({
   plugins: [
     googleAI({
       // The API key is read from the GOOGLE_API_KEY environment variable.
-      apiVersion: 'v1beta',
     }),
   ],
   enableTracing: true,

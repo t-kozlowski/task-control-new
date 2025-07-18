@@ -30,7 +30,7 @@ export async function getProjectSummary(input: ProjectSummaryInput): Promise<Pro
 
 const projectSummaryPrompt = ai.definePrompt({
   name: 'projectSummaryPrompt',
-  model: 'googleai/gemini-1.5-flash',
+  model: 'googleai/gemini-1.5-flash-latest',
   input: { schema: ProjectSummaryInputSchema },
   output: { schema: ProjectSummaryOutputSchema },
   prompt: `Jesteś głównym analitykiem strategicznym AI w projekcie. Twoim zadaniem jest dostarczenie zwięzłego, ale wnikliwego podsumowania dla zarządu.
