@@ -5,12 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import type { Task } from '@/types';
 import React, { useMemo } from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts';
-import { format, differenceInDays, addDays, isBefore, startOfDay } from 'date-fns';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ReferenceLine } from 'recharts';
+import { format, differenceInDays, addDays, isBefore, startOfDay, parseISO } from 'date-fns';
 import { Icons } from '@/components/icons';
 
 interface LiveStatsProps {
   tasks: Task[];
+  projectDeadline?: string | null;
 }
 
 const KpiCard = ({ title, value, unit, isPositive, description }: { title: string; value: string | number; unit: string, isPositive?: boolean, description?: string }) => (
@@ -22,35 +23,35 @@ const KpiCard = ({ title, value, unit, isPositive, description }: { title: strin
     </div>
 );
 
-export default function LiveStats({ tasks }: LiveStatsProps) {
-  const { burndownData, kpis, hasData } = useMemo(() => {
-    // We only consider main tasks WITH a due date for the burndown chart
+export default function LiveStats({ tasks, projectDeadline }: LiveStatsProps) {
+  const { burndownData, kpis, hasData, deadlineLine } = useMemo(() => {
     const relevantTasks = tasks.filter(t => !t.parentId && t.dueDate);
     
     if (relevantTasks.length === 0) {
-      return { burndownData: [], kpis: { spi: 'N/A', prediction: 'Brak danych' }, hasData: false };
+      return { burndownData: [], kpis: { spi: 'N/A', prediction: 'Brak danych' }, hasData: false, deadlineLine: null };
     }
     
     const taskCount = relevantTasks.length;
-    const dates = relevantTasks.map(t => new Date(t.dueDate!));
-    const startDate = startOfDay(new Date());
-    const endDate = new Date(Math.max(...dates.map(d => d.getTime())));
+    const dueDates = relevantTasks.map(t => parseISO(t.dueDate!));
+    const completionDates = relevantTasks.map(t => t.date ? parseISO(t.date) : new Date());
+    
+    // Use the earliest task date as start date for a more realistic timeline
+    const allDates = [...dueDates, ...completionDates];
+    const minDate = new Date(Math.min(...allDates.map(d => d.getTime())));
+    const startDate = startOfDay(minDate);
+    const endDate = new Date(Math.max(...dueDates.map(d => d.getTime())));
 
     const totalDays = Math.max(1, differenceInDays(endDate, startDate));
     
     const idealData: { day: string; ideal: number; actual: number | null }[] = [];
     const tasksPerDay = taskCount / totalDays;
     
-    const initialTasksDone = relevantTasks.filter(t => 
-        t.status === 'Done' && t.date && !isBefore(startOfDay(new Date(t.date)), startDate)
-    ).length;
-
     for (let i = 0; i <= totalDays; i++) {
         const currentDate = addDays(startDate, i);
         const idealRemaining = taskCount - (tasksPerDay * i);
 
         const tasksDoneOnDate = relevantTasks.filter(t => 
-            t.status === 'Done' && t.date && isBefore(startOfDay(new Date(t.date)), addDays(currentDate, 1))
+            t.status === 'Done' && t.date && isBefore(startOfDay(parseISO(t.date)), addDays(currentDate, 1))
         ).length;
 
         idealData.push({
@@ -82,6 +83,13 @@ export default function LiveStats({ tasks }: LiveStatsProps) {
         }
     }
 
+    let deadlineReferenceLine = null;
+    if (projectDeadline) {
+      const deadlineDate = parseISO(projectDeadline);
+      if (isBefore(deadlineDate, endDate) && isBefore(startDate, deadlineDate)) {
+        deadlineReferenceLine = { x: format(deadlineDate, 'MMM dd'), stroke: 'hsl(var(--destructive))', label: 'Deadline' };
+      }
+    }
 
     return { 
         burndownData: idealData, 
@@ -89,9 +97,10 @@ export default function LiveStats({ tasks }: LiveStatsProps) {
             spi: isNaN(spi as number) ? 'N/A' : spi,
             prediction: tasksCompleted === taskCount ? 'Zakończono' : prediction,
          },
-        hasData: true
+        hasData: true,
+        deadlineLine: deadlineReferenceLine,
     };
-  }, [tasks]);
+  }, [tasks, projectDeadline]);
 
   const chartConfig = {
     ideal: { label: 'Idealna ścieżka', color: 'hsl(var(--muted-foreground)/0.5)' },
@@ -102,7 +111,7 @@ export default function LiveStats({ tasks }: LiveStatsProps) {
     <Card className="w-full">
       <CardHeader>
         <CardTitle>Prędkość vs. Cel</CardTitle>
-        <CardDescription>Porównanie postępu z idealną ścieżką na podstawie terminów zadań.</CardDescription>
+        <CardDescription>Realistyczne porównanie postępu z idealną ścieżką do celu na podstawie terminów zadań.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
           {hasData ? (
@@ -136,6 +145,7 @@ export default function LiveStats({ tasks }: LiveStatsProps) {
                     </defs>
                     <Area dataKey="ideal" type="monotone" stroke="var(--color-ideal)" strokeWidth={2} strokeDasharray="5 5" fillOpacity={0} dot={false} name="Idealnie" />
                     <Area dataKey="actual" type="monotone" stroke="var(--color-actual)" strokeWidth={2} fill="url(#fillActual)" fillOpacity={0.4} dot={false} name="Rzeczywiście" />
+                    {deadlineLine && <ReferenceLine {...deadlineLine} strokeDasharray="3 3" />}
                     </AreaChart>
                 </ChartContainer>
                 </div>

@@ -1,11 +1,22 @@
 
+'use client'
+
 import { getTasks, getUsers } from '@/lib/data-service';
 import ProjectStats from '../_components/project-stats';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, Users, ListChecks, CheckCircle, Package } from 'lucide-react';
+import { Briefcase, Users, ListChecks, CheckCircle, Package, Calendar as CalendarIcon, Save } from 'lucide-react';
 import ProtectedRoute from './_components/protected-route';
 import { Progress } from '@/components/ui/progress';
 import { Label } from '@/components/ui/label';
+import { Task, User } from '@/types';
+import { useEffect, useState } from 'react';
+import LiveStats from '../_components/live-stats';
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format, parseISO } from 'date-fns';
+import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 
 const KpiCard = ({ title, value, icon: Icon }: { title: string, value: string | number, icon: React.ElementType }) => (
@@ -21,11 +32,43 @@ const KpiCard = ({ title, value, icon: Icon }: { title: string, value: string | 
 );
 
 
-export const dynamic = 'force-dynamic';
+export default function ProjectManagerPage() {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [projectDeadline, setProjectDeadline] = useState<Date | undefined>();
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
-export default async function ProjectManagerPage() {
-  const tasks = await getTasks();
-  const users = await getUsers();
+  useEffect(() => {
+    async function fetchData() {
+        setIsLoading(true);
+        const tasksData = await getTasks();
+        const usersData = await getUsers();
+        const storedDeadline = localStorage.getItem('projectDeadline');
+        
+        setTasks(tasksData);
+        setUsers(usersData);
+        if (storedDeadline) {
+          setProjectDeadline(parseISO(storedDeadline));
+        }
+        setIsLoading(false);
+    }
+    fetchData();
+  }, []);
+
+  const handleSaveDeadline = () => {
+    if (projectDeadline) {
+        localStorage.setItem('projectDeadline', projectDeadline.toISOString());
+        toast({
+            title: 'Zapisano!',
+            description: 'Nowy termin końcowy projektu został zapisany.'
+        })
+    }
+  }
+
+  if (isLoading) {
+    return <ProtectedRoute><div>Ładowanie...</div></ProtectedRoute>;
+  }
 
   const mainTasks = tasks.filter(t => !t.parentId);
   const completedMainTasks = mainTasks.filter(t => t.status === 'Done').length;
@@ -33,6 +76,8 @@ export default async function ProjectManagerPage() {
   const remainingMainTasks = totalMainTasks - completedMainTasks;
   const overallProgress = totalMainTasks > 0 ? Math.round((completedMainTasks / totalMainTasks) * 100) : 0;
   const teamSize = users.length;
+  
+  const deadlineString = projectDeadline ? projectDeadline.toISOString() : null;
 
   return (
     <ProtectedRoute>
@@ -63,6 +108,44 @@ export default async function ProjectManagerPage() {
                     </div>
                 </CardContent>
              </Card>
+             
+            <Card>
+                <CardHeader>
+                    <CardTitle>Zarządzanie Projektem</CardTitle>
+                    <CardDescription>Ustaw globalne parametry dla całego projektu.</CardDescription>
+                </CardHeader>
+                <CardContent className="grid gap-6 md:grid-cols-2">
+                    <div className="space-y-2">
+                        <Label htmlFor="deadline">Globalny Termin Końcowy Projektu</Label>
+                        <div className="flex gap-2">
+                         <Popover>
+                            <PopoverTrigger asChild>
+                            <Button
+                                id="deadline"
+                                variant={"outline"}
+                                className={cn("w-full justify-start text-left font-normal", !projectDeadline && "text-muted-foreground")}
+                            >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {projectDeadline ? format(projectDeadline, "PPP") : <span>Wybierz datę</span>}
+                            </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                            <Calendar
+                                mode="single"
+                                selected={projectDeadline}
+                                onSelect={setProjectDeadline}
+                                initialFocus
+                            />
+                            </PopoverContent>
+                        </Popover>
+                        <Button onClick={handleSaveDeadline}><Save className="h-4 w-4 mr-2" /> Zapisz</Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground">Ten termin będzie widoczny jako linia na wykresie "Prędkość vs. Cel".</p>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <LiveStats tasks={tasks} projectDeadline={deadlineString} />
 
             <Card>
                 <CardHeader>

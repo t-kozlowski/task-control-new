@@ -25,7 +25,6 @@ import {
   LogOut,
   Search,
   PanelLeft,
-  UserCheck,
 } from 'lucide-react';
 
 export const Icons = {
@@ -49,13 +48,13 @@ export const Icons = {
   edit: Edit,
   checkCircle: CheckCircle,
   folderOpen: FolderOpen,
-  meetings: UserCheck,
+  meetings: Users,
   users: Users,
   spinner: LoaderCircle,
   logout: LogOut,
   search: Search,
   menu: PanelLeft,
-  myTasks: UserCheck,
+  myTasks: ListTodo,
   projectManager: Briefcase,
 };
 

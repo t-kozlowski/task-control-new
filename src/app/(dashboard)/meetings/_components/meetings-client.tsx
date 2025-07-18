@@ -1,7 +1,7 @@
 // src/app/(dashboard)/meetings/_components/meetings-client.tsx
 'use client';
-import { useState, useEffect, useMemo } from 'react';
-import type { Meeting, ActionItem, User } from '@/types';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import type { Meeting, ActionItem, User, Task } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Icons } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +14,90 @@ import { cn } from '@/lib/utils';
 import { format, isFuture, isPast } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { MeetingPrepOutput } from '@/ai/flows/meeting-prep';
+import { AlertTriangle, Lightbulb, ListChecks } from 'lucide-react';
+
+function AiPrepView({ meeting, users, tasks }: { meeting: Meeting; users: User[]; tasks: Task[] }) {
+    const [prepData, setPrepData] = useState<MeetingPrepOutput | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const getPrepData = useCallback(async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const response = await fetch('/api/ai/meeting-prep', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    meetingId: meeting.id,
+                    attendeeEmails: meeting.attendees,
+                }),
+            });
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Wystąpił błąd podczas generowania podpowiedzi.');
+            }
+            const data: MeetingPrepOutput = await response.json();
+            setPrepData(data);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Wystąpił nieznany błąd.');
+        } finally {
+            setIsLoading(false);
+        }
+    }, [meeting]);
+
+    useEffect(() => {
+        getPrepData();
+    }, [getPrepData]);
+
+    if (isLoading) {
+        return <div className="p-6 flex items-center justify-center gap-2 text-muted-foreground"><Icons.spinner className="animate-spin" /> Ładowanie sugestii AI...</div>;
+    }
+
+    if (error) {
+        return <div className="p-6 text-destructive">{error}</div>;
+    }
+    
+    if (!prepData) {
+        return <div className="p-6 text-muted-foreground">Brak danych do wyświetlenia.</div>;
+    }
+
+    const sentimentColors: Record<string, string> = {
+        positive: 'text-green-400',
+        neutral: 'text-yellow-400',
+        negative: 'text-red-400',
+    };
+
+    return (
+        <div className="p-4 space-y-6">
+            <div className="p-4 rounded-lg border bg-secondary/50">
+                 <h4 className="font-semibold mb-2">Sentyment Projektu: <span className={cn('capitalize', sentimentColors[prepData.overallSentiment])}>{prepData.overallSentiment}</span></h4>
+                 <p className="text-sm text-muted-foreground">{prepData.sentimentReasoning}</p>
+            </div>
+            
+            <div className="space-y-2">
+                <h4 className="font-semibold flex items-center gap-2"><ListChecks className="text-primary"/> Proponowana Agenda</h4>
+                <ul className="list-disc pl-6 space-y-1 text-sm">
+                    {prepData.discussionPoints.map((point, i) => <li key={i}>{point}</li>)}
+                </ul>
+            </div>
+            <div className="space-y-2">
+                <h4 className="font-semibold flex items-center gap-2"><AlertTriangle className="text-primary" /> Potencjalne Pytania i Ryzyka</h4>
+                <ul className="list-disc pl-6 space-y-1 text-sm">
+                    {prepData.questionsToAsk.map((q, i) => <li key={i}>{q}</li>)}
+                </ul>
+            </div>
+             <div className="space-y-2">
+                <h4 className="font-semibold flex items-center gap-2"><Lightbulb className="text-primary" /> Tematy do Pochwały</h4>
+                <ul className="list-disc pl-6 space-y-1 text-sm">
+                    {prepData.talkingPoints.map((p, i) => <li key={i}>{p}</li>)}
+                </ul>
+            </div>
+        </div>
+    );
+}
+
 
 function ActionItemsView({ items, users }: { items: ActionItem[], users: User[] }) {
     const getAssigneeName = (email: string) => users.find(u => u.email === email)?.name || email;
@@ -39,7 +123,7 @@ function ActionItemsView({ items, users }: { items: ActionItem[], users: User[] 
     );
 }
 
-export default function MeetingsClient({ initialMeetings }: { initialMeetings: Meeting[] }) {
+export default function MeetingsClient({ initialMeetings, initialTasks }: { initialMeetings: Meeting[], initialTasks: Task[] }) {
     const [meetings, setMeetings] = useState<Meeting[]>(initialMeetings);
     const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
     const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -48,24 +132,22 @@ export default function MeetingsClient({ initialMeetings }: { initialMeetings: M
     const { toast } = useToast();
     const { users } = useApp();
     
-    const sortedMeetings = useMemo(() => meetings.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()), [meetings]);
+    const sortedMeetings = useMemo(() => meetings.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()), [meetings]);
     
     const refreshMeetings = async () => {
         const res = await fetch('/api/meetings');
         const data = await res.json();
-        const sorted = data.sort((a: Meeting, b: Meeting) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        const sorted = data.sort((a: Meeting, b: Meeting) => new Date(b.date).getTime() - new Date(a.date).getTime());
         setMeetings(sorted);
         return sorted;
     };
 
     useEffect(() => {
-        const sorted = initialMeetings.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-        setMeetings(sorted);
-        if (!selectedMeeting && sorted.length > 0) {
-            const upcomingOrMostRecent = sorted.find(m => isFuture(new Date(m.date))) || sorted[sorted.length - 1];
+        if (!selectedMeeting && sortedMeetings.length > 0) {
+            const upcomingOrMostRecent = sortedMeetings.find(m => isFuture(new Date(m.date))) || sortedMeetings[0];
             setSelectedMeeting(upcomingOrMostRecent);
         }
-    }, [initialMeetings]);
+    }, [sortedMeetings, selectedMeeting]);
 
     
     const handleAddMeeting = () => {
@@ -88,21 +170,22 @@ export default function MeetingsClient({ initialMeetings }: { initialMeetings: M
             toast({ title: 'Sukces', description: 'Spotkanie usunięte.' });
             const updatedMeetings = await refreshMeetings();
             setSelectedMeeting(updatedMeetings[0] || null);
-        } catch (error) {
+        } catch (error) => {
             toast({ title: 'Błąd', description: error instanceof Error ? error.message : 'Wystąpił nieznany błąd.', variant: 'destructive' });
         }
     };
 
     const onMeetingSaved = async () => {
         const updatedMeetings = await refreshMeetings();
-        // This logic to find new or edited meeting might need adjustment
-        // as getValues() from react-hook-form is not available here.
-        // A simpler approach is to refetch and find the meeting by id.
-        const reselectedMeeting = updatedMeetings.find(m => m.id === editingMeeting?.id); // simplified logic
+        const newOrEditedId = editingMeeting?.id || `MEETING-${Date.now()}`;
+        const reselectedMeeting = updatedMeetings.find(m => m.id === editingMeeting?.id);
+        
         if (reselectedMeeting) {
             setSelectedMeeting(reselectedMeeting);
         } else if (updatedMeetings.length > 0) {
-            setSelectedMeeting(updatedMeetings[updatedMeetings.length -1]);
+            // Find the newly added meeting
+            const newMeeting = updatedMeetings.find(m => m.id !== meetings.find(old => old.id === m.id));
+            setSelectedMeeting(newMeeting || updatedMeetings[0]);
         }
         setIsSheetOpen(false);
     };
@@ -152,6 +235,7 @@ export default function MeetingsClient({ initialMeetings }: { initialMeetings: M
                                 <TabsList>
                                     <TabsTrigger value="summary">Podsumowanie</TabsTrigger>
                                     <TabsTrigger value="actions">Punkty Akcji</TabsTrigger>
+                                    <TabsTrigger value="prep">Przygotowanie AI</TabsTrigger>
                                     <TabsTrigger value="notes">Notatki</TabsTrigger>
                                 </TabsList>
                                 <div className="flex gap-2">
@@ -176,6 +260,9 @@ export default function MeetingsClient({ initialMeetings }: { initialMeetings: M
                                 </TabsContent>
                                 <TabsContent value="actions" className="m-0">
                                      <ActionItemsView items={selectedMeeting.actionItems} users={users} />
+                                </TabsContent>
+                                <TabsContent value="prep" className="m-0">
+                                     <AiPrepView meeting={selectedMeeting} users={users} tasks={initialTasks} />
                                 </TabsContent>
                                  <TabsContent value="notes" className="p-4 m-0">
                                       <h4 className="font-semibold mb-2">Surowe notatki</h4>
