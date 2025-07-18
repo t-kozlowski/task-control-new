@@ -26,6 +26,7 @@ const menuItems = [
   { href: '/project-manager', label: 'Project Manager', icon: Icons.projectManager, requiredEmail: 'tomek@example.com' },
   { href: '/directives', label: 'Dyrektywy AI', icon: Icons.directives },
   { href: '/users', label: 'Użytkownicy', icon: Icons.users, requiredEmail: 'tomek@example.com' },
+  { href: '/ai-test', label: 'Test AI', icon: Icons.aiTest },
 ];
 
 

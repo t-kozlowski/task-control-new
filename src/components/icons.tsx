@@ -28,6 +28,7 @@ import {
   Layers,
   ClipboardList,
   CalendarClock,
+  TestTube2,
 } from 'lucide-react';
 
 export const Icons = {
@@ -60,6 +61,7 @@ export const Icons = {
   myTasks: ListTodo,
   projectManager: Briefcase,
   deadline: CalendarClock,
+  aiTest: TestTube2,
 };
 
 export const PriorityIcons = {

@@ -45,7 +45,7 @@ export default function AiTestPage() {
         <CardHeader>
           <CardTitle>Test Głównego Przepływu Analitycznego</CardTitle>
           <CardDescription>
-            Kliknij przycisk poniżej, aby wywołać przepływ AI `getProjectSummary` i sprawdzić, czy otrzymujemy poprawną, ustrukturyzowaną odpowiedź od modelu Gemini.
+            Kliknij przycisk poniżej, aby wywołać przepływ AI `getProjectSummary` i sprawdzić, czy otrzymujemy poprawną, ustrukturyzowaną odpowiedź od modelu OpenAI.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
