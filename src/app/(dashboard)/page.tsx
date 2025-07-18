@@ -2,7 +2,6 @@
 import { getTasks, getUsers, getVision, getBurndownData } from '@/lib/data-service';
 import DashboardClient from './_components/dashboard-client';
 import NoticeBoard from './_components/notice-board';
-import LiveStats from './_components/live-stats';
 import ProjectStats from './_components/project-stats';
 import { KeyStats } from './_components/key-stats';
 
@@ -19,8 +18,7 @@ export default async function DashboardPage() {
       <NoticeBoard tasks={tasks} initialVision={vision.text} />
       <KeyStats tasks={tasks} users={users} />
       <ProjectStats tasks={tasks} />
-      <DashboardClient initialTasks={tasks} initialUsers={users} />
-      <LiveStats initialData={burndownData} />
+      <DashboardClient initialTasks={tasks} initialUsers={users} initialBurndownData={burndownData} />
     </div>
   );
 }

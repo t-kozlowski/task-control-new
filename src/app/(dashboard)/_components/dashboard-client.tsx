@@ -2,11 +2,20 @@
 'use client';
 
 import React from 'react';
-import type { Task, User } from '@/types';
+import type { Task, User, BurndownDataPoint } from '@/types';
 import TaskList from './task-list';
 import TaskSpotlight from './task-spotlight';
+import LiveStats from './live-stats';
 
-export default function DashboardClient({ initialTasks, initialUsers }: { initialTasks: Task[], initialUsers: User[] }) {
+export default function DashboardClient({ 
+  initialTasks, 
+  initialUsers,
+  initialBurndownData
+}: { 
+  initialTasks: Task[], 
+  initialUsers: User[],
+  initialBurndownData: BurndownDataPoint[]
+}) {
 
   return (
     <>
@@ -16,6 +25,7 @@ export default function DashboardClient({ initialTasks, initialUsers }: { initia
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
             <TaskSpotlight tasks={initialTasks} />
+            <LiveStats initialData={initialBurndownData} />
         </div>
       </div>
     </>
