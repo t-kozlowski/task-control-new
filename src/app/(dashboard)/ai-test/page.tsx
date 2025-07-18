@@ -8,7 +8,7 @@ import { Icons } from '@/components/icons';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { ProjectSummaryOutput } from '@/ai/flows/project-summary';
-import { TestTube2, AlertTriangle, Lightbulb, FileText, CheckCircle } from 'lucide-react';
+import { AlertTriangle, Lightbulb, CheckCircle, FlaskConical, File } from 'lucide-react';
 
 export default function AiTestPage() {
   const [result, setResult] = useState<ProjectSummaryOutput | null>(null);
@@ -38,7 +38,7 @@ export default function AiTestPage() {
   return (
     <div className="flex flex-col gap-6">
        <div className="flex items-center gap-3">
-          <TestTube2 className="h-8 w-8 text-primary" />
+          <FlaskConical className="h-8 w-8 text-primary" />
           <h1 className="text-3xl font-bold tracking-tight">Test Funkcji AI</h1>
         </div>
       <Card>
@@ -88,7 +88,7 @@ export default function AiTestPage() {
                     <AlertTitle className="text-green-400">Test zakończony sukcesem!</AlertTitle>
                     <AlertDescription className="space-y-4 mt-2">
                         <div className="space-y-2">
-                            <h4 className="font-semibold flex items-center gap-2"><FileText className="h-4 w-4" />Podsumowanie</h4>
+                            <h4 className="font-semibold flex items-center gap-2"><File className="h-4 w-4" />Podsumowanie</h4>
                             <p className="text-sm pl-6">{result.summary}</p>
                         </div>
                         <div className="space-y-2">
