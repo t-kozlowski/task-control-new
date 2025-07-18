@@ -1,3 +1,4 @@
+
 // src/app/(dashboard)/api-test/page.tsx
 'use client';
 
@@ -20,7 +21,8 @@ export default function ApiTestPage() {
     setResult(null);
 
     try {
-      const response = await fetch('/api/test');
+      // Wywołujemy nowy endpoint, który będzie proxy do serwera Pythona
+      const response = await fetch('/api/python-proxy');
       
       if (!response.ok) {
         let errorData;
@@ -46,13 +48,13 @@ export default function ApiTestPage() {
     <div className="flex flex-col gap-6">
        <div className="flex items-center gap-3">
           <FlaskConical className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl font-bold tracking-tight">Test Komunikacji API</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Test Komunikacji z Backendem Pythona</h1>
         </div>
       <Card>
         <CardHeader>
-          <CardTitle>Test Podstawowego Endpointu API</CardTitle>
+          <CardTitle>Test Połączenia z Pythonem przez Proxy</CardTitle>
           <CardDescription>
-            Kliknij przycisk poniżej, aby wywołać testowy endpoint `/api/test`. Ten test sprawdza, czy frontend może poprawnie komunikować się z backendem i otrzymywać odpowiedź JSON.
+            Kliknij przycisk, aby wysłać zapytanie do endpointu `/api/python-proxy`, który następnie przekaże je do Twojego backendu w Pythonie. Adres backendu jest skonfigurowany w pliku `.env`.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -63,7 +65,7 @@ export default function ApiTestPage() {
                 Testowanie...
               </>
             ) : (
-              'Uruchom test API'
+              'Uruchom test z backendem Pythona'
             )}
           </Button>
 
@@ -95,7 +97,7 @@ export default function ApiTestPage() {
                     <CheckCircle className="h-4 w-4 text-green-400" />
                     <AlertTitle className="text-green-400">Test zakończony sukcesem!</AlertTitle>
                     <AlertDescription className="space-y-4 mt-2">
-                        <h4 className="font-semibold">Otrzymana odpowiedź z API:</h4>
+                        <h4 className="font-semibold">Odpowiedź z backendu Pythona:</h4>
                         <pre className="mt-2 w-full whitespace-pre-wrap rounded-md bg-secondary/50 p-4 font-mono text-xs">
                            {JSON.stringify(result, null, 2)}
                         </pre>

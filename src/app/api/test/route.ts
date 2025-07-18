@@ -1,3 +1,4 @@
+
 // src/app/api/test/route.ts
 import { NextResponse } from 'next/server';
 
@@ -8,7 +9,7 @@ export async function GET(request: Request) {
     // This is a simple test endpoint.
     // It returns a static JSON response to verify that the API routing is working.
     const data = {
-      message: "API działa poprawnie!",
+      message: "Wbudowane API w Next.js działa!",
       timestamp: new Date().toISOString(),
       status: "OK",
     };
