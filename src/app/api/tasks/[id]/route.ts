@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getTasks, saveTasks } from '@/lib/data-service';
 import { Task } from '@/types';
-import { format } from 'date-fns';
+import { calculateWeightedProgress } from '@/lib/task-utils';
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
@@ -14,13 +14,30 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ message: 'Task not found' }, { status: 404 });
     }
     
-    // If the task is being marked as 'Done', set the completion date.
-    if (updatedTask.status === 'Done' && tasks[taskIndex].status !== 'Done') {
-      updatedTask.date = new Date().toISOString();
+    tasks[taskIndex] = updatedTask;
+
+    // After updating the task, check if its parent (or itself if it's a main task) is now completed.
+    const parentId = updatedTask.parentId || updatedTask.id;
+    const parentTaskIndex = tasks.findIndex(t => t.id === parentId);
+
+    if (parentTaskIndex !== -1) {
+      const parentTask = tasks[parentTaskIndex];
+      // Check if task is not already marked as 'Done' to avoid re-setting the date
+      if (parentTask.status !== 'Done') {
+        const progress = calculateWeightedProgress(parentTask, tasks);
+        if (progress === 100) {
+          tasks[parentTaskIndex].status = 'Done';
+          tasks[parentTaskIndex].date = new Date().toISOString();
+        }
+      }
+    }
+    
+    // Legacy check for tasks without subtasks
+    if (!updatedTask.parentId && updatedTask.status === 'Done' && tasks[taskIndex].status !== 'Done' && calculateWeightedProgress(updatedTask, tasks) === 100) {
+       tasks[taskIndex].date = new Date().toISOString();
     }
 
 
-    tasks[taskIndex] = updatedTask;
     await saveTasks(tasks);
     return NextResponse.json(updatedTask);
   } catch (error) {
