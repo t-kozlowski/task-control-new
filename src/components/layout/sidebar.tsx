@@ -27,7 +27,7 @@ import { Task } from '@/types';
 
 const menuItems = [
   { href: '/', label: 'Pulpit', icon: Icons.dashboard },
-  { href: '/my-tasks', label: 'Moje Zadania', icon: Icons.userCheck },
+  { href: '/my-tasks', label: 'Moje Zadania', icon: Icons.myTasks },
   { href: '/backlog', label: 'Backlog', icon: Icons.backlog },
   { href: '/meetings', label: 'Spotkania', icon: Icons.meetings },
   { href: '/project-manager', label: 'Project Manager', icon: Icons.projectManager, requiredEmail: 'tomek@example.com' },

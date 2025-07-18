@@ -6,7 +6,6 @@ import type { Task, User } from '@/types';
 import TaskList from './task-list';
 import TaskSpotlight from './task-spotlight';
 import { KeyStats } from './key-stats';
-import LiveStats from './live-stats';
 import { AiNotifications } from '@/components/layout/ai-notifications';
 
 
@@ -16,7 +15,6 @@ export default function DashboardClient({ initialTasks, initialUsers }: { initia
     <div className="flex flex-col gap-6">
       <AiNotifications />
       <KeyStats tasks={initialTasks} users={initialUsers} />
-      <LiveStats tasks={initialTasks} />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <div className="lg:col-span-2 flex flex-col gap-6">
             <TaskList tasks={initialTasks} />

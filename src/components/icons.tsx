@@ -49,13 +49,13 @@ export const Icons = {
   edit: Edit,
   checkCircle: CheckCircle,
   folderOpen: FolderOpen,
-  meetings: Briefcase,
+  meetings: UserCheck,
   users: Users,
   spinner: LoaderCircle,
   logout: LogOut,
   search: Search,
   menu: PanelLeft,
-  userCheck: UserCheck,
+  myTasks: UserCheck,
   projectManager: Briefcase,
 };
 

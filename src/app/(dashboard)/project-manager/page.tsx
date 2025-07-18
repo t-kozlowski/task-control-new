@@ -1,9 +1,12 @@
+
 import { getTasks, getUsers } from '@/lib/data-service';
 import ProjectStats from '../_components/project-stats';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Briefcase, Users, ListChecks, CheckCircle, Package } from 'lucide-react';
 import ProtectedRoute from './_components/protected-route';
 import { Progress } from '@/components/ui/progress';
+import LiveStats from '../_components/live-stats';
+import { Label } from '@/components/ui/label';
 
 
 const KpiCard = ({ title, value, icon: Icon }: { title: string, value: string | number, icon: React.ElementType }) => (
@@ -61,6 +64,8 @@ export default async function ProjectManagerPage() {
                     </div>
                 </CardContent>
              </Card>
+
+            <LiveStats tasks={tasks} />
 
             <Card>
                 <CardHeader>
