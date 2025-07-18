@@ -170,7 +170,7 @@ export default function MeetingsClient({ initialMeetings, initialTasks }: { init
             toast({ title: 'Sukces', description: 'Spotkanie usunięte.' });
             const updatedMeetings = await refreshMeetings();
             setSelectedMeeting(updatedMeetings[0] || null);
-        } catch (error) => {
+        } catch (error) {
             toast({ title: 'Błąd', description: error instanceof Error ? error.message : 'Wystąpił nieznany błąd.', variant: 'destructive' });
         }
     };
