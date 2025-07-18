@@ -7,7 +7,7 @@ import { Button } from '../ui/button';
 import { AnimatePresence, motion } from 'framer-motion';
 
 export function AiNotifications() {
-  const [notification, setNotification] = useState<any | null>(null);
+  const [notification, setNotification] = useState<{ message: string } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,9 +16,8 @@ export function AiNotifications() {
     setError(null);
     setNotification(null);
     try {
-      // Bezpośrednie wywołanie serwera Flask
-      // Upewnij się, że Twój serwer Flask ma włączony CORS!
-      const res = await fetch('http://127.0.0.1:5000/generate_summary');
+      const res = await fetch(`http://10.73.0.148:5000/generate_summary`);
+
       if (!res.ok) {
         const errorText = await res.text().catch(() => 'Serwer odpowiedział błędem bez szczegółów.');
         throw new Error(`Błąd serwera Flask (${res.status}): ${errorText}`);
@@ -76,9 +75,7 @@ export function AiNotifications() {
                   {notification && (
                      <div className="mt-4 p-4 bg-secondary/50 border border-border rounded-lg">
                         <p className="text-sm font-semibold text-primary">Odpowiedź z serwera Python:</p>
-                        <pre className="mt-2 w-full whitespace-pre-wrap rounded-md bg-background/50 p-2 font-mono text-xs">
-                          {JSON.stringify(notification, null, 2)}
-                        </pre>
+                        <p className="mt-2 text-sm text-foreground/90">{notification.message}</p>
                     </div>
                   )}
 

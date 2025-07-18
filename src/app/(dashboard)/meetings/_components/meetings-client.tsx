@@ -14,8 +14,6 @@ import { cn } from '@/lib/utils';
 import { format, isFuture, isPast } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MeetingPrepOutput } from '@/ai/flows/meeting-prep';
-import { AlertTriangle, Lightbulb, ListChecks } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,50 +25,62 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { useSettings } from '@/context/settings-context';
 
 
 function AiPrepView({ meeting, users, tasks }: { meeting: Meeting; users: User[]; tasks: Task[] }) {
-    const [prepData, setPrepData] = useState<MeetingPrepOutput | null>(null);
+    const [prepData, setPrepData] = useState<{message: string} | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const { apiKey } = useSettings();
 
     const getPrepData = useCallback(async () => {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await fetch('/api/ai/meeting-prep', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    meetingId: meeting.id,
-                    attendeeEmails: meeting.attendees,
-                }),
+            const response = await fetch('http://10.73.0.148:5000/ai_help', {
+                method: 'GET',
             });
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.message || 'Wystąpił błąd podczas generowania podpowiedzi.');
             }
-            const data: MeetingPrepOutput = await response.json();
+            const data = await response.json();
             setPrepData(data);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Wystąpił nieznany błąd.');
         } finally {
             setIsLoading(false);
         }
-    }, [meeting, apiKey]);
+    }, [meeting]);
 
     useEffect(() => {
-        if (apiKey) {
-            getPrepData();
-        } else {
-            setIsLoading(false);
-            setError("Wprowadź klucz API w ustawieniach, aby wygenerować podpowiedzi AI.");
-        }
-    }, [getPrepData, apiKey]);
+        getPrepData();
+    }, [getPrepData]);
+
+    const ParsedContent = ({ content }: { content: string }) => {
+        const lines = content.split('\\n');
+        return (
+            <div className="space-y-2">
+                {lines.map((line, index) => {
+                    if (line.startsWith('####')) {
+                        return <h5 key={index} className="text-md font-semibold mt-4 mb-2">{line.replace('####', '').trim()}</h5>;
+                    }
+                    
+                    const parts = line.split(/(\*\*.*?\*\*)/g);
+
+                    return (
+                        <p key={index} className="text-sm text-muted-foreground">
+                            {parts.map((part, i) => {
+                                if (part.startsWith('**') && part.endsWith('**')) {
+                                    return <strong key={i} className="font-bold text-foreground">{part.slice(2, -2)}</strong>;
+                                }
+                                return part;
+                            })}
+                        </p>
+                    );
+                })}
+            </div>
+        );
+    };
 
     if (isLoading) {
         return <div className="p-6 flex items-center justify-center gap-2 text-muted-foreground"><Icons.spinner className="animate-spin" /> Ładowanie sugestii AI...</div>;
@@ -80,40 +90,15 @@ function AiPrepView({ meeting, users, tasks }: { meeting: Meeting; users: User[]
         return <div className="p-6 text-destructive">{error}</div>;
     }
     
-    if (!prepData) {
+    if (!prepData || !prepData.message) {
         return <div className="p-6 text-muted-foreground">Brak danych do wyświetlenia.</div>;
     }
-
-    const sentimentColors: Record<string, string> = {
-        positive: 'text-green-400',
-        neutral: 'text-yellow-400',
-        negative: 'text-red-400',
-    };
 
     return (
         <div className="p-4 space-y-6">
             <div className="p-4 rounded-lg border bg-secondary/50">
-                 <h4 className="font-semibold mb-2">Sentyment Projektu: <span className={cn('capitalize', sentimentColors[prepData.overallSentiment])}>{prepData.overallSentiment}</span></h4>
-                 <p className="text-sm text-muted-foreground">{prepData.sentimentReasoning}</p>
-            </div>
-            
-            <div className="space-y-2">
-                <h4 className="font-semibold flex items-center gap-2"><ListChecks className="text-primary"/> Proponowana Agenda</h4>
-                <ul className="list-disc pl-6 space-y-1 text-sm">
-                    {prepData.discussionPoints.map((point, i) => <li key={i}>{point}</li>)}
-                </ul>
-            </div>
-            <div className="space-y-2">
-                <h4 className="font-semibold flex items-center gap-2"><AlertTriangle className="text-primary" /> Potencjalne Pytania i Ryzyka</h4>
-                <ul className="list-disc pl-6 space-y-1 text-sm">
-                    {prepData.questionsToAsk.map((q, i) => <li key={i}>{q}</li>)}
-                </ul>
-            </div>
-             <div className="space-y-2">
-                <h4 className="font-semibold flex items-center gap-2"><Lightbulb className="text-primary" /> Tematy do Pochwały</h4>
-                <ul className="list-disc pl-6 space-y-1 text-sm">
-                    {prepData.talkingPoints.map((p, i) => <li key={i}>{p}</li>)}
-                </ul>
+                 <h4 className="font-semibold mb-2 text-primary">Podpowiedzi AI</h4>
+                 <ParsedContent content={prepData.message} />
             </div>
         </div>
     );

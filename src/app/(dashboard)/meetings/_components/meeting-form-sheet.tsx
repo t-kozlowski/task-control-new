@@ -105,7 +105,7 @@ export function MeetingFormSheet({ open, onOpenChange, meeting, onMeetingSaved, 
     }
     setIsRedacting(true);
     try {
-      const response = await fetch('/api/ai/redact-notes', {
+      const response = await fetch(`http://10.73.0.148:5000/redact_notes`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -232,7 +232,7 @@ export function MeetingFormSheet({ open, onOpenChange, meeting, onMeetingSaved, 
             <div className="space-y-2">
               <Label htmlFor="rawNotes">Szybkie Notatki</Label>
               <Textarea id="rawNotes" {...register('rawNotes')} rows={5} placeholder="Wpisz luźne notatki, punkty, pomysły... AI je uporządkuje." />
-              <Button type="button" variant="outline" size="sm" onClick={handleRedact} disabled={isRedacting || !apiKey}>
+              <Button type="button" variant="outline" size="sm" onClick={handleRedact} disabled={isRedacting}>
                 {isRedacting ? <Icons.spinner className="mr-2 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                 Redaguj z AI
               </Button>
