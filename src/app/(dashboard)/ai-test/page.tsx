@@ -9,11 +9,13 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { ProjectSummaryOutput } from '@/ai/flows/project-summary';
 import { AlertTriangle, Lightbulb, CheckCircle, FlaskConical, File } from 'lucide-react';
+import { useSettings } from '@/context/settings-context';
 
 export default function AiTestPage() {
   const [result, setResult] = useState<ProjectSummaryOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { apiKey } = useSettings();
 
   const handleTest = async () => {
     setIsLoading(true);
@@ -21,7 +23,11 @@ export default function AiTestPage() {
     setResult(null);
 
     try {
-      const response = await fetch('/api/ai/summary');
+      const response = await fetch('/api/ai/summary', {
+         headers: {
+          'x-google-api-key': apiKey || '',
+        },
+      });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Wystąpił nieoczekiwany błąd serwera.');
@@ -45,11 +51,11 @@ export default function AiTestPage() {
         <CardHeader>
           <CardTitle>Test Głównego Przepływu Analitycznego</CardTitle>
           <CardDescription>
-            Kliknij przycisk poniżej, aby wywołać przepływ AI `getProjectSummary` i sprawdzić, czy otrzymujemy poprawną, ustrukturyzowaną odpowiedź od modelu OpenAI.
+            Kliknij przycisk poniżej, aby wywołać przepływ AI `getProjectSummary` i sprawdzić, czy otrzymujemy poprawną, ustrukturyzowaną odpowiedź od modelu Gemini.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Button onClick={handleTest} disabled={isLoading}>
+          <Button onClick={handleTest} disabled={isLoading || !apiKey}>
             {isLoading ? (
               <>
                 <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
@@ -59,6 +65,7 @@ export default function AiTestPage() {
               'Uruchom test AI'
             )}
           </Button>
+           {!apiKey && <p className="text-xs text-muted-foreground mt-2">Wprowadź klucz API w <a href="/settings" className="underline">ustawieniach</a>, aby włączyć test.</p>}
 
           <Separator />
 

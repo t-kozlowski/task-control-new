@@ -27,12 +27,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { useSettings } from '@/context/settings-context';
 
 
 function AiPrepView({ meeting, users, tasks }: { meeting: Meeting; users: User[]; tasks: Task[] }) {
     const [prepData, setPrepData] = useState<MeetingPrepOutput | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const { apiKey } = useSettings();
 
     const getPrepData = useCallback(async () => {
         setIsLoading(true);
@@ -40,7 +42,10 @@ function AiPrepView({ meeting, users, tasks }: { meeting: Meeting; users: User[]
         try {
             const response = await fetch('/api/ai/meeting-prep', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'x-google-api-key': apiKey || '',
+                },
                 body: JSON.stringify({
                     meetingId: meeting.id,
                     attendeeEmails: meeting.attendees,
@@ -57,11 +62,16 @@ function AiPrepView({ meeting, users, tasks }: { meeting: Meeting; users: User[]
         } finally {
             setIsLoading(false);
         }
-    }, [meeting]);
+    }, [meeting, apiKey]);
 
     useEffect(() => {
-        getPrepData();
-    }, [getPrepData]);
+        if (apiKey) {
+            getPrepData();
+        } else {
+            setIsLoading(false);
+            setError("Wprowadź klucz API w ustawieniach, aby wygenerować podpowiedzi AI.");
+        }
+    }, [getPrepData, apiKey]);
 
     if (isLoading) {
         return <div className="p-6 flex items-center justify-center gap-2 text-muted-foreground"><Icons.spinner className="animate-spin" /> Ładowanie sugestii AI...</div>;

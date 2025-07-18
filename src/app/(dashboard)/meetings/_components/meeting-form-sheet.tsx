@@ -28,6 +28,7 @@ import { Icons } from '@/components/icons';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useSettings } from '@/context/settings-context';
 
 const actionItemSchema = z.object({
   id: z.string(),
@@ -59,6 +60,7 @@ interface MeetingFormSheetProps {
 export function MeetingFormSheet({ open, onOpenChange, meeting, onMeetingSaved, users }: MeetingFormSheetProps) {
   const { toast } = useToast();
   const [isRedacting, setIsRedacting] = useState(false);
+  const { apiKey } = useSettings();
   const { register, handleSubmit, control, reset, getValues, setValue, watch, formState: { errors, isSubmitting } } = useForm<MeetingFormData>({
     resolver: zodResolver(meetingSchema),
     defaultValues: {
@@ -105,7 +107,10 @@ export function MeetingFormSheet({ open, onOpenChange, meeting, onMeetingSaved, 
     try {
       const response = await fetch('/api/ai/redact-notes', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-google-api-key': apiKey || '',
+        },
         body: JSON.stringify({ notes: rawNotes })
       });
       if (!response.ok) throw new Error('Nie udało się zredagować notatek.');
@@ -228,7 +233,7 @@ export function MeetingFormSheet({ open, onOpenChange, meeting, onMeetingSaved, 
             <div className="space-y-2">
               <Label htmlFor="rawNotes">Szybkie Notatki</Label>
               <Textarea id="rawNotes" {...register('rawNotes')} rows={5} placeholder="Wpisz luźne notatki, punkty, pomysły... AI je uporządkuje." />
-              <Button type="button" variant="outline" size="sm" onClick={handleRedact} disabled={isRedacting}>
+              <Button type="button" variant="outline" size="sm" onClick={handleRedact} disabled={isRedacting || !apiKey}>
                 {isRedacting ? <Icons.spinner className="mr-2 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                 Redaguj z AI
               </Button>

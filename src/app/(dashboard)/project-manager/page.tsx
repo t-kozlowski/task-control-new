@@ -25,6 +25,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Icons } from '@/components/icons';
 import AdvancedMetrics from './_components/advanced-metrics';
+import { useSettings } from '@/context/settings-context';
 
 export default function ProjectManagerPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -41,6 +42,7 @@ export default function ProjectManagerPage() {
   });
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [deadline, setDeadline] = useState('');
+  const { apiKey } = useSettings();
 
   useEffect(() => {
     const storedDeadline = localStorage.getItem('projectDeadline');
@@ -148,6 +150,9 @@ export default function ProjectManagerPage() {
     try {
         const response = await fetch('/api/ai/suggest-burndown', {
             method: 'POST',
+            headers: {
+              'x-google-api-key': apiKey || '',
+            }
         });
         if (!response.ok) throw new Error('Nie udało się pobrać sugestii AI.');
         const data = await response.json();
@@ -278,7 +283,7 @@ export default function ProjectManagerPage() {
                                 <Label htmlFor="new-actual" className="text-right">Rzeczywiście</Label>
                                 <Input id="new-actual" type="number" value={newPoint.actual} onChange={(e) => setNewPoint({...newPoint, actual: parseInt(e.target.value) || 0})} className="col-span-3" />
                               </div>
-                               <Button variant="outline" onClick={handleSuggestValues} disabled={isSuggesting}>
+                               <Button variant="outline" onClick={handleSuggestValues} disabled={isSuggesting || !apiKey}>
                                   {isSuggesting ? <Icons.spinner className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                                   Zasugeruj z AI
                                 </Button>

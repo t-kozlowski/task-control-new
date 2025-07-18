@@ -6,18 +6,24 @@ import { Icons, BotMessageSquare } from '../icons';
 import type { AiNotificationOutput } from '@/ai/flows/ai-notifications';
 import { Button } from '../ui/button';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useSettings } from '@/context/settings-context';
 
 export function AiNotifications() {
   const [notification, setNotification] = useState<AiNotificationOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { apiKey } = useSettings();
 
   const handleFetchNotification = async () => {
     setIsLoading(true);
     setError(null);
     setNotification(null);
     try {
-      const res = await fetch('/api/ai/notification');
+      const res = await fetch('/api/ai/notification', {
+        headers: {
+          'x-google-api-key': apiKey || '',
+        },
+      });
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || 'Nie udało się pobrać analizy AI.');
@@ -52,7 +58,7 @@ export function AiNotifications() {
             <p className="text-sm text-muted-foreground mb-4">
               Poproś AI o przeanalizowanie stanu projektu, zidentyfikowanie ryzyk i zasugerowanie nowych, innowacyjnych zadań.
             </p>
-            <Button onClick={handleFetchNotification} disabled={isLoading}>
+            <Button onClick={handleFetchNotification} disabled={isLoading || !apiKey}>
               {isLoading ? (
                 <>
                   <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
@@ -65,6 +71,7 @@ export function AiNotifications() {
                 </>
               )}
             </Button>
+            {!apiKey && <p className="text-xs text-muted-foreground mt-2">Wprowadź klucz API w <a href="/settings" className="underline">ustawieniach</a>, aby włączyć tę funkcję.</p>}
 
             <AnimatePresence>
               {hasContent && (

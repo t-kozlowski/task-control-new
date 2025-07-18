@@ -30,6 +30,7 @@ import {
   CalendarClock,
   FlaskConical,
   File,
+  Settings,
 } from 'lucide-react';
 
 export const Icons = {
@@ -64,6 +65,7 @@ export const Icons = {
   deadline: CalendarClock,
   aiTest: FlaskConical,
   file: File,
+  settings: Settings,
 };
 
 export const PriorityIcons = {

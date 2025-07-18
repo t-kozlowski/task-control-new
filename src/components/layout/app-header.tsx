@@ -27,6 +27,7 @@ const menuItems = [
   { href: '/directives', label: 'Dyrektywy AI', icon: Icons.directives },
   { href: '/users', label: 'Użytkownicy', icon: Icons.users, requiredEmail: 'tomek@example.com' },
   { href: '/ai-test', label: 'Test AI', icon: Icons.aiTest },
+  { href: '/settings', label: 'Konfiguracja', icon: Icons.settings },
 ];
 
 

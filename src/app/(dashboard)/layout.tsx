@@ -1,6 +1,8 @@
+
 import { AppSidebar } from '@/components/layout/sidebar';
 import { AppHeader } from '@/components/layout/app-header';
 import { Toaster } from '@/components/ui/toaster';
+import { SettingsProvider } from '@/context/settings-context';
 
 export default function DashboardLayout({
   children,
@@ -9,6 +11,7 @@ export default function DashboardLayout({
 }) {
   
   return (
+    <SettingsProvider>
       <div className="flex min-h-screen w-full flex-col bg-muted/40">
         <AppSidebar />
         <main className="flex flex-col flex-1 sm:pl-14">
@@ -19,5 +22,6 @@ export default function DashboardLayout({
         </main>
         <Toaster />
       </div>
+    </SettingsProvider>
   );
 }

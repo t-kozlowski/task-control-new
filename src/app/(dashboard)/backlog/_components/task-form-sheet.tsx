@@ -31,6 +31,7 @@ import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { Icons } from '@/components/icons';
 import { priorityTranslations, statusTranslations } from '@/lib/task-utils';
+import { useSettings } from '@/context/settings-context';
 
 const taskSchema = z.object({
   id: z.string().optional(),
@@ -58,6 +59,7 @@ interface TaskFormSheetProps {
 
 export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved, users, tasks }: TaskFormSheetProps) {
   const { loggedInUser } = useApp();
+  const { apiKey } = useSettings();
   const { toast } = useToast();
   const [isSuggesting, setIsSuggesting] = useState(false);
   const { register, handleSubmit, control, reset, setValue, getValues, formState: { errors, isSubmitting } } = useForm<TaskFormData>({
@@ -101,7 +103,10 @@ export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved, users, ta
     try {
       const response = await fetch('/api/ai/suggest-description', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-google-api-key': apiKey || '' 
+        },
         body: JSON.stringify({ taskName }),
       });
       if (!response.ok) throw new Error('Nie udało się wygenerować opisu.');
@@ -178,7 +183,7 @@ export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved, users, ta
              <div>
               <div className="flex justify-between items-center mb-1">
                 <Label htmlFor="name">Nazwa Zadania</Label>
-                <Button type="button" variant="outline" size="sm" onClick={handleSuggestDescription} disabled={isSuggesting}>
+                <Button type="button" variant="outline" size="sm" onClick={handleSuggestDescription} disabled={isSuggesting || !apiKey}>
                    {isSuggesting ? <Icons.spinner className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                   Zasugeruj
                 </Button>
