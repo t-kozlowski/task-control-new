@@ -3,57 +3,68 @@
   {
     "id": "1",
     "name": "Alicja",
-    "email": "alice@example.com"
+    "email": "alice@example.com",
+    "password": "password123"
   },
   {
     "id": "2",
     "name": "Bartek",
-    "email": "bob@example.com"
+    "email": "bob@example.com",
+    "password": "password123"
   },
   {
     "id": "3",
     "name": "Cezary",
-    "email": "charlie@example.com"
+    "email": "charlie@example.com",
+    "password": "password123"
   },
   {
     "id": "4",
     "name": "Dawid",
-    "email": "david@example.com"
+    "email": "david@example.com",
+    "password": "password123"
   },
   {
     "id": "5",
     "name": "Ewa",
-    "email": "eve@example.com"
+    "email": "eve@example.com",
+    "password": "password123"
   },
   {
     "id": "6",
     "name": "Andrzej",
-    "email": "andrzej@example.com"
+    "email": "andrzej@example.com",
+    "password": "password123"
   },
   {
     "id": "7",
     "name": "Tomek",
-    "email": "tomek@example.com"
+    "email": "tomek@example.com",
+    "password": "password123"
   },
   {
     "id": "8",
     "name": "Robert",
-    "email": "robert@example.com"
+    "email": "robert@example.com",
+    "password": "password123"
   },
   {
     "id": "9",
     "name": "Mikołaj",
-    "email": "mikolaj@example.com"
+    "email": "mikolaj@example.com",
+    "password": "password123"
   },
   {
     "id": "10",
     "name": "Łukasz",
-    "email": "lukasz@example.com"
+    "email": "lukasz@example.com",
+    "password": "password123"
   },
   {
     "id": "11",
     "name": "github copilot",
-    "email": "copilot@example.com"
+    "email": "copilot@example.com",
+    "password": "password123"
   }
 ]
 

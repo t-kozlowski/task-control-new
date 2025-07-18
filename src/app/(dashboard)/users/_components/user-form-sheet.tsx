@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -23,6 +24,7 @@ const userSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(1, 'Nazwa użytkownika jest wymagana.'),
   email: z.string().email('Nieprawidłowy format adresu email.'),
+  password: z.string().min(1, 'Hasło jest wymagane.'),
 });
 
 type UserFormData = z.infer<typeof userSchema>;
@@ -49,6 +51,7 @@ export function UserFormSheet({ open, onOpenChange, user, onUserSaved }: UserFor
                     id: `${Date.now()}`,
                     name: '',
                     email: '',
+                    password: '',
                 });
             }
         }
@@ -102,6 +105,11 @@ export function UserFormSheet({ open, onOpenChange, user, onUserSaved }: UserFor
                             <Label htmlFor="email">Adres Email</Label>
                             <Input id="email" type="email" {...register('email')} />
                             {errors.email && <p className="text-destructive text-sm mt-1">{errors.email.message}</p>}
+                        </div>
+                         <div>
+                            <Label htmlFor="password">Hasło</Label>
+                            <Input id="password" type="password" {...register('password')} />
+                            {errors.password && <p className="text-destructive text-sm mt-1">{errors.password.message}</p>}
                         </div>
                     </div>
                     <SheetFooter>

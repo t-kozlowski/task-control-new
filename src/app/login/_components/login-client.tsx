@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -7,26 +8,28 @@ import type { User } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { ProjectIcon } from '@/components/icons';
 import { Skeleton } from '@/components/ui/skeleton';
 
 
 export default function LoginClient() {
   const { users, isLoading, setLoggedInUser } = useApp();
-  const [selectedUser, setSelectedUser] = useState<string>('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
   const handleLogin = () => {
-    if (!selectedUser) {
-      setError('Proszę wybrać użytkownika.');
+    setError('');
+    if (!email || !password) {
+      setError('Proszę wpisać email i hasło.');
       return;
     }
-    const user = users.find(u => u.id === selectedUser);
-    if (user) {
+    const user = users.find(u => u.email === email);
+    if (user && user.password === password) {
       setLoggedInUser(user);
     } else {
-      setError('Nie znaleziono użytkownika.');
+      setError('Nieprawidłowy email lub hasło.');
     }
   };
   
@@ -58,28 +61,34 @@ export default function LoginClient() {
             <h1 className="text-2xl font-semibold text-foreground">Project Sentinel</h1>
           </div>
           <CardTitle className="text-2xl">Zaloguj się</CardTitle>
-          <CardDescription>Wybierz swoje konto, aby kontynuować.</CardDescription>
+          <CardDescription>Wpisz swoje dane, aby kontynuować.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="user-select">Konto użytkownika</Label>
-              <Select onValueChange={setSelectedUser} value={selectedUser}>
-                <SelectTrigger id="user-select">
-                  <SelectValue placeholder="Wybierz użytkownika..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {users.map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.name} ({user.email})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="m@example.com"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="password">Hasło</Label>
+              <Input
+                id="password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button onClick={handleLogin} className="w-full">
-              Zaloguj się
+            <Button onClick={handleLogin} className="w-full" disabled={isLoading}>
+              {isLoading ? 'Logowanie...' : 'Zaloguj się'}
             </Button>
           </div>
         </CardContent>

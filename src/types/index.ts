@@ -1,3 +1,4 @@
+
 export type Priority = 'Critical' | 'High' | 'Medium' | 'Low';
 export type Status = 'Todo' | 'In Progress' | 'Done' | 'Backlog';
 
@@ -31,6 +32,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  password?: string;
 }
 
 export interface ActionItem {
