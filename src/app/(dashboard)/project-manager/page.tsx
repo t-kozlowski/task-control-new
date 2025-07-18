@@ -150,9 +150,6 @@ export default function ProjectManagerPage() {
     try {
         const response = await fetch('/api/ai/suggest-burndown', {
             method: 'POST',
-            headers: {
-              'x-google-api-key': apiKey || '',
-            }
         });
         if (!response.ok) throw new Error('Nie udało się pobrać sugestii AI.');
         const data = await response.json();

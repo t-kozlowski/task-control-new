@@ -11,6 +11,3 @@ export const ai = genkit({
   ],
   enableTracing: true,
 });
-
-// The middleware has been removed for a simpler, more robust implementation.
-// API routes will now directly use the above `ai` instance.

@@ -109,7 +109,6 @@ export function MeetingFormSheet({ open, onOpenChange, meeting, onMeetingSaved, 
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'x-google-api-key': apiKey || '',
         },
         body: JSON.stringify({ notes: rawNotes })
       });

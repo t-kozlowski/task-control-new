@@ -19,11 +19,7 @@ export function AiNotifications() {
     setError(null);
     setNotification(null);
     try {
-      const res = await fetch('/api/ai/notification', {
-        headers: {
-          'x-google-api-key': apiKey || '',
-        },
-      });
+      const res = await fetch('/api/ai/notification');
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || 'Nie udało się pobrać analizy AI.');

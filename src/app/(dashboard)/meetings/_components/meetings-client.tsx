@@ -44,7 +44,6 @@ function AiPrepView({ meeting, users, tasks }: { meeting: Meeting; users: User[]
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
-                    'x-google-api-key': apiKey || '',
                 },
                 body: JSON.stringify({
                     meetingId: meeting.id,

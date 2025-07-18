@@ -40,7 +40,7 @@ export default function SettingsClient() {
 
       toast({
         title: 'Sukces!',
-        description: 'Klucz API został zapisany na serwerze. Może być wymagane ponowne uruchomienie serwera.',
+        description: 'Klucz API został zapisany. Zmiany będą aktywne natychmiast.',
       });
     } catch (e) {
       toast({

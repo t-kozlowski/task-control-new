@@ -11,9 +11,10 @@ export async function GET(request: Request) {
 
       // Select one random directive to focus on, if directives exist
       let randomDirective = '';
-      if (directives.length > 0) {
-        const randomIndex = Math.floor(Math.random() * directives.length);
-        randomDirective = directives[randomIndex].text;
+      const nonEmptyDirectives = directives.filter(d => d.text.trim() !== '');
+      if (nonEmptyDirectives.length > 0) {
+        const randomIndex = Math.floor(Math.random() * nonEmptyDirectives.length);
+        randomDirective = nonEmptyDirectives[randomIndex].text;
       }
 
       const notification = await generateNotification({

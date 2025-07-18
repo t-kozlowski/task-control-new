@@ -105,7 +105,6 @@ export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved, users, ta
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'x-google-api-key': apiKey || '' 
         },
         body: JSON.stringify({ taskName }),
       });
