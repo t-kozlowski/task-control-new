@@ -3,15 +3,17 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/app-context';
-import { User } from '@/types';
+import type { User } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ProjectIcon } from '@/components/icons';
+import { Skeleton } from '@/components/ui/skeleton';
 
-export default function LoginClient({ users }: { users: User[] }) {
-  const { setLoggedInUser } = useApp();
+
+export default function LoginClient() {
+  const { users, isLoading, setLoggedInUser } = useApp();
   const [selectedUser, setSelectedUser] = useState<string>('');
   const [error, setError] = useState('');
 
@@ -27,6 +29,25 @@ export default function LoginClient({ users }: { users: User[] }) {
       setError('Nie znaleziono użytkownika.');
     }
   };
+  
+  if (isLoading) {
+      return (
+        <div className="flex items-center justify-center min-h-screen bg-background">
+             <Card className="w-full max-w-sm mx-auto">
+                <CardHeader className="text-center">
+                    <div className="flex items-center gap-2 justify-center mb-4">
+                        <ProjectIcon className="size-8 text-primary" />
+                        <h1 className="text-2xl font-semibold text-foreground">Project Sentinel</h1>
+                    </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <Skeleton className="h-8 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                </CardContent>
+            </Card>
+        </div>
+      )
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
