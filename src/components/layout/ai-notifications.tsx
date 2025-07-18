@@ -3,32 +3,24 @@
 
 import { useState } from 'react';
 import { Icons, BotMessageSquare } from '../icons';
-import type { AiNotificationOutput } from '@/ai/flows/ai-notifications';
 import { Button } from '../ui/button';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useSettings } from '@/context/settings-context';
 
 export function AiNotifications() {
   const [notification, setNotification] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { apiKey } = useSettings();
 
   const handleFetchNotification = async () => {
     setIsLoading(true);
     setError(null);
     setNotification(null);
     try {
-      // Wywołujemy nowy, dynamiczny endpoint proxy
-      const res = await fetch('/api/proxy/generate_summary');
+      // Wywołujemy nowy, prosty i dedykowany endpoint
+      const res = await fetch('/api/ask-python');
       if (!res.ok) {
-        let errorData;
-        try {
-          errorData = await res.json();
-        } catch (e) {
-          throw new Error(`Server returned non-JSON error (status: ${res.status})`);
-        }
-        throw new Error(errorData.message || `An unknown server error occurred (status: ${res.status}).`);
+        const errorData = await res.json().catch(() => ({ message: 'Serwer Pythona odpowiedział błędem bez formatu JSON.' }));
+        throw new Error(errorData.message || `Serwer odpowiedział statusem: ${res.status}`);
       }
       const newNotification = await res.json();
       setNotification(newNotification);
@@ -49,13 +41,13 @@ export function AiNotifications() {
         <div className="flex-1">
             <h3 className="text-lg font-semibold text-foreground/90">Strategiczny Asystent AI</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Poproś AI o przeanalizowanie stanu projektu, zidentyfikowanie ryzyk i zasugerowanie nowych, innowacyjnych zadań.
+              Poproś AI o przeanalizowanie stanu projektu. Przycisk wywoła backend w Pythonie.
             </p>
             <Button onClick={handleFetchNotification} disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-                  Analizuję...
+                  Czekam na Pythona...
                 </>
               ) : (
                 <>
