@@ -2,10 +2,10 @@
 import { NextResponse } from 'next/server';
 import { getTasks } from '@/lib/data-service';
 import { suggestBurndownValues } from '@/ai/flows/suggest-burndown-values';
-import { configureGenkit } from '@/ai/genkit';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
-  return await configureGenkit(request, async () => {
     try {
       const tasks = await getTasks();
       
@@ -14,9 +14,11 @@ export async function POST(request: Request) {
       });
 
       return NextResponse.json(result);
-    } catch (error) {
+    } catch (error: any) {
       console.error('AI Burndown Suggestion Error:', error);
-      return NextResponse.json({ message: 'Error suggesting burndown values with AI' }, { status: 500 });
+      return NextResponse.json(
+        { message: error.message || 'Error suggesting burndown values with AI' }, 
+        { status: 500 }
+      );
     }
-  });
 }

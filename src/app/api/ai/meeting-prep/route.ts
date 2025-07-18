@@ -3,10 +3,10 @@ import { NextResponse } from 'next/server';
 import { getMeetings, getTasks, getDirectives } from '@/lib/data-service';
 import { getMeetingPrep } from '@/ai/flows/meeting-prep';
 import type { ActionItem } from '@/types';
-import { configureGenkit } from '@/ai/genkit';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
-  return await configureGenkit(request, async () => {
     try {
       const { meetingId, attendeeEmails } = await request.json();
 
@@ -46,5 +46,4 @@ export async function POST(request: Request) {
         { status: 500 }
       );
     }
-  });
 }

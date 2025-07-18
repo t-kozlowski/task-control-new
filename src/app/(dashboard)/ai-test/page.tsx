@@ -15,7 +15,7 @@ export default function AiTestPage() {
   const [result, setResult] = useState<ProjectSummaryOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { apiKey } = useSettings();
+  const { apiKey, isLoading: isLoadingSettings } = useSettings();
 
   const handleTest = async () => {
     setIsLoading(true);
@@ -23,18 +23,22 @@ export default function AiTestPage() {
     setResult(null);
 
     try {
-      const response = await fetch('/api/ai/summary', {
-         headers: {
-          // Pass the API key from the browser settings to the API route
-          'x-google-api-key': apiKey || '',
-        },
-      });
+      const response = await fetch('/api/ai/summary');
+      
+      const responseBody = await response.text();
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `Wystąpił błąd serwera (status: ${response.status}).`);
+        let errorData;
+        try {
+          errorData = JSON.parse(responseBody);
+        } catch (e) {
+            throw new Error(`Server returned non-JSON error (status: ${response.status}): ${responseBody}`);
+        }
+        throw new Error(errorData.message || `An unknown server error occurred (status: ${response.status}).`);
       }
-      const data = await response.json();
+      
+      const data: ProjectSummaryOutput = JSON.parse(responseBody);
       setResult(data);
+
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Wystąpił nieznany błąd');
     } finally {
@@ -56,7 +60,7 @@ export default function AiTestPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Button onClick={handleTest} disabled={isLoading || !apiKey}>
+          <Button onClick={handleTest} disabled={isLoading || isLoadingSettings || !apiKey}>
             {isLoading ? (
               <>
                 <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
@@ -66,12 +70,17 @@ export default function AiTestPage() {
               'Uruchom test AI'
             )}
           </Button>
-           {!apiKey && (
+           {(isLoadingSettings || !apiKey) && (
             <Alert variant="destructive" className="mt-4">
               <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Brak klucza API</AlertTitle>
+              <AlertTitle>
+                {isLoadingSettings ? "Sprawdzanie klucza API..." : "Brak klucza API"}
+              </AlertTitle>
               <AlertDescription>
-                Wprowadź swój klucz API w <a href="/settings" className="underline font-bold">ustawieniach</a>, aby włączyć funkcje AI.
+                 {isLoadingSettings 
+                    ? "Proszę czekać, weryfikujemy konfigurację."
+                    : <>Wprowadź swój klucz API w <a href="/settings" className="underline font-bold">ustawieniach</a>, aby włączyć funkcje AI.</>
+                 }
               </AlertDescription>
             </Alert>
            )}

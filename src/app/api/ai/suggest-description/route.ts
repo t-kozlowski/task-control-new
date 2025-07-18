@@ -2,10 +2,10 @@
 // src/app/api/ai/suggest-description/route.ts
 import { NextResponse } from 'next/server';
 import { suggestTaskDescription } from '@/ai/flows/suggest-task-description';
-import { configureGenkit } from '@/ai/genkit';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
-  return await configureGenkit(request, async () => {
     try {
       const { taskName } = await request.json();
 
@@ -16,9 +16,11 @@ export async function POST(request: Request) {
       const result = await suggestTaskDescription({ taskName });
 
       return NextResponse.json(result);
-    } catch (error) {
+    } catch (error: any) {
       console.error('AI Description Suggestion Error:', error);
-      return NextResponse.json({ message: 'Error suggesting description with AI' }, { status: 500 });
+      return NextResponse.json(
+        { message: error.message || 'Error suggesting description with AI' },
+        { status: 500 }
+      );
     }
-  });
 }

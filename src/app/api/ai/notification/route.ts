@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import { getTasks, getDirectives } from '@/lib/data-service';
 import { generateNotification } from '@/ai/flows/ai-notifications';
-import { configureGenkit } from '@/ai/genkit';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
-  return await configureGenkit(request, async () => {
     try {
       const tasks = await getTasks();
       const directives = await getDirectives();
@@ -22,9 +22,11 @@ export async function GET(request: Request) {
       });
 
       return NextResponse.json(notification);
-    } catch (error) {
+    } catch (error: any) {
       console.error('AI Notification Error:', error);
-      return NextResponse.json({ message: 'Error generating AI notification' }, { status: 500 });
+      return NextResponse.json(
+        { message: error.message || 'Error generating AI notification' }, 
+        { status: 500 }
+      );
     }
-  });
 }
