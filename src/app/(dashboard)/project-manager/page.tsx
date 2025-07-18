@@ -11,6 +11,18 @@ import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { Label } from '@/components/ui/label';
 
 export default function ProjectManagerPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -20,6 +32,12 @@ export default function ProjectManagerPage() {
   const [isSavingVision, setIsSavingVision] = useState(false);
   const [burndownData, setBurndownData] = useState<BurndownDataPoint[]>([]);
   const [isSavingBurndown, setIsSavingBurndown] = useState(false);
+  const [newPoint, setNewPoint] = useState<BurndownDataPoint>({
+    date: new Date().toISOString().split('T')[0],
+    ideal: 0,
+    actual: 0
+  });
+
   const { toast } = useToast();
 
   const fetchAllData = async () => {
@@ -79,8 +97,9 @@ export default function ProjectManagerPage() {
   };
 
   const addBurndownPoint = () => {
-    const today = new Date().toISOString().split('T')[0];
-    setBurndownData([...burndownData, { date: today, ideal: 0, actual: 0 }]);
+    const updatedData = [...burndownData, newPoint].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    setBurndownData(updatedData);
+    setNewPoint({ date: new Date().toISOString().split('T')[0], ideal: 0, actual: 0 }); // Reset for next entry
   };
   
   const removeBurndownPoint = (index: number) => {
@@ -181,7 +200,38 @@ export default function ProjectManagerPage() {
                     </Table>
                     </div>
                     <div className="flex justify-between items-center mt-4">
-                        <Button variant="outline" onClick={addBurndownPoint}><PlusCircle className="h-4 w-4 mr-2" />Dodaj punkt</Button>
+                      <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="outline"><PlusCircle className="h-4 w-4 mr-2" />Dodaj punkt</Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Dodaj nowy punkt danych</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Wprowadź dane dla nowego punktu na wykresie spalania.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <div className="grid gap-4 py-4">
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                  <Label htmlFor="new-date" className="text-right">Data</Label>
+                                  <Input id="new-date" type="date" value={newPoint.date} onChange={(e) => setNewPoint({...newPoint, date: e.target.value})} className="col-span-3" />
+                                </div>
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                  <Label htmlFor="new-ideal" className="text-right">Idealnie</Label>
+                                  <Input id="new-ideal" type="number" value={newPoint.ideal} onChange={(e) => setNewPoint({...newPoint, ideal: parseInt(e.target.value) || 0})} className="col-span-3" />
+                                </div>
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                  <Label htmlFor="new-actual" className="text-right">Rzeczywiście</Label>
+                                  <Input id="new-actual" type="number" value={newPoint.actual} onChange={(e) => setNewPoint({...newPoint, actual: parseInt(e.target.value) || 0})} className="col-span-3" />
+                                </div>
+                              </div>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Anuluj</AlertDialogCancel>
+                                <AlertDialogAction onClick={addBurndownPoint}>Dodaj</AlertDialogAction>
+                              </AlertDialogFooter>
+                          </AlertDialogContent>
+                      </AlertDialog>
+
                         <Button onClick={saveBurndownData} disabled={isSavingBurndown}><Save className="h-4 w-4 mr-2"/> Zapisz i Synchronizuj</Button>
                     </div>
                 </CardContent>
