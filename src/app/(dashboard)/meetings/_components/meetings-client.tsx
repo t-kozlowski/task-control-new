@@ -242,7 +242,7 @@ export default function MeetingsClient({ initialMeetings, initialTasks }: { init
                                 </TabsList>
                                 <div className="flex gap-2">
                                      <Button variant="outline" size="sm" onClick={handleEditMeeting}>Edytuj</Button>
-                                     <Button variant="outline" size="sm" onClick={handleDeleteMeeting} className="text-destructive hover:text-destructive hover:border-destructive">Usuń</Button>
+                                     <Button variant="outline" size="sm" onClick={handleDeleteMeeting} className="text-destructive hover:text-destructive hover:border-destructive/50">Usuń</Button>
                                 </div>
                             </div>
                             <ScrollArea className="flex-1">
