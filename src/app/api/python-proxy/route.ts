@@ -22,12 +22,30 @@ export async function GET(request: Request) {
   try {
     // Przekazujemy zapytanie do serwera w Pythonie.
     // W przyszłości możesz tutaj przekazywać dane z frontendu, np. w ciele zapytania POST.
-    const response = await fetch(pythonBackendUrl);
+    const response = await fetch(pythonBackendUrl, {
+      method: 'GET', // Możesz zmienić na POST, jeśli potrzebujesz wysyłać dane
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      // body: JSON.stringify(body), // Przykładowe ciało zapytania POST
+    });
 
     // Sprawdzamy, czy odpowiedź z Pythona jest poprawna.
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Python backend returned an error: ${response.status} ${errorText}`);
+      // Próbujemy sparsować tekst błędu jako JSON, jeśli się nie uda, zwracamy tekst
+      try {
+        const errorJson = JSON.parse(errorText);
+        return NextResponse.json(
+          { message: 'Python backend returned an error', error: errorJson },
+          { status: response.status }
+        );
+      } catch (e) {
+         return NextResponse.json(
+          { message: 'Python backend returned a non-JSON error', error: errorText },
+          { status: response.status }
+        );
+      }
     }
 
     // Pobieramy odpowiedź JSON z serwera Pythona.
