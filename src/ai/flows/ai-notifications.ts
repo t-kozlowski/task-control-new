@@ -34,7 +34,7 @@ export async function generateNotification(input: AiNotificationInput): Promise<
 
 const aiNotificationPrompt = ai.definePrompt({
   name: 'aiNotificationPrompt',
-  model: 'openai/gpt-4o',
+  model: 'gpt-4o',
   input: {schema: AiNotificationInputSchema},
   output: {schema: AiNotificationOutputSchema},
   prompt: `Jesteś strategicznym asystentem AI dla panelu zarządzania projektami. Twoim zadaniem jest dostarczanie wnikliwych spostrzeżeń.

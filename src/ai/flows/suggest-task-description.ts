@@ -29,7 +29,7 @@ export async function suggestTaskDescription(input: SuggestTaskDescriptionInput)
 // Prompt Definition
 const suggestTaskDescriptionPrompt = ai.definePrompt({
   name: 'suggestTaskDescriptionPrompt',
-  model: 'openai/gpt-4o',
+  model: 'gpt-4o',
   input: { schema: SuggestTaskDescriptionInputSchema },
   output: { schema: SuggestTaskDescriptionOutputSchema },
   prompt: `Jesteś ekspertem w zarządzaniu projektami, specjalizującym się w tworzeniu jasnych i zwięzłych opisów zadań. Twoim celem jest przekształcenie zwięzłej nazwy zadania w szczegółowy, profesjonalny i gotowy do wykonania opis w języku polskim.

@@ -31,7 +31,7 @@ export async function suggestBurndownValues(input: SuggestBurndownValuesInput): 
 // Prompt Definition
 const suggestBurndownValuesPrompt = ai.definePrompt({
   name: 'suggestBurndownValuesPrompt',
-  model: 'openai/gpt-4o',
+  model: 'gpt-4o',
   input: { schema: SuggestBurndownValuesInputSchema },
   output: { schema: SuggestBurndownValuesOutputSchema },
   prompt: `Jesteś analitykiem projektowym AI. Twoim zadaniem jest pomoc Project Managerowi w wypełnieniu wykresu spalania (burndown chart). Przeanalizuj listę zadań i zasugeruj wartości.
