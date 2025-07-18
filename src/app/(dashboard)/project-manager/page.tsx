@@ -4,7 +4,7 @@
 import { getTasks, getUsers } from '@/lib/data-service';
 import ProjectStats from '../_components/project-stats';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, Users, ListChecks, CheckCircle, Package, Calendar as CalendarIcon, Save } from 'lucide-react';
+import { Briefcase, Users, ListChecks, CheckCircle, Package, Calendar as CalendarIcon, Save, Target, BrainCircuit } from 'lucide-react';
 import ProtectedRoute from './_components/protected-route';
 import { Progress } from '@/components/ui/progress';
 import { Label } from '@/components/ui/label';
@@ -17,6 +17,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { Textarea } from '@/components/ui/textarea';
 
 
 const KpiCard = ({ title, value, icon: Icon }: { title: string, value: string | number, icon: React.ElementType }) => (
@@ -37,17 +38,24 @@ export default function ProjectManagerPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [projectDeadline, setProjectDeadline] = useState<Date | undefined>();
   const [isLoading, setIsLoading] = useState(true);
+  const [visionText, setVisionText] = useState('');
+  const [isSavingVision, setIsSavingVision] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     async function fetchData() {
         setIsLoading(true);
-        const tasksData = await getTasks();
-        const usersData = await getUsers();
+        const [tasksData, usersData, visionData] = await Promise.all([
+          fetch('/api/tasks').then(res => res.json()),
+          fetch('/api/users').then(res => res.json()),
+          fetch('/api/vision').then(res => res.json()),
+        ]);
+        
         const storedDeadline = localStorage.getItem('projectDeadline');
         
         setTasks(tasksData);
         setUsers(usersData);
+        setVisionText(visionData.text || '');
         if (storedDeadline) {
           setProjectDeadline(parseISO(storedDeadline));
         }
@@ -64,7 +72,31 @@ export default function ProjectManagerPage() {
             description: 'Nowy termin końcowy projektu został zapisany.'
         })
     }
-  }
+  };
+
+  const handleSaveVision = async () => {
+    setIsSavingVision(true);
+    try {
+        const response = await fetch('/api/vision', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: visionText })
+        });
+        if (!response.ok) throw new Error('Nie udało się zapisać wizji.');
+        toast({
+            title: 'Zapisano!',
+            description: 'Główna wizja projektu została zaktualizowana.'
+        })
+    } catch(error) {
+        toast({
+            title: 'Błąd',
+            description: error instanceof Error ? error.message : 'Wystąpił błąd.',
+            variant: 'destructive',
+        })
+    } finally {
+        setIsSavingVision(false);
+    }
+  };
 
   if (isLoading) {
     return <ProtectedRoute><div>Ładowanie...</div></ProtectedRoute>;
@@ -109,41 +141,61 @@ export default function ProjectManagerPage() {
                 </CardContent>
              </Card>
              
-            <Card>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                  <CardHeader>
+                      <CardTitle>Zarządzanie Projektem</CardTitle>
+                      <CardDescription>Ustaw globalne parametry dla całego projektu.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                          <Label htmlFor="deadline">Globalny Termin Końcowy Projektu</Label>
+                          <div className="flex gap-2">
+                          <Popover>
+                              <PopoverTrigger asChild>
+                              <Button
+                                  id="deadline"
+                                  variant={"outline"}
+                                  className={cn("w-full justify-start text-left font-normal", !projectDeadline && "text-muted-foreground")}
+                              >
+                                  <CalendarIcon className="mr-2 h-4 w-4" />
+                                  {projectDeadline ? format(projectDeadline, "PPP") : <span>Wybierz datę</span>}
+                              </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0">
+                              <Calendar
+                                  mode="single"
+                                  selected={projectDeadline}
+                                  onSelect={setProjectDeadline}
+                                  initialFocus
+                              />
+                              </PopoverContent>
+                          </Popover>
+                          <Button onClick={handleSaveDeadline}><Save className="h-4 w-4 mr-2" /> Zapisz</Button>
+                          </div>
+                          <p className="text-xs text-muted-foreground">Ten termin będzie widoczny jako linia na wykresie "Prędkość vs. Cel".</p>
+                      </div>
+                  </CardContent>
+              </Card>
+
+              <Card>
                 <CardHeader>
-                    <CardTitle>Zarządzanie Projektem</CardTitle>
-                    <CardDescription>Ustaw globalne parametry dla całego projektu.</CardDescription>
+                  <CardTitle className="flex items-center gap-2"><Target className="h-5 w-5"/> Główna Wizja Projektu</CardTitle>
+                  <CardDescription>Ustal główny cel, który będzie widoczny dla całego zespołu na tablicy ogłoszeń.</CardDescription>
                 </CardHeader>
-                <CardContent className="grid gap-6 md:grid-cols-2">
-                    <div className="space-y-2">
-                        <Label htmlFor="deadline">Globalny Termin Końcowy Projektu</Label>
-                        <div className="flex gap-2">
-                         <Popover>
-                            <PopoverTrigger asChild>
-                            <Button
-                                id="deadline"
-                                variant={"outline"}
-                                className={cn("w-full justify-start text-left font-normal", !projectDeadline && "text-muted-foreground")}
-                            >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {projectDeadline ? format(projectDeadline, "PPP") : <span>Wybierz datę</span>}
-                            </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                            <Calendar
-                                mode="single"
-                                selected={projectDeadline}
-                                onSelect={setProjectDeadline}
-                                initialFocus
-                            />
-                            </PopoverContent>
-                        </Popover>
-                        <Button onClick={handleSaveDeadline}><Save className="h-4 w-4 mr-2" /> Zapisz</Button>
-                        </div>
-                        <p className="text-xs text-muted-foreground">Ten termin będzie widoczny jako linia na wykresie "Prędkość vs. Cel".</p>
-                    </div>
+                <CardContent className="flex flex-col gap-2">
+                    <Textarea 
+                      value={visionText}
+                      onChange={(e) => setVisionText(e.target.value)}
+                      placeholder="Np. 'Stworzyć najbardziej intuicyjną platformę analityczną na rynku...'"
+                      rows={4}
+                    />
+                    <Button onClick={handleSaveVision} disabled={isSavingVision} className="self-end">
+                      {isSavingVision ? "Zapisywanie..." : "Zapisz wizję"}
+                    </Button>
                 </CardContent>
-            </Card>
+              </Card>
+            </div>
 
             <LiveStats tasks={tasks} projectDeadline={deadlineString} />
 

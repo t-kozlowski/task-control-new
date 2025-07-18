@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -18,15 +19,17 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Task, Priority, Status, User } from '@/types';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useApp } from '@/context/app-context';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Check, ChevronsUpDown } from 'lucide-react';
+import { CalendarIcon, Check, ChevronsUpDown, Sparkles } from 'lucide-react';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
+import { useToast } from '@/hooks/use-toast';
+import { Icons } from '@/components/icons';
 
 const taskSchema = z.object({
   id: z.string().optional(),
@@ -54,7 +57,9 @@ interface TaskFormSheetProps {
 
 export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved, users, tasks }: TaskFormSheetProps) {
   const { loggedInUser } = useApp();
-  const { register, handleSubmit, control, reset, formState: { errors, isSubmitting } } = useForm<TaskFormData>({
+  const { toast } = useToast();
+  const [isSuggesting, setIsSuggesting] = useState(false);
+  const { register, handleSubmit, control, reset, setValue, getValues, formState: { errors, isSubmitting } } = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
   });
 
@@ -79,6 +84,43 @@ export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved, users, ta
       }
     }
   }, [task, open, reset, loggedInUser]);
+
+  const handleSuggestDescription = async () => {
+    const taskName = getValues('name');
+    if (!taskName) {
+      toast({
+        title: 'Brak nazwy zadania',
+        description: 'Wpisz najpierw nazwę zadania, aby AI mogło zasugerować opis.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsSuggesting(true);
+    try {
+      const response = await fetch('/api/ai/suggest-description', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ taskName }),
+      });
+      if (!response.ok) throw new Error('Nie udało się wygenerować opisu.');
+      const data = await response.json();
+      setValue('description', data.suggestedDescription, { shouldValidate: true });
+      toast({
+        title: 'Sukces!',
+        description: 'Opis zadania został wygenerowany przez AI.'
+      });
+    } catch (error) {
+      toast({
+        title: 'Błąd',
+        description: error instanceof Error ? error.message : 'Wystąpił nieznany błąd.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSuggesting(false);
+    }
+  };
+
 
   const onSubmit = async (data: TaskFormData) => {
     const method = task ? 'PUT' : 'POST';
@@ -133,7 +175,13 @@ export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved, users, ta
               />
             </div>
              <div>
-              <Label htmlFor="name">Nazwa Zadania</Label>
+              <div className="flex justify-between items-center mb-1">
+                <Label htmlFor="name">Nazwa Zadania</Label>
+                <Button type="button" variant="outline" size="sm" onClick={handleSuggestDescription} disabled={isSuggesting}>
+                   {isSuggesting ? <Icons.spinner className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                  Zasugeruj
+                </Button>
+              </div>
               <Input id="name" {...register('name')} />
               {errors.name && <p className="text-destructive text-sm mt-1">{errors.name.message}</p>}
             </div>
