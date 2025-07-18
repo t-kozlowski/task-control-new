@@ -51,3 +51,9 @@ export interface Meeting {
     attendees: string[]; // emails
     actionItems: ActionItem[];
 }
+
+export interface BurndownDataPoint {
+  date: string; // YYYY-MM-DD
+  ideal: number;
+  actual: number;
+}

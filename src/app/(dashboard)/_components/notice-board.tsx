@@ -17,26 +17,14 @@ const StatItem = ({ icon: Icon, label, value }: { icon: React.ElementType, label
     </div>
 );
 
-export default function NoticeBoard({ tasks }: { tasks: Task[] }) {
-    const [vision, setVision] = useState('');
-    const [isLoading, setIsLoading] = useState(true);
+export default function NoticeBoard({ tasks, initialVision }: { tasks: Task[], initialVision: string }) {
+    const [vision, setVision] = useState(initialVision);
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
-        const fetchVision = async () => {
-            setIsLoading(true);
-            try {
-                const res = await fetch('/api/vision');
-                const data = await res.json();
-                setVision(data.text);
-            } catch (error) {
-                console.error("Failed to fetch vision", error);
-                setVision("Nie udało się załadować wizji projektu.");
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchVision();
-    }, []);
+      // Vision is now passed as a prop, but we keep this effect in case we want to make it live-updating later.
+      setVision(initialVision);
+    }, [initialVision]);
 
     const mainTasks = tasks.filter(t => !t.parentId);
     const completedMainTasks = mainTasks.filter(t => t.status === 'Done').length;

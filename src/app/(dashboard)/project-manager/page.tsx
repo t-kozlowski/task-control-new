@@ -1,36 +1,16 @@
 
 'use client'
 
-import { getTasks, getUsers } from '@/lib/data-service';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, Users, ListChecks, CheckCircle, Package, Calendar as CalendarIcon, Save, Target } from 'lucide-react';
+import { Briefcase, Target, Save, Trash2, PlusCircle, LineChart } from 'lucide-react';
 import ProtectedRoute from './_components/protected-route';
-import { Progress } from '@/components/ui/progress';
-import { Label } from '@/components/ui/label';
-import { Task, User } from '@/types';
+import { Task, User, BurndownDataPoint } from '@/types';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
-import { Calendar } from '@/components/ui/calendar';
-import { format, parseISO } from 'date-fns';
-import { useApp } from '@/context/app-context';
-
-
-const KpiCard = ({ title, value, icon: Icon }: { title: string, value: string | number, icon: React.ElementType }) => (
-    <div className="flex items-start gap-4 rounded-lg bg-secondary/50 p-4">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-           <Icon className="h-6 w-6" />
-        </div>
-        <div>
-            <p className="text-sm text-muted-foreground">{title}</p>
-            <p className="text-2xl font-bold">{value}</p>
-        </div>
-    </div>
-);
-
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
 
 export default function ProjectManagerPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -38,30 +18,28 @@ export default function ProjectManagerPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [visionText, setVisionText] = useState('');
   const [isSavingVision, setIsSavingVision] = useState(false);
-  const [projectDeadline, setProjectDeadline] = useState<Date | undefined>();
+  const [burndownData, setBurndownData] = useState<BurndownDataPoint[]>([]);
+  const [isSavingBurndown, setIsSavingBurndown] = useState(false);
   const { toast } = useToast();
-  const { loggedInUser } = useApp();
+
+  const fetchAllData = async () => {
+      setIsLoading(true);
+      const [tasksData, usersData, visionData, burndownData] = await Promise.all([
+        fetch('/api/tasks').then(res => res.json()),
+        fetch('/api/users').then(res => res.json()),
+        fetch('/api/vision').then(res => res.json()),
+        fetch('/api/burndown').then(res => res.json()),
+      ]);
+      
+      setTasks(tasksData);
+      setUsers(usersData);
+      setVisionText(visionData.text || '');
+      setBurndownData(burndownData.sort((a: BurndownDataPoint, b: BurndownDataPoint) => new Date(a.date).getTime() - new Date(b.date).getTime()));
+      setIsLoading(false);
+  }
 
   useEffect(() => {
-    async function fetchData() {
-        setIsLoading(true);
-        const [tasksData, usersData, visionData] = await Promise.all([
-          fetch('/api/tasks').then(res => res.json()),
-          fetch('/api/users').then(res => res.json()),
-          fetch('/api/vision').then(res => res.json()),
-        ]);
-        
-        setTasks(tasksData);
-        setUsers(usersData);
-        setVisionText(visionData.text || '');
-
-        const storedDeadline = localStorage.getItem('projectDeadline');
-        if (storedDeadline) {
-          setProjectDeadline(parseISO(storedDeadline));
-        }
-        setIsLoading(false);
-    }
-    fetchData();
+    fetchAllData();
   }, []);
   
   const handleSaveVision = async () => {
@@ -88,28 +66,57 @@ export default function ProjectManagerPage() {
     }
   };
 
-   const handleSaveDeadline = () => {
-    if (projectDeadline) {
-        localStorage.setItem('projectDeadline', projectDeadline.toISOString());
+  const handleBurndownChange = (index: number, field: keyof Omit<BurndownDataPoint, 'date'>, value: string) => {
+    const newData = [...burndownData];
+    newData[index] = { ...newData[index], [field]: parseInt(value, 10) || 0 };
+    setBurndownData(newData);
+  };
+
+  const handleDateChange = (index: number, value: string) => {
+    const newData = [...burndownData];
+    newData[index] = { ...newData[index], date: value };
+    setBurndownData(newData);
+  };
+
+  const addBurndownPoint = () => {
+    const today = new Date().toISOString().split('T')[0];
+    setBurndownData([...burndownData, { date: today, ideal: 0, actual: 0 }]);
+  };
+  
+  const removeBurndownPoint = (index: number) => {
+    const newData = burndownData.filter((_, i) => i !== index);
+    setBurndownData(newData);
+  }
+
+  const saveBurndownData = async () => {
+    setIsSavingBurndown(true);
+    try {
+        const response = await fetch('/api/burndown', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(burndownData)
+        });
+        if (!response.ok) throw new Error('Nie udało się zapisać danych wykresu.');
         toast({
             title: 'Zapisano!',
-            description: 'Nowy termin końcowy projektu został zapisany i zostanie zsynchronizowany na wykresie.'
+            description: 'Dane dla wykresu spalania zostały zaktualizowane.'
         })
-        // Force a re-render of components that use this localStorage item
-        window.dispatchEvent(new Event('storage'));
+        fetchAllData();
+    } catch(error) {
+        toast({
+            title: 'Błąd',
+            description: error instanceof Error ? error.message : 'Wystąpił błąd.',
+            variant: 'destructive',
+        })
+    } finally {
+        setIsSavingBurndown(false);
     }
-  };
+  }
+
 
   if (isLoading) {
     return <ProtectedRoute><div>Ładowanie...</div></ProtectedRoute>;
   }
-
-  const mainTasks = tasks.filter(t => !t.parentId);
-  const completedMainTasks = mainTasks.filter(t => t.status === 'Done').length;
-  const totalMainTasks = mainTasks.length;
-  const remainingMainTasks = totalMainTasks - completedMainTasks;
-  const overallProgress = totalMainTasks > 0 ? Math.round((completedMainTasks / totalMainTasks) * 100) : 0;
-  const teamSize = users.length;
   
   return (
     <ProtectedRoute>
@@ -120,41 +127,6 @@ export default function ProjectManagerPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Ustawienia Wykresu Prędkości</CardTitle>
-                        <CardDescription>Ustal parametry dla wykresu "Prędkość vs. Cel", który jest widoczny na głównym pulpicie.</CardDescription>
-                    </CardHeader>
-                     <CardContent>
-                        <div className="space-y-2">
-                            <Label htmlFor="deadline">Globalny Termin Końcowy Projektu</Label>
-                            <div className="flex gap-2">
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                <Button
-                                    id="deadline"
-                                    variant={"outline"}
-                                    className={cn("w-[240px] justify-start text-left font-normal", !projectDeadline && "text-muted-foreground")}
-                                >
-                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {projectDeadline ? format(projectDeadline, "PPP") : <span>Wybierz datę</span>}
-                                </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0">
-                                <Calendar
-                                    mode="single"
-                                    selected={projectDeadline}
-                                    onSelect={setProjectDeadline}
-                                    initialFocus
-                                />
-                                </PopoverContent>
-                            </Popover>
-                            <Button onClick={handleSaveDeadline}><Save className="h-4 w-4 mr-2" /> Synchronizuj</Button>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2"><Target className="h-5 w-5"/> Główna Wizja Projektu</CardTitle>
@@ -170,6 +142,48 @@ export default function ProjectManagerPage() {
                     <Button onClick={handleSaveVision} disabled={isSavingVision} className="self-end">
                       {isSavingVision ? "Zapisywanie..." : "Zapisz wizję"}
                     </Button>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2"><LineChart className="h-5 w-5"/> Zarządzaj Danymi Wykresu Spalania</CardTitle>
+                  <CardDescription>Manualnie wprowadzaj punkty danych dla wykresu "Burndown Chart" widocznego na pulpicie.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="max-h-60 overflow-y-auto pr-2">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Data</TableHead>
+                                <TableHead>Idealnie</TableHead>
+                                <TableHead>Rzeczywiście</TableHead>
+                                <TableHead></TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {burndownData.map((point, index) => (
+                                <TableRow key={index}>
+                                    <TableCell>
+                                        <Input type="date" value={point.date} onChange={(e) => handleDateChange(index, e.target.value)} />
+                                    </TableCell>
+                                    <TableCell>
+                                        <Input type="number" value={point.ideal} onChange={(e) => handleBurndownChange(index, 'ideal', e.target.value)} />
+                                    </TableCell>
+                                    <TableCell>
+                                        <Input type="number" value={point.actual} onChange={(e) => handleBurndownChange(index, 'actual', e.target.value)} />
+                                    </TableCell>
+                                     <TableCell>
+                                        <Button variant="ghost" size="icon" onClick={() => removeBurndownPoint(index)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                    </div>
+                    <div className="flex justify-between items-center mt-4">
+                        <Button variant="outline" onClick={addBurndownPoint}><PlusCircle className="h-4 w-4 mr-2" />Dodaj punkt</Button>
+                        <Button onClick={saveBurndownData} disabled={isSavingBurndown}><Save className="h-4 w-4 mr-2"/> Zapisz i Synchronizuj</Button>
+                    </div>
                 </CardContent>
               </Card>
             </div>

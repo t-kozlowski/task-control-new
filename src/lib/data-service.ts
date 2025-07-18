@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { Task, AiDirective, User, Meeting } from '@/types';
+import { Task, AiDirective, User, Meeting, BurndownDataPoint } from '@/types';
 
 const dataDirectory = path.join(process.cwd(), 'data');
 const tasksFilePath = path.join(dataDirectory, 'tasks.json');
@@ -8,6 +8,7 @@ const directivesFilePath = path.join(dataDirectory, 'directives.json');
 const usersFilePath = path.join(dataDirectory, 'users.json');
 const meetingsFilePath = path.join(dataDirectory, 'meetings.json');
 const visionFilePath = path.join(dataDirectory, 'vision.json');
+const burndownFilePath = path.join(dataDirectory, 'burndown.json');
 
 
 async function readData<T>(filePath: string, defaultValue: T): Promise<T> {
@@ -53,3 +54,7 @@ export const saveMeetings = (meetings: Meeting[]) => writeData<Meeting[]>(meetin
 // Vision Functions
 export const getVision = () => readData<{ text: string }>(visionFilePath, { text: '' });
 export const saveVision = (vision: { text: string }) => writeData<{ text: string }>(visionFilePath, vision);
+
+// Burndown Chart Functions
+export const getBurndownData = () => readData<BurndownDataPoint[]>(burndownFilePath, []);
+export const saveBurndownData = (data: BurndownDataPoint[]) => writeData<BurndownDataPoint[]>(burndownFilePath, data);

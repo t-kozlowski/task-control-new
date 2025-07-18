@@ -3,134 +3,29 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import type { Task } from '@/types';
-import React, { useMemo, useState, useEffect } from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ReferenceLine } from 'recharts';
-import { format, differenceInDays, addDays, isBefore, startOfDay, parseISO } from 'date-fns';
+import type { BurndownDataPoint } from '@/types';
+import React, { useMemo } from 'react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { Icons } from '@/components/icons';
-import { cn } from '@/lib/utils';
-
 
 interface LiveStatsProps {
-  tasks: Task[];
+  initialData: BurndownDataPoint[];
 }
 
-const KpiCard = ({ title, value, unit, isPositive, description }: { title: string; value: string | number; unit: string, isPositive?: boolean, description?: string }) => (
-    <div className="rounded-lg bg-secondary/50 p-4 text-center border">
-      <p className="text-sm text-muted-foreground" title={description}>{title}</p>
-      <p className={cn(
-          'text-3xl font-bold', 
-          isPositive === true && 'text-green-400', 
-          isPositive === false && 'text-red-400',
-          !isPositive && 'text-foreground'
-      )}>
-        {value}<span className="text-lg font-normal ml-1">{unit}</span>
-      </p>
-    </div>
-);
-
-export default function LiveStats({ tasks }: LiveStatsProps) {
-  const [projectDeadline, setProjectDeadline] = useState<Date | undefined>();
-  
-  useEffect(() => {
-    const storedDeadline = localStorage.getItem('projectDeadline');
-    if (storedDeadline) {
-      setProjectDeadline(parseISO(storedDeadline));
-    }
-    const handleStorageChange = () => {
-        const storedDeadline = localStorage.getItem('projectDeadline');
-        if (storedDeadline) {
-            setProjectDeadline(parseISO(storedDeadline));
-        } else {
-            setProjectDeadline(undefined);
-        }
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
-
-  const { burndownData, kpis, hasData, deadlineLine } = useMemo(() => {
-    const relevantTasks = tasks.filter(t => !t.parentId && t.dueDate);
-    
-    if (relevantTasks.length === 0) {
-      return { burndownData: [], kpis: { spi: 'N/A', prediction: 'Brak danych' }, hasData: false, deadlineLine: null };
+export default function LiveStats({ initialData }: LiveStatsProps) {
+  const { chartData, hasData } = useMemo(() => {
+    if (!initialData || initialData.length === 0) {
+      return { chartData: [], hasData: false };
     }
     
-    const taskCount = relevantTasks.length;
-    
-    const startDates = relevantTasks.map(t => t.date ? startOfDay(parseISO(t.date)) : new Date());
-    const minDate = new Date(Math.min(...startDates.map(d => d.getTime())));
-    const startDate = startOfDay(minDate);
-    
-    const dueDates = relevantTasks.map(t => parseISO(t.dueDate!));
-    const maxDueDate = new Date(Math.max(...dueDates.map(d => d.getTime())));
-    const endDate = projectDeadline && projectDeadline > maxDueDate ? projectDeadline : maxDueDate;
-
-    const totalDays = Math.max(1, differenceInDays(endDate, startDate));
-    
-    const idealData: { day: string; ideal: number; actual: number | null }[] = [];
-    const tasksPerDay = taskCount / totalDays;
-    
-    let cumulativeTasksDone = 0;
-    const completionDates = relevantTasks
-        .filter(t => t.status === 'Done' && t.date)
-        .map(t => startOfDay(parseISO(t.date)))
-        .sort((a,b) => a.getTime() - b.getTime());
-
-    for (let i = 0; i <= totalDays; i++) {
-        const currentDate = addDays(startDate, i);
-        
-        const idealRemaining = taskCount - (tasksPerDay * i);
-
-        const tasksDoneByThisDate = completionDates.filter(d => !isBefore(currentDate, d)).length;
-        
-        idealData.push({
-            day: format(currentDate, 'MMM dd'),
-            ideal: Math.max(0, parseFloat(idealRemaining.toFixed(2))),
-            actual: taskCount - tasksDoneByThisDate,
-        });
-    }
-
-    const tasksCompleted = relevantTasks.filter(t => t.status === 'Done').length;
-    const daysElapsed = Math.max(1, differenceInDays(new Date(), startDate));
-    const plannedWork = tasksPerDay * daysElapsed;
-    
-    let spi: number | string = 1;
-    if (plannedWork > 0) {
-        const earnedValue = tasksCompleted;
-        spi = isNaN(earnedValue / plannedWork) ? 1.0 : parseFloat((earnedValue / plannedWork).toFixed(2));
-    } else if (plannedWork <= 0 && daysElapsed <= 1) {
-        spi = 1.0;
-    }
-
-    let prediction: string = "N/A";
-    const workRate = tasksCompleted / Math.max(1, differenceInDays(new Date(), startDate));
-    if (workRate > 0 && tasksCompleted < taskCount) {
-        const remainingTasks = taskCount - tasksCompleted;
-        const remainingDays = remainingTasks / workRate;
-        prediction = format(addDays(new Date(), remainingDays), 'dd MMM yyyy');
-    } else if (tasksCompleted === taskCount) {
-        prediction = "Zakończono";
-    }
-
-    let deadlineReferenceLine = null;
-    if (projectDeadline) {
-      const deadlineDate = projectDeadline;
-      if (isBefore(deadlineDate, endDate) && isBefore(startDate, deadlineDate) || deadlineDate.getTime() === endDate.getTime()) {
-        deadlineReferenceLine = { x: format(deadlineDate, 'MMM dd'), stroke: 'hsl(var(--destructive))', label: 'Deadline' };
-      }
-    }
+    // Sort data by date
+    const sortedData = [...initialData].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     return { 
-        burndownData: idealData, 
-        kpis: { 
-            spi: isNaN(spi as number) ? 'N/A' : spi,
-            prediction: prediction,
-         },
-        hasData: true,
-        deadlineLine: deadlineReferenceLine,
+      chartData: sortedData,
+      hasData: true,
     };
-  }, [tasks, projectDeadline]);
+  }, [initialData]);
 
   const chartConfig = {
     ideal: { label: 'Idealna ścieżka', color: 'hsl(var(--muted-foreground)/0.5)' },
@@ -142,33 +37,19 @@ export default function LiveStats({ tasks }: LiveStatsProps) {
       <CardHeader>
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div>
-                <CardTitle>Prędkość vs. Cel</CardTitle>
-                <CardDescription>Realistyczne porównanie postępu z idealną ścieżką do celu na podstawie terminów zadań.</CardDescription>
+                <CardTitle>Wykres Spalania (Burndown Chart)</CardTitle>
+                <CardDescription>Wizualizacja postępu projektu w czasie. Dane zarządzane przez Project Managera.</CardDescription>
             </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
           {hasData ? (
             <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <KpiCard 
-                        title="Wskaźnik Realizacji Celu (SPI)"
-                        value={kpis.spi} 
-                        unit="" 
-                        isPositive={typeof kpis.spi === 'number' ? kpis.spi >= 1 : undefined}
-                        description="SPI >= 1 oznacza, że jesteś przed harmonogramem. SPI < 1 oznacza opóźnienie."
-                    />
-                    <KpiCard 
-                        title="Przewidywane Ukończenie" 
-                        value={kpis.prediction}
-                        unit=""
-                    />
-                </div>
                 <div className="h-[350px] w-full">
                 <ChartContainer config={chartConfig}>
-                    <AreaChart accessibilityLayer data={burndownData} margin={{ top: 5, right: 30, left: 0, bottom: 0 }}>
+                    <AreaChart accessibilityLayer data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 0 }}>
                     <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border) / 0.5)" />
-                    <XAxis dataKey="day" tickLine={false} axisLine={false} tickMargin={8} name="Dzień" />
+                    <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} name="Dzień" />
                     <YAxis allowDecimals={false} tickLine={false} axisLine={false} tickMargin={8} domain={[0, 'dataMax + 2']} label={{ value: "Pozostałe zadania", angle: -90, position: 'insideLeft', offset: 10 }} />
                     <ChartTooltip cursor={true} content={<ChartTooltipContent indicator="dot" />} />
                     <defs>
@@ -179,7 +60,6 @@ export default function LiveStats({ tasks }: LiveStatsProps) {
                     </defs>
                     <Area dataKey="ideal" type="monotone" stroke="var(--color-ideal)" strokeWidth={2} strokeDasharray="5 5" fillOpacity={0} dot={false} name="Idealnie" />
                     <Area dataKey="actual" type="monotone" stroke="var(--color-actual)" strokeWidth={2} fill="url(#fillActual)" fillOpacity={0.4} dot={false} name="Rzeczywiście" />
-                    {deadlineLine && <ReferenceLine {...deadlineLine} strokeDasharray="3 3" />}
                     </AreaChart>
                 </ChartContainer>
                 </div>
@@ -188,7 +68,7 @@ export default function LiveStats({ tasks }: LiveStatsProps) {
             <div className="text-center text-muted-foreground p-8 flex flex-col items-center gap-4">
                 <Icons.folderOpen className="h-12 w-12" />
                 <h3 className="text-lg font-semibold">Brak danych do wygenerowania wykresu</h3>
-                <p>Ustaw terminy (`dueDate`) dla zadań głównych, aby zobaczyć analizę.</p>
+                <p>Project Manager musi skonfigurować dane dla wykresu spalania.</p>
             </div>
           )}
       </CardContent>
