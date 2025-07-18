@@ -4,14 +4,22 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import type { Task } from '@/types';
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ReferenceLine } from 'recharts';
 import { format, differenceInDays, addDays, isBefore, startOfDay, parseISO } from 'date-fns';
 import { Icons } from '@/components/icons';
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { Label } from '@/components/ui/label';
+import { Calendar as CalendarIcon, Save } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
+import { useApp } from '@/context/app-context';
+
 
 interface LiveStatsProps {
   tasks: Task[];
-  projectDeadline?: string | null;
 }
 
 const KpiCard = ({ title, value, unit, isPositive, description }: { title: string; value: string | number; unit: string, isPositive?: boolean, description?: string }) => (
@@ -23,7 +31,28 @@ const KpiCard = ({ title, value, unit, isPositive, description }: { title: strin
     </div>
 );
 
-export default function LiveStats({ tasks, projectDeadline }: LiveStatsProps) {
+export default function LiveStats({ tasks }: LiveStatsProps) {
+  const [projectDeadline, setProjectDeadline] = useState<Date | undefined>();
+  const { toast } = useToast();
+  const { loggedInUser } = useApp();
+
+  useEffect(() => {
+    const storedDeadline = localStorage.getItem('projectDeadline');
+    if (storedDeadline) {
+      setProjectDeadline(parseISO(storedDeadline));
+    }
+  }, []);
+
+  const handleSaveDeadline = () => {
+    if (projectDeadline) {
+        localStorage.setItem('projectDeadline', projectDeadline.toISOString());
+        toast({
+            title: 'Zapisano!',
+            description: 'Nowy termin końcowy projektu został zapisany.'
+        })
+    }
+  };
+
   const { burndownData, kpis, hasData, deadlineLine } = useMemo(() => {
     const relevantTasks = tasks.filter(t => !t.parentId && t.dueDate);
     
@@ -33,11 +62,9 @@ export default function LiveStats({ tasks, projectDeadline }: LiveStatsProps) {
     
     const taskCount = relevantTasks.length;
     const dueDates = relevantTasks.map(t => parseISO(t.dueDate!));
-    const completionDates = relevantTasks.map(t => t.date ? parseISO(t.date) : new Date());
     
-    // Use the earliest task date as start date for a more realistic timeline
-    const allDates = [...dueDates, ...completionDates];
-    const minDate = new Date(Math.min(...allDates.map(d => d.getTime())));
+    const startDates = relevantTasks.map(t => t.date ? startOfDay(parseISO(t.date)) : new Date());
+    const minDate = new Date(Math.min(...startDates.map(d => d.getTime())));
     const startDate = startOfDay(minDate);
     const endDate = new Date(Math.max(...dueDates.map(d => d.getTime())));
 
@@ -72,7 +99,7 @@ export default function LiveStats({ tasks, projectDeadline }: LiveStatsProps) {
     }
 
     let prediction: string = "N/A";
-    const workRate = tasksCompleted / Math.max(1, differenceInDays(new Date(), startDate)); // tasks per day
+    const workRate = tasksCompleted / Math.max(1, differenceInDays(new Date(), startDate));
     if (workRate > 0) {
         const remainingTasks = taskCount - tasksCompleted;
         if (remainingTasks > 0) {
@@ -85,7 +112,7 @@ export default function LiveStats({ tasks, projectDeadline }: LiveStatsProps) {
 
     let deadlineReferenceLine = null;
     if (projectDeadline) {
-      const deadlineDate = parseISO(projectDeadline);
+      const deadlineDate = projectDeadline;
       if (isBefore(deadlineDate, endDate) && isBefore(startDate, deadlineDate)) {
         deadlineReferenceLine = { x: format(deadlineDate, 'MMM dd'), stroke: 'hsl(var(--destructive))', label: 'Deadline' };
       }
@@ -107,11 +134,45 @@ export default function LiveStats({ tasks, projectDeadline }: LiveStatsProps) {
     actual: { label: 'Rzeczywisty postęp', color: 'hsl(var(--primary))' },
   };
 
+  const isProjectManager = loggedInUser?.email === 'tomek@example.com';
+
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>Prędkość vs. Cel</CardTitle>
-        <CardDescription>Realistyczne porównanie postępu z idealną ścieżką do celu na podstawie terminów zadań.</CardDescription>
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div>
+                <CardTitle>Prędkość vs. Cel</CardTitle>
+                <CardDescription>Realistyczne porównanie postępu z idealną ścieżką do celu na podstawie terminów zadań.</CardDescription>
+            </div>
+            {isProjectManager && (
+            <div className="space-y-2">
+                <Label htmlFor="deadline">Globalny Termin Końcowy Projektu</Label>
+                <div className="flex gap-2">
+                <Popover>
+                    <PopoverTrigger asChild>
+                    <Button
+                        id="deadline"
+                        variant={"outline"}
+                        className={cn("w-[240px] justify-start text-left font-normal", !projectDeadline && "text-muted-foreground")}
+                    >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {projectDeadline ? format(projectDeadline, "PPP") : <span>Wybierz datę</span>}
+                    </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                    <Calendar
+                        mode="single"
+                        selected={projectDeadline}
+                        onSelect={setProjectDeadline}
+                        initialFocus
+                    />
+                    </PopoverContent>
+                </Popover>
+                <Button onClick={handleSaveDeadline}><Save className="h-4 w-4 mr-2" /> Zapisz</Button>
+                </div>
+            </div>
+            )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
           {hasData ? (

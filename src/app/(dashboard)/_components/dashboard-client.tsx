@@ -11,15 +11,6 @@ import NoticeBoard from './notice-board';
 
 
 export default function DashboardClient({ initialTasks, initialUsers }: { initialTasks: Task[], initialUsers: User[] }) {
-  const [projectDeadline, setProjectDeadline] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Deadline is stored in localStorage by the PM page, we retrieve it here for the chart
-    const storedDeadline = localStorage.getItem('projectDeadline');
-    if (storedDeadline) {
-      setProjectDeadline(storedDeadline);
-    }
-  }, []);
 
   return (
     <div className="flex flex-col gap-6">
@@ -31,7 +22,9 @@ export default function DashboardClient({ initialTasks, initialUsers }: { initia
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
             <TaskSpotlight tasks={initialTasks} />
-            <LiveStats tasks={initialTasks} projectDeadline={projectDeadline} />
+        </div>
+        <div className="lg:col-span-3">
+           <LiveStats tasks={initialTasks} />
         </div>
       </div>
     </div>
