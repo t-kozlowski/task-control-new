@@ -127,7 +127,7 @@ export default function LiveStats({ tasks }: LiveStatsProps) {
   };
 
   return (
-    <Card className="w-full">
+    <Card className="w-full lg:col-span-3">
       <CardHeader>
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div>
