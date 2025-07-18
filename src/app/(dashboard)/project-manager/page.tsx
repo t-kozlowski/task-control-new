@@ -2,7 +2,6 @@
 'use client'
 
 import { getTasks, getUsers } from '@/lib/data-service';
-import ProjectStats from '../_components/project-stats';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Briefcase, Users, ListChecks, CheckCircle, Package, Calendar as CalendarIcon, Save, Target } from 'lucide-react';
 import ProtectedRoute from './_components/protected-route';
@@ -120,28 +119,6 @@ export default function ProjectManagerPage() {
                 <h1 className="text-3xl font-bold tracking-tight">Panel Project Managera</h1>
             </div>
 
-             <Card>
-                <CardHeader>
-                    <CardTitle>Kluczowe Wskaźniki Projektu</CardTitle>
-                    <CardDescription>Szybki przegląd najważniejszych metryk.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="space-y-2">
-                        <div className="flex justify-between items-baseline">
-                             <Label className="text-muted-foreground">Całkowity Postęp Projektu</Label>
-                             <span className="font-bold text-xl">{overallProgress}%</span>
-                        </div>
-                        <Progress value={overallProgress} className="h-3" />
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <KpiCard title="Zadania Główne" value={totalMainTasks} icon={Package} />
-                        <KpiCard title="Ukończone" value={completedMainTasks} icon={CheckCircle} />
-                        <KpiCard title="Pozostałe" value={remainingMainTasks} icon={ListChecks} />
-                        <KpiCard title="Wielkość Zespołu" value={teamSize} icon={Users} />
-                    </div>
-                </CardContent>
-             </Card>
-             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
                     <CardHeader>
@@ -195,18 +172,6 @@ export default function ProjectManagerPage() {
                     </Button>
                 </CardContent>
               </Card>
-
-              <Card className="md:col-span-2">
-                <CardHeader>
-                    <CardTitle>Statystyki Projektu</CardTitle>
-                    <CardDescription>
-                        Szczegółowy wgląd w podział i status zadań.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <ProjectStats tasks={tasks} />
-                </CardContent>
-            </Card>
             </div>
         </div>
     </ProtectedRoute>

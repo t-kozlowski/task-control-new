@@ -5,13 +5,11 @@ import React from 'react';
 import type { Task, User } from '@/types';
 import TaskList from './task-list';
 import TaskSpotlight from './task-spotlight';
-import { KeyStats } from './key-stats';
 
 export default function DashboardClient({ initialTasks, initialUsers }: { initialTasks: Task[], initialUsers: User[] }) {
 
   return (
     <>
-      <KeyStats tasks={initialTasks} users={initialUsers} />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <div className="lg:col-span-2 flex flex-col gap-6">
             <TaskList tasks={initialTasks} />
