@@ -31,6 +31,16 @@ export default function LiveStats({ tasks }: LiveStatsProps) {
     if (storedDeadline) {
       setProjectDeadline(parseISO(storedDeadline));
     }
+    const handleStorageChange = () => {
+        const storedDeadline = localStorage.getItem('projectDeadline');
+        if (storedDeadline) {
+            setProjectDeadline(parseISO(storedDeadline));
+        } else {
+            setProjectDeadline(undefined);
+        }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const { burndownData, kpis, hasData, deadlineLine } = useMemo(() => {
@@ -59,7 +69,6 @@ export default function LiveStats({ tasks }: LiveStatsProps) {
         const currentDate = addDays(startDate, i);
         const idealRemaining = taskCount - (tasksPerDay * i);
 
-        // Actual progress is based on tasks marked as 'Done' with a completion date.
         const tasksDoneOnDate = relevantTasks.filter(t => 
             t.status === 'Done' && t.date && isBefore(startOfDay(parseISO(t.date)), addDays(currentDate, 1))
         ).length;
@@ -72,13 +81,15 @@ export default function LiveStats({ tasks }: LiveStatsProps) {
     }
 
     const tasksCompleted = relevantTasks.filter(t => t.status === 'Done').length;
-    const daysElapsed = Math.max(1, differenceInDays(new Date(), startDate));
+    const daysElapsed = differenceInDays(new Date(), startDate);
     const plannedWork = tasksPerDay * daysElapsed;
     
     let spi: number | string = 1;
     if (plannedWork > 0) {
         const earnedValue = tasksCompleted;
         spi = isNaN(earnedValue / plannedWork) ? 'N/A' : parseFloat((earnedValue / plannedWork).toFixed(2));
+    } else if (plannedWork <= 0 && daysElapsed <= 1) {
+        spi = 1.0;
     }
 
     let prediction: string = "N/A";

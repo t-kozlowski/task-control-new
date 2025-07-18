@@ -25,11 +25,13 @@ import {
   LogOut,
   Search,
   PanelLeft,
+  Layers,
+  ClipboardList,
 } from 'lucide-react';
 
 export const Icons = {
   dashboard: LayoutDashboard,
-  backlog: ListTodo,
+  backlog: Layers,
   directives: BrainCircuit,
   critical: Siren,
   high: ChevronsUp,
@@ -48,7 +50,7 @@ export const Icons = {
   edit: Edit,
   checkCircle: CheckCircle,
   folderOpen: FolderOpen,
-  meetings: Users,
+  meetings: ClipboardList,
   users: Users,
   spinner: LoaderCircle,
   logout: LogOut,
