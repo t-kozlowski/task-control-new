@@ -1,7 +1,6 @@
 import { AppSidebar } from '@/components/layout/sidebar';
 import { AppHeader } from '@/components/layout/app-header';
 import { Toaster } from '@/components/ui/toaster';
-import { useApp } from '@/context/app-context';
 
 export default function DashboardLayout({
   children,

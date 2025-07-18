@@ -30,9 +30,9 @@ const menuItems = [
   { href: '/my-tasks', label: 'Moje Zadania', icon: Icons.userCheck },
   { href: '/backlog', label: 'Backlog', icon: Icons.backlog },
   { href: '/meetings', label: 'Spotkania', icon: Icons.meetings },
+  { href: '/project-manager', label: 'Project Manager', icon: Icons.projectManager, requiredEmail: 'tomek@example.com' },
   { href: '/directives', label: 'Dyrektywy AI', icon: Icons.directives },
   { href: '/users', label: 'Użytkownicy', icon: Icons.users },
-  { href: '/ai-test', label: 'Test AI', icon: Icons.aiTest },
 ];
 
 export function AppSidebar() {
@@ -102,7 +102,11 @@ export function AppSidebar() {
             </DropdownMenuContent>
         </DropdownMenu>
 
-          {menuItems.map(item => (
+          {menuItems.map(item => {
+            if (item.requiredEmail && loggedInUser?.email !== item.requiredEmail) {
+              return null;
+            }
+            return (
             <Tooltip key={item.href}>
               <TooltipTrigger asChild>
                 <Link
@@ -118,7 +122,7 @@ export function AppSidebar() {
               </TooltipTrigger>
               <TooltipContent side="right">{item.label}</TooltipContent>
             </Tooltip>
-          ))}
+          )})}
         </nav>
         </TooltipProvider>
       </aside>

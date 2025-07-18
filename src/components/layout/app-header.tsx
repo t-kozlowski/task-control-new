@@ -22,9 +22,9 @@ const menuItems = [
   { href: '/my-tasks', label: 'Moje Zadania', icon: Icons.userCheck },
   { href: '/backlog', label: 'Backlog', icon: Icons.backlog },
   { href: '/meetings', label: 'Spotkania', icon: Icons.meetings },
+  { href: '/project-manager', label: 'Project Manager', icon: Icons.projectManager, requiredEmail: 'tomek@example.com' },
   { href: '/directives', label: 'Dyrektywy AI', icon: Icons.directives },
   { href: '/users', label: 'Użytkownicy', icon: Icons.users },
-  { href: '/ai-test', label: 'Test AI', icon: Icons.aiTest },
 ];
 
 
@@ -84,7 +84,11 @@ export function AppHeader() {
                       </DropdownMenuContent>
                   </DropdownMenu>
                 )}
-                {menuItems.map(item => (
+                {menuItems.map(item => {
+                   if (item.requiredEmail && loggedInUser?.email !== item.requiredEmail) {
+                    return null;
+                  }
+                  return (
                    <Link
                     key={item.href}
                     href={item.href}
@@ -93,7 +97,8 @@ export function AppHeader() {
                     <item.icon className="h-5 w-5" />
                     {item.label}
                   </Link>
-                ))}
+                  )
+                })}
               </nav>
             </SheetContent>
           </Sheet>
