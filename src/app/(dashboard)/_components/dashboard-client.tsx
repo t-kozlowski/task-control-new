@@ -20,12 +20,14 @@ export default function DashboardClient({
   return (
     <>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        <div className="lg:col-span-3">
+          <LiveStats initialData={initialBurndownData} />
+        </div>
         <div className="lg:col-span-2 flex flex-col gap-6">
             <TaskList tasks={initialTasks} />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
             <TaskSpotlight tasks={initialTasks} />
-            <LiveStats initialData={initialBurndownData} />
         </div>
       </div>
     </>
