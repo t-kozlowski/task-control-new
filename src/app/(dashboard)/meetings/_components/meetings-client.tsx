@@ -16,6 +16,18 @@ import { pl } from 'date-fns/locale';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MeetingPrepOutput } from '@/ai/flows/meeting-prep';
 import { AlertTriangle, Lightbulb, ListChecks } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
 
 function AiPrepView({ meeting, users, tasks }: { meeting: Meeting; users: User[]; tasks: Task[] }) {
     const [prepData, setPrepData] = useState<MeetingPrepOutput | null>(null);
@@ -166,7 +178,6 @@ export default function MeetingsClient({ initialMeetings, initialTasks }: { init
 
     const handleDeleteMeeting = async () => {
         if (!selectedMeeting) return;
-        if (!confirm('Czy na pewno chcesz usunąć to spotkanie?')) return;
         try {
             const res = await fetch(`/api/meetings/${selectedMeeting.id}`, { method: 'DELETE' });
             if (!res.ok) throw new Error('Nie udało się usunąć spotkania');
@@ -242,7 +253,23 @@ export default function MeetingsClient({ initialMeetings, initialTasks }: { init
                                 </TabsList>
                                 <div className="flex gap-2">
                                      <Button variant="outline" size="sm" onClick={handleEditMeeting}>Edytuj</Button>
-                                     <Button variant="outline" size="sm" onClick={handleDeleteMeeting} className="text-destructive hover:text-destructive hover:border-destructive/50">Usuń</Button>
+                                     <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="outline" size="sm" className="text-destructive hover:text-destructive hover:border-destructive/50">Usuń</Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                            <AlertDialogTitle>Czy na pewno chcesz usunąć to spotkanie?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                Ta akcja jest nieodwracalna. Spowoduje to trwałe usunięcie spotkania z bazy danych.
+                                            </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                            <AlertDialogCancel>Anuluj</AlertDialogCancel>
+                                            <AlertDialogAction onClick={handleDeleteMeeting} className="bg-destructive hover:bg-destructive/90">Kontynuuj</AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
                                 </div>
                             </div>
                             <ScrollArea className="flex-1">

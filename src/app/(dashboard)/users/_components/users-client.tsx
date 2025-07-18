@@ -8,6 +8,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { UserFormSheet } from './user-form-sheet';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 export default function UsersClient({ initialUsers }: { initialUsers: User[] }) {
   const [users, setUsers] = useState<User[]>(initialUsers);
@@ -32,8 +43,6 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
   };
 
   const handleDeleteUser = async (userId: string, userName: string) => {
-    if (!confirm(`Czy na pewno chcesz usunąć użytkownika ${userName}?`)) return;
-
     try {
       const response = await fetch(`/api/users/${userId}`, { method: 'DELETE' });
       if (!response.ok) {
@@ -90,9 +99,25 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
                   <Button variant="ghost" size="icon" onClick={() => handleEditUser(user)}>
                     <Icons.edit className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteUser(user.id, user.name)}>
-                    <Icons.delete className="h-4 w-4" />
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                        <Icons.delete className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Czy na pewno chcesz usunąć użytkownika {user.name}?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Ta akcja jest nieodwracalna. Spowoduje to trwałe usunięcie konta użytkownika.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Anuluj</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDeleteUser(user.id, user.name)} className="bg-destructive hover:bg-destructive/90">Kontynuuj</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </div>
             ))}

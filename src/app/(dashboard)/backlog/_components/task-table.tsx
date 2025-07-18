@@ -13,6 +13,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -33,8 +44,6 @@ interface TaskTableProps {
 
 export function TaskTable({ tasks, onEdit, onTaskDeleted, users }: TaskTableProps) {
     const handleDelete = async (taskId: string) => {
-        if (!confirm('Czy na pewno chcesz usunąć to zadanie? To usunie również wszystkie jego podzadania.')) return;
-        
         await fetch(`/api/tasks/${taskId}`, { method: 'DELETE' });
         onTaskDeleted();
     };
@@ -106,21 +115,38 @@ export function TaskTable({ tasks, onEdit, onTaskDeleted, users }: TaskTableProp
             </div>
           </TableCell>
           <TableCell className="text-right">
-              <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                      <Icons.more />
-                  </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                  <DropdownMenuItem onSelect={() => onEdit(task)}>
-                      <Icons.edit className="mr-2 h-4 w-4" /> Edytuj
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => handleDelete(task.id)} className="text-destructive">
-                      <Icons.delete className="mr-2 h-4 w-4" /> Usuń
-                  </DropdownMenuItem>
-                  </DropdownMenuContent>
-              </DropdownMenu>
+              <AlertDialog>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                        <Icons.more />
+                    </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                    <DropdownMenuItem onSelect={() => onEdit(task)}>
+                        <Icons.edit className="mr-2 h-4 w-4" /> Edytuj
+                    </DropdownMenuItem>
+                    <AlertDialogTrigger asChild>
+                      <DropdownMenuItem className="text-destructive" onSelect={(e) => e.preventDefault()}>
+                          <Icons.delete className="mr-2 h-4 w-4" /> Usuń
+                      </DropdownMenuItem>
+                    </AlertDialogTrigger>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+                 <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Czy na pewno chcesz usunąć to zadanie?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Ta akcja jest nieodwracalna. Spowoduje to trwałe usunięcie zadania
+                        {subTasksByParentId[task.id] ? ` i ${subTasksByParentId[task.id].length} jego podzadań.` : '.'}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Anuluj</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => handleDelete(task.id)} className="bg-destructive hover:bg-destructive/90">Kontynuuj</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+              </AlertDialog>
           </TableCell>
         </TableRow>
       );
