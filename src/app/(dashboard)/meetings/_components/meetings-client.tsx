@@ -146,6 +146,9 @@ export default function MeetingsClient({ initialMeetings, initialTasks }: { init
         if (!selectedMeeting && sortedMeetings.length > 0) {
             const upcomingOrMostRecent = sortedMeetings.find(m => isFuture(new Date(m.date))) || sortedMeetings[0];
             setSelectedMeeting(upcomingOrMostRecent);
+        } else if (selectedMeeting && !sortedMeetings.find(m => m.id === selectedMeeting.id)) {
+            // if selected meeting was deleted, select the first one
+            setSelectedMeeting(sortedMeetings[0] || null);
         }
     }, [sortedMeetings, selectedMeeting]);
 
@@ -168,8 +171,7 @@ export default function MeetingsClient({ initialMeetings, initialTasks }: { init
             const res = await fetch(`/api/meetings/${selectedMeeting.id}`, { method: 'DELETE' });
             if (!res.ok) throw new Error('Nie udało się usunąć spotkania');
             toast({ title: 'Sukces', description: 'Spotkanie usunięte.' });
-            const updatedMeetings = await refreshMeetings();
-            setSelectedMeeting(updatedMeetings[0] || null);
+            await refreshMeetings();
         } catch (error) {
             toast({ title: 'Błąd', description: error instanceof Error ? error.message : 'Wystąpił nieznany błąd.', variant: 'destructive' });
         }
