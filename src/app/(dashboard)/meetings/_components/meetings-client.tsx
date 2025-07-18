@@ -98,7 +98,6 @@ export default function MeetingsClient({ initialMeetings }: { initialMeetings: M
         // This logic to find new or edited meeting might need adjustment
         // as getValues() from react-hook-form is not available here.
         // A simpler approach is to refetch and find the meeting by id.
-        const newOrEditedMeetingId = editingMeeting?.id || `MEETING-${Date.now()}`; // This is not reliable
         const reselectedMeeting = updatedMeetings.find(m => m.id === editingMeeting?.id); // simplified logic
         if (reselectedMeeting) {
             setSelectedMeeting(reselectedMeeting);
@@ -157,7 +156,7 @@ export default function MeetingsClient({ initialMeetings }: { initialMeetings: M
                                 </TabsList>
                                 <div className="flex gap-2">
                                      <Button variant="outline" size="sm" onClick={handleEditMeeting}>Edytuj</Button>
-                                     <Button variant="destructive" size="sm" onClick={handleDeleteMeeting}>Usuń</Button>
+                                     <Button variant="outline" size="sm" onClick={handleDeleteMeeting} className="text-destructive hover:text-destructive hover:border-destructive">Usuń</Button>
                                 </div>
                             </div>
                             <ScrollArea className="flex-1">
