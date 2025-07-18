@@ -1,62 +1,25 @@
 [
   {
-    "id": "MEETING-1",
-    "date": "2024-07-15",
-    "title": "Podsumowanie Q2 i plany na Q3",
-    "summary": "Omówiono kluczowe osiągnięcia z drugiego kwartału, w tym wdrożenie nowego systemu uwierzytelniania. Przedstawiono wstępne plany na trzeci kwartał, z fokusem na refaktoryzację i poprawę wydajności.",
-    "attendees": [
-      "ceo@example.com",
-      "alice@example.com",
-      "bob@example.com"
-    ],
-    "actionItems": [
-      {
-        "id": "AI-1-1",
-        "description": "Przygotować szczegółowy harmonogram refaktoryzacji.",
-        "owner": "david@example.com",
-        "status": "Done"
-      },
-      {
-        "id": "AI-1-2",
-        "description": "Zbadać możliwości integracji z zewnętrznym systemem analitycznym.",
-        "owner": "charlie@example.com",
-        "status": "In Progress"
-      }
-    ]
-  },
-  {
-    "id": "MEETING-2",
-    "date": "2024-07-29",
-    "title": "Przegląd postępów w projekcie X",
-    "summary": "Skupiono się na postępach w budowie interfejsu pulpitu. Zidentyfikowano ryzyko opóźnienia związane z integracją biblioteki do wykresów. Zdecydowano o alokacji dodatkowych zasobów.",
-    "attendees": [
-      "ceo@example.com",
-      "alice@example.com",
-      "bob@example.com"
-    ],
-    "actionItems": [
-      {
-        "id": "AI-2-1",
-        "description": "Przeprowadzić audyt bezpieczeństwa modułu uwierzytelniania.",
-        "owner": "alice@example.com",
-        "status": "Todo"
-      },
-      {
-        "id": "AI-2-2",
-        "description": "Zaktualizować dokumentację użytkownika o nowe funkcje pulpitu.",
-        "owner": "eve@example.com",
-        "status": "Backlog"
-      }
-    ]
-  },
-  {
-    "id": "MEETING-1752745517750",
-    "title": "uuuu",
+    "id": "MEETING-1752823579728",
+    "title": "Spotkanie z PrezeseM #3",
     "date": "2025-07-17",
-    "summary": "juuuuu",
+    "summary": "",
+    "rawNotes": "\nMotywacja: Omówiono aktualny stan motywacji w zespole, wskazując na kluczowe czynniki wpływające na zaangażowanie pracowników.\n\nReview postępu: Dokonano przeglądu postępów w projektach, omawiając osiągnięte kamienie milowe oraz obszary wymagające poprawy.\n\nBrak płatnych nadgodzin i obietnice: Zgłoszono problem braku płatnych nadgodzin oraz niewywiązanie się z wcześniejszych obietnic dotyczących ich wypłaty.\n\nObiecany SodaStream: Przypomniano obietnicę dostarczenia urządzenia SodaStream dla zespołu.\n\nSiorotowania wizyta: Zorganizowano wizytę w firmie, której celem była prezentacja nowych rozwiązań i omówienie współpracy.\n\nJazda ciężarówką: Przeprowadzono próbę jazdy ciężarówką, aby lepiej zrozumieć wymagania i specyfikę pracy w tym obszarze.\n\nSpotkanie z Hugo: Spotkanie z Hugo, w celu omówienia bieżących projektów oraz przyszłych planów rozwoju.\n\nSodaStream i gokarty: Podkreślono planowane działania związane z organizowaniem aktywności integracyjnych, takich jak gokarty, oraz realizacją obietnicy dostarczenia SodaStream.",
     "attendees": [
-      "bob@example.com"
+      "lchmielik@lspgroup.pl",
+      "mlewandowski@lspgroup.pl",
+      "rjuchimiuk@lspgroup.pl",
+      "anguyen@lspgroup.pl",
+      "tkozlowski@lspgroup.pl",
+      "bgrabowski@lspgroup.pl"
     ],
-    "actionItems": []
+    "actionItems": [
+      {
+        "id": "AI-1752823661279",
+        "description": "Warsztaty programistyczne, cały team ma przemyśleć co chce",
+        "owner": "tkozlowski@lspgroup.pl",
+        "status": "Todo"
+      }
+    ]
   }
 ]
