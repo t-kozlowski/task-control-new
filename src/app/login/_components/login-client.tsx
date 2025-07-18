@@ -40,7 +40,7 @@ export default function LoginClient() {
                 <CardHeader className="text-center">
                     <div className="flex items-center gap-2 justify-center mb-4">
                         <ProjectIcon className="size-8 text-primary" />
-                        <h1 className="text-2xl font-semibold text-foreground">Project Sentinel</h1>
+                        <h1 className="text-2xl font-semibold text-foreground">Kontrola Tasków LSP</h1>
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -58,7 +58,7 @@ export default function LoginClient() {
         <CardHeader className="text-center">
            <div className="flex items-center gap-2 justify-center mb-4">
             <ProjectIcon className="size-8 text-primary" />
-            <h1 className="text-2xl font-semibold text-foreground">Project Sentinel</h1>
+            <h1 className="text-2xl font-semibold text-foreground">Kontrola Tasków LSP</h1>
           </div>
           <CardTitle className="text-2xl">Zaloguj się</CardTitle>
           <CardDescription>Wpisz swoje dane, aby kontynuować.</CardDescription>
