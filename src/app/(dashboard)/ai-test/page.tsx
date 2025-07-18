@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Icons } from '@/components/icons';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import { ProjectSummaryOutput } from '@/ai/flows/project-summary';
+import type { ProjectSummaryOutput } from '@/ai/flows/project-summary';
 import { AlertTriangle, Lightbulb, CheckCircle, FlaskConical, File } from 'lucide-react';
 import { useSettings } from '@/context/settings-context';
 
@@ -25,12 +25,13 @@ export default function AiTestPage() {
     try {
       const response = await fetch('/api/ai/summary', {
          headers: {
+          // Pass the API key from the browser settings to the API route
           'x-google-api-key': apiKey || '',
         },
       });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Wystąpił nieoczekiwany błąd serwera.');
+        throw new Error(errorData.message || `Wystąpił błąd serwera (status: ${response.status}).`);
       }
       const data = await response.json();
       setResult(data);
@@ -65,7 +66,15 @@ export default function AiTestPage() {
               'Uruchom test AI'
             )}
           </Button>
-           {!apiKey && <p className="text-xs text-muted-foreground mt-2">Wprowadź klucz API w <a href="/settings" className="underline">ustawieniach</a>, aby włączyć test.</p>}
+           {!apiKey && (
+            <Alert variant="destructive" className="mt-4">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Brak klucza API</AlertTitle>
+              <AlertDescription>
+                Wprowadź swój klucz API w <a href="/settings" className="underline font-bold">ustawieniach</a>, aby włączyć funkcje AI.
+              </AlertDescription>
+            </Alert>
+           )}
 
           <Separator />
 
