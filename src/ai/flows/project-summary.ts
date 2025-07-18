@@ -30,7 +30,7 @@ export async function getProjectSummary(input: ProjectSummaryInput): Promise<Pro
 
 const projectSummaryPrompt = ai.definePrompt({
   name: 'projectSummaryPrompt',
-  model: 'openai/gpt-4.1-mini',
+  model: 'openai/gpt-4o',
   input: { schema: ProjectSummaryInputSchema },
   output: { schema: ProjectSummaryOutputSchema },
   prompt: `Jesteś głównym analitykiem strategicznym AI w projekcie. Twoim zadaniem jest dostarczenie zwięzłego, ale wnikliwego podsumowania dla zarządu.
