@@ -2,61 +2,37 @@
   {
     "id": "2",
     "name": "Bartek",
-    "email": "bob@example.com",
-    "password": "password123"
-  },
-  {
-    "id": "3",
-    "name": "Cezaryyy",
-    "email": "charlie@example.com",
-    "password": "password123"
-  },
-  {
-    "id": "4",
-    "name": "Dawid",
-    "email": "david@example.com",
-    "password": "password123"
-  },
-  {
-    "id": "5",
-    "name": "Ewa",
-    "email": "eve@example.com",
-    "password": "password123"
+    "email": "bgrabowski@lspgroup.pl",
+    "password": "Haslo"
   },
   {
     "id": "6",
     "name": "Andrzej",
-    "email": "andrzej@example.com",
-    "password": "password123"
+    "email": "anguyen@lspgroup.pl",
+    "password": "Haslo"
   },
   {
     "id": "7",
     "name": "Tomek",
-    "email": "tomek@example.com",
-    "password": "password123"
+    "email": "tkozlowski@lspgroup.pl",
+    "password": "Tomek15lat!"
   },
   {
     "id": "8",
     "name": "Robert",
-    "email": "robert@example.com",
-    "password": "password123"
+    "email": "rjuchimiuk@lspgroup.pl",
+    "password": "Haslo"
   },
   {
     "id": "9",
     "name": "Mikołaj",
-    "email": "mikolaj@example.com",
-    "password": "password123"
+    "email": "mlewandowski@lspgroup.pl",
+    "password": "Haslo"
   },
   {
     "id": "10",
     "name": "Łukasz",
-    "email": "lukasz@example.com",
-    "password": "password123"
-  },
-  {
-    "id": "11",
-    "name": "github copilot",
-    "email": "copilot@example.com",
-    "password": "password123"
+    "email": "lchmielik@lspgroup.pl",
+    "password": "Haslo"
   }
 ]

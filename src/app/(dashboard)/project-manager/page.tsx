@@ -2,7 +2,7 @@
 'use client'
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, Target, Save, Trash2, PlusCircle, LineChart } from 'lucide-react';
+import { Briefcase, Target, Save, Trash2, PlusCircle, LineChart, Sparkles } from 'lucide-react';
 import ProtectedRoute from './_components/protected-route';
 import { Task, User, BurndownDataPoint } from '@/types';
 import { useEffect, useState } from 'react';
@@ -23,6 +23,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Label } from '@/components/ui/label';
+import { Icons } from '@/components/icons';
+import AdvancedMetrics from './_components/advanced-metrics';
 
 export default function ProjectManagerPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -37,6 +39,7 @@ export default function ProjectManagerPage() {
     ideal: 0,
     actual: 0
   });
+  const [isSuggesting, setIsSuggesting] = useState(false);
 
   const { toast } = useToast();
 
@@ -132,6 +135,34 @@ export default function ProjectManagerPage() {
     }
   }
 
+  const handleSuggestValues = async () => {
+    setIsSuggesting(true);
+    try {
+        const response = await fetch('/api/ai/suggest-burndown', {
+            method: 'POST',
+        });
+        if (!response.ok) throw new Error('Nie udało się pobrać sugestii AI.');
+        const data = await response.json();
+        setNewPoint(prev => ({
+            ...prev,
+            actual: data.suggestedActual,
+            ideal: data.suggestedIdeal
+        }));
+        toast({
+            title: 'Sugestie AI',
+            description: data.reasoning,
+        });
+    } catch(e) {
+        toast({
+            title: 'Błąd AI',
+            description: e instanceof Error ? e.message : 'Wystąpił nieznany błąd.',
+            variant: 'destructive',
+        });
+    } finally {
+        setIsSuggesting(false);
+    }
+  };
+
 
   if (isLoading) {
     return <ProtectedRoute><div>Ładowanie...</div></ProtectedRoute>;
@@ -163,80 +194,86 @@ export default function ProjectManagerPage() {
                     </Button>
                 </CardContent>
               </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2"><LineChart className="h-5 w-5"/> Zarządzaj Danymi Wykresu Spalania</CardTitle>
-                  <CardDescription>Manualnie wprowadzaj punkty danych dla wykresu "Burndown Chart" widocznego na pulpicie.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="max-h-60 overflow-y-auto pr-2">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Data</TableHead>
-                                <TableHead>Idealnie</TableHead>
-                                <TableHead>Rzeczywiście</TableHead>
-                                <TableHead></TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {burndownData.map((point, index) => (
-                                <TableRow key={index}>
-                                    <TableCell>
-                                        <Input type="date" value={point.date} onChange={(e) => handleDateChange(index, e.target.value)} />
-                                    </TableCell>
-                                    <TableCell>
-                                        <Input type="number" value={point.ideal} onChange={(e) => handleBurndownChange(index, 'ideal', e.target.value)} />
-                                    </TableCell>
-                                    <TableCell>
-                                        <Input type="number" value={point.actual} onChange={(e) => handleBurndownChange(index, 'actual', e.target.value)} />
-                                    </TableCell>
-                                     <TableCell>
-                                        <Button variant="ghost" size="icon" onClick={() => removeBurndownPoint(index)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                    </div>
-                    <div className="flex justify-between items-center mt-4">
-                      <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="outline"><PlusCircle className="h-4 w-4 mr-2" />Dodaj punkt</Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Dodaj nowy punkt danych</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Wprowadź dane dla nowego punktu na wykresie spalania.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <div className="grid gap-4 py-4">
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                  <Label htmlFor="new-date" className="text-right">Data</Label>
-                                  <Input id="new-date" type="date" value={newPoint.date} onChange={(e) => setNewPoint({...newPoint, date: e.target.value})} className="col-span-3" />
-                                </div>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                  <Label htmlFor="new-ideal" className="text-right">Idealnie</Label>
-                                  <Input id="new-ideal" type="number" value={newPoint.ideal} onChange={(e) => setNewPoint({...newPoint, ideal: parseInt(e.target.value) || 0})} className="col-span-3" />
-                                </div>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                  <Label htmlFor="new-actual" className="text-right">Rzeczywiście</Label>
-                                  <Input id="new-actual" type="number" value={newPoint.actual} onChange={(e) => setNewPoint({...newPoint, actual: parseInt(e.target.value) || 0})} className="col-span-3" />
-                                </div>
-                              </div>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Anuluj</AlertDialogCancel>
-                                <AlertDialogAction onClick={addBurndownPoint}>Dodaj</AlertDialogAction>
-                              </AlertDialogFooter>
-                          </AlertDialogContent>
-                      </AlertDialog>
-
-                        <Button onClick={saveBurndownData} disabled={isSavingBurndown}><Save className="h-4 w-4 mr-2"/> Zapisz i Synchronizuj</Button>
-                    </div>
-                </CardContent>
-              </Card>
+               <AdvancedMetrics tasks={tasks} users={users} />
             </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><LineChart className="h-5 w-5"/> Zarządzaj Danymi Wykresu Spalania</CardTitle>
+                <CardDescription>Manualnie wprowadzaj punkty danych dla wykresu "Burndown Chart" widocznego na pulpicie.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                  <div className="max-h-60 overflow-y-auto pr-2">
+                  <Table>
+                      <TableHeader>
+                          <TableRow>
+                              <TableHead>Data</TableHead>
+                              <TableHead>Idealnie</TableHead>
+                              <TableHead>Rzeczywiście</TableHead>
+                              <TableHead></TableHead>
+                          </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                          {burndownData.map((point, index) => (
+                              <TableRow key={index}>
+                                  <TableCell>
+                                      <Input type="date" value={point.date} onChange={(e) => handleDateChange(index, e.target.value)} />
+                                  </TableCell>
+                                  <TableCell>
+                                      <Input type="number" value={point.ideal} onChange={(e) => handleBurndownChange(index, 'ideal', e.target.value)} />
+                                  </TableCell>
+                                  <TableCell>
+                                      <Input type="number" value={point.actual} onChange={(e) => handleBurndownChange(index, 'actual', e.target.value)} />
+                                  </TableCell>
+                                    <TableCell>
+                                      <Button variant="ghost" size="icon" onClick={() => removeBurndownPoint(index)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                  </TableCell>
+                              </TableRow>
+                          ))}
+                      </TableBody>
+                  </Table>
+                  </div>
+                  <div className="flex justify-between items-center mt-4">
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="outline"><PlusCircle className="h-4 w-4 mr-2" />Dodaj punkt</Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Dodaj nowy punkt danych</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Wprowadź dane dla nowego punktu na wykresie spalania. Możesz też poprosić AI o sugestie.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <div className="grid gap-4 py-4">
+                              <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="new-date" className="text-right">Data</Label>
+                                <Input id="new-date" type="date" value={newPoint.date} onChange={(e) => setNewPoint({...newPoint, date: e.target.value})} className="col-span-3" />
+                              </div>
+                              <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="new-ideal" className="text-right">Idealnie</Label>
+                                <Input id="new-ideal" type="number" value={newPoint.ideal} onChange={(e) => setNewPoint({...newPoint, ideal: parseInt(e.target.value) || 0})} className="col-span-3" />
+                              </div>
+                              <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="new-actual" className="text-right">Rzeczywiście</Label>
+                                <Input id="new-actual" type="number" value={newPoint.actual} onChange={(e) => setNewPoint({...newPoint, actual: parseInt(e.target.value) || 0})} className="col-span-3" />
+                              </div>
+                               <Button variant="outline" onClick={handleSuggestValues} disabled={isSuggesting}>
+                                  {isSuggesting ? <Icons.spinner className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                                  Zasugeruj z AI
+                                </Button>
+                            </div>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Anuluj</AlertDialogCancel>
+                              <AlertDialogAction onClick={addBurndownPoint}>Dodaj</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+
+                      <Button onClick={saveBurndownData} disabled={isSavingBurndown}><Save className="h-4 w-4 mr-2"/> Zapisz i Synchronizuj</Button>
+                  </div>
+              </CardContent>
+            </Card>
         </div>
     </ProtectedRoute>
   );
