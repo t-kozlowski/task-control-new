@@ -1,10 +1,10 @@
 import {genkit} from 'genkit';
-import {googleAI} from '@genkit-ai/googleai';
+import {openAI} from 'genkitx-openai';
 
 export const ai = genkit({
   plugins: [
-    googleAI({
-      // The API key is read from the GOOGLE_API_KEY environment variable.
+    openAI({
+      apiKey: process.env.OPENAI_API_KEY,
     }),
   ],
   enableTracing: true,
