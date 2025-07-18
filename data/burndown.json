@@ -1,37 +1,22 @@
 [
   {
-    "date": "2025-07-15",
-    "ideal": 20,
-    "actual": 20
-  },
-  {
     "date": "2025-07-16",
-    "ideal": 18,
-    "actual": 19
+    "ideal": 200,
+    "actual": 200
   },
   {
     "date": "2025-07-17",
-    "ideal": 16,
-    "actual": 17
+    "ideal": 199,
+    "actual": 200
   },
   {
     "date": "2025-07-18",
-    "ideal": 14,
-    "actual": 15
+    "ideal": 198,
+    "actual": 199
   },
   {
-    "date": "2025-07-19",
-    "ideal": 12,
-    "actual": 12
-  },
-  {
-    "date": "2025-07-20",
-    "ideal": 10,
-    "actual": 11
-  },
-  {
-    "date": "2025-07-22",
-    "ideal": 10,
-    "actual": 10
+    "date": "2025-07-31",
+    "ideal": 0,
+    "actual": 198
   }
 ]

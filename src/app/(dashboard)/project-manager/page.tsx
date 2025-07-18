@@ -2,7 +2,7 @@
 'use client'
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, Target, Save, Trash2, PlusCircle, LineChart, Sparkles } from 'lucide-react';
+import { Briefcase, Target, Save, Trash2, PlusCircle, LineChart, Sparkles, CalendarClock } from 'lucide-react';
 import ProtectedRoute from './_components/protected-route';
 import { Task, User, BurndownDataPoint } from '@/types';
 import { useEffect, useState } from 'react';
@@ -40,6 +40,14 @@ export default function ProjectManagerPage() {
     actual: 0
   });
   const [isSuggesting, setIsSuggesting] = useState(false);
+  const [deadline, setDeadline] = useState('');
+
+  useEffect(() => {
+    const storedDeadline = localStorage.getItem('projectDeadline');
+    if (storedDeadline) {
+      setDeadline(storedDeadline);
+    }
+  }, []);
 
   const { toast } = useToast();
 
@@ -163,6 +171,18 @@ export default function ProjectManagerPage() {
     }
   };
 
+  const handleSaveDeadline = () => {
+    if (deadline) {
+        localStorage.setItem('projectDeadline', deadline);
+        // Dispatch a storage event to notify other components/tabs
+        window.dispatchEvent(new Event('storage'));
+        toast({
+            title: 'Zapisano!',
+            description: 'Globalny termin projektu został zaktualizowany.'
+        });
+    }
+  };
+
 
   if (isLoading) {
     return <ProtectedRoute><div>Ładowanie...</div></ProtectedRoute>;
@@ -274,6 +294,22 @@ export default function ProjectManagerPage() {
                   </div>
               </CardContent>
             </Card>
+
+             <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2"><CalendarClock className="h-5 w-5"/> Ustaw Globalny Termin Projektu</CardTitle>
+                  <CardDescription>Ta data będzie używana do generowania linii predykcji na wykresie spalania.</CardDescription>
+                </CardHeader>
+                <CardContent className="flex items-center gap-4">
+                    <Input 
+                      type="date" 
+                      value={deadline}
+                      onChange={(e) => setDeadline(e.target.value)}
+                      className="max-w-xs"
+                    />
+                    <Button onClick={handleSaveDeadline}>Zapisz deadline</Button>
+                </CardContent>
+              </Card>
         </div>
     </ProtectedRoute>
   );

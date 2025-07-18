@@ -27,6 +27,7 @@ import {
   PanelLeft,
   Layers,
   ClipboardList,
+  CalendarClock,
 } from 'lucide-react';
 
 export const Icons = {
@@ -58,6 +59,7 @@ export const Icons = {
   menu: PanelLeft,
   myTasks: ListTodo,
   projectManager: Briefcase,
+  deadline: CalendarClock,
 };
 
 export const PriorityIcons = {
