@@ -1,4 +1,5 @@
 
+
 export type Priority = 'Critical' | 'High' | 'Medium' | 'Low';
 export type Status = 'Todo' | 'In Progress' | 'Done' | 'Backlog';
 
@@ -21,6 +22,7 @@ export interface Task {
   parentId?: string | null;
   date?: string; // Add date field for completion date tracking
   dueDate?: string | null; // Add due date field for burndown chart
+  needsHelp?: boolean;
 }
 
 export interface AiDirective {

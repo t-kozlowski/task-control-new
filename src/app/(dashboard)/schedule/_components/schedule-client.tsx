@@ -14,10 +14,10 @@ export default function ScheduleClient({ tasks }: { tasks: Task[] }) {
 
   const tasksByDate = useMemo(() => {
     const map = new Map<string, Task[]>();
-    if (!tasks) return map; // Fix: Check if tasks is defined
+    if (!tasks) return map;
     tasks.forEach(task => {
       if (task.dueDate && !task.parentId) { // Only main tasks
-        const dateKey = task.dueDate;
+        const dateKey = task.dueDate.split('T')[0];
         if (!map.has(dateKey)) {
           map.set(dateKey, []);
         }
@@ -34,7 +34,7 @@ export default function ScheduleClient({ tasks }: { tasks: Task[] }) {
   const modifiersStyles = {
     hasTask: {
       fontWeight: 'bold',
-      border: '2px solid hsl(var(--primary))',
+      border: '2px solid hsl(var(--primary) / 0.5)',
       borderRadius: 'var(--radius)',
     }
   };
@@ -75,16 +75,16 @@ export default function ScheduleClient({ tasks }: { tasks: Task[] }) {
   return (
     <Calendar
         mode="single"
-        className="rounded-md border p-0"
+        className="rounded-md border p-4"
         classNames={{
-            months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 p-4',
+            months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0',
             month: 'space-y-4 w-full',
-            table: 'w-full border-collapse',
-            head_row: 'flex justify-around',
-            head_cell: 'w-full text-muted-foreground rounded-md font-normal text-[0.8rem]',
+            table: 'w-full border-collapse space-y-1',
+            head_row: 'flex justify-around mb-2',
+            head_cell: 'w-full text-muted-foreground rounded-md font-normal text-sm',
             row: 'flex w-full mt-2 justify-around',
-            cell: 'h-16 w-full text-center text-sm p-0 relative focus-within:relative focus-within:z-20',
-            day: 'h-full w-full p-0 font-normal aria-selected:opacity-100',
+            cell: 'h-24 w-full text-center text-sm p-0 relative focus-within:relative focus-within:z-20 rounded-md',
+            day: 'h-full w-full p-1 font-normal aria-selected:opacity-100',
         }}
         modifiers={modifiers}
         modifiersStyles={modifiersStyles}

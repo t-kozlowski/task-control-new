@@ -3,20 +3,28 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Task } from '@/types';
 import TaskListItem from './task-list-item';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Archive } from 'lucide-react';
 
-export default function TaskList({ tasks }: { tasks: Task[] }) {
+export default function TaskList({ tasks: initialTasks }: { tasks: Task[] }) {
   const [showArchived, setShowArchived] = useState(false);
+  const [tasks, setTasks] = useState(initialTasks);
+
+  useEffect(() => {
+    setTasks(initialTasks);
+  }, [initialTasks]);
+
+  const handleTaskUpdate = (updatedTask: Task) => {
+    setTasks(currentTasks => 
+        currentTasks.map(t => t.id === updatedTask.id ? updatedTask : t)
+    );
+  };
 
   const { activeTasks, archivedTasks } = useMemo(() => {
-    // Active tasks are main tasks that are not 'Done'
     const active = tasks.filter(t => !t.parentId && t.status !== 'Done');
-    // Archived tasks are all tasks (main and sub) that are 'Done'
     const archived = tasks.filter(t => t.status === 'Done');
-    
     return { activeTasks: active, archivedTasks: archived };
   }, [tasks]);
 
@@ -41,7 +49,7 @@ export default function TaskList({ tasks }: { tasks: Task[] }) {
       <CardContent className="space-y-4">
         {displayedTasks.length > 0 ? (
           displayedTasks.map(task => (
-            <TaskListItem key={task.id} task={task} allTasks={tasks} />
+            <TaskListItem key={task.id} task={task} allTasks={tasks} onTaskUpdate={handleTaskUpdate} />
           ))
         ) : (
           <div className="text-center text-muted-foreground p-8 flex flex-col items-center gap-4">

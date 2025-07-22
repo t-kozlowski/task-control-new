@@ -14,10 +14,11 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ message: 'Task not found' }, { status: 404 });
     }
     
-    tasks[taskIndex] = updatedTask;
+    // Merge existing task with updated fields
+    tasks[taskIndex] = { ...tasks[taskIndex], ...updatedTask };
 
     // After updating the task, check if its parent (or itself if it's a main task) is now completed.
-    const parentId = updatedTask.parentId || updatedTask.id;
+    const parentId = tasks[taskIndex].parentId || tasks[taskIndex].id;
     const parentTaskIndex = tasks.findIndex(t => t.id === parentId);
 
     if (parentTaskIndex !== -1) {
@@ -33,13 +34,13 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     }
     
     // Legacy check for tasks without subtasks
-    if (!updatedTask.parentId && updatedTask.status === 'Done' && tasks[taskIndex].status !== 'Done' && calculateWeightedProgress(updatedTask, tasks) === 100) {
+    if (!tasks[taskIndex].parentId && tasks[taskIndex].status === 'Done' && tasks[taskIndex].status !== 'Done' && calculateWeightedProgress(tasks[taskIndex], tasks) === 100) {
        tasks[taskIndex].date = new Date().toISOString();
     }
 
 
     await saveTasks(tasks);
-    return NextResponse.json(updatedTask);
+    return NextResponse.json(tasks[taskIndex]);
   } catch (error) {
     return NextResponse.json({ message: 'Error updating task' }, { status: 500 });
   }

@@ -1,6 +1,5 @@
 import { getTasks } from '@/lib/data-service';
 import ScheduleClient from './_components/schedule-client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -14,17 +13,10 @@ export default async function SchedulePage() {
             <Calendar className="h-8 w-8 text-primary" />
             <h1 className="text-3xl font-bold tracking-tight">Harmonogram Projektu</h1>
         </div>
-        <Card>
-            <CardHeader>
-                <CardTitle>Kalendarz Zadań</CardTitle>
-                <CardDescription>
-                    Wizualizacja terminów (dueDate) dla wszystkich zadań głównych w projekcie. Najedź na datę, aby zobaczyć szczegóły.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                 <ScheduleClient initialTasks={tasks} />
-            </CardContent>
-        </Card>
+        <p className="text-muted-foreground">
+            Wizualizacja terminów (dueDate) dla wszystkich zadań głównych w projekcie. Najedź na datę, aby zobaczyć szczegóły.
+        </p>
+        <ScheduleClient initialTasks={tasks} />
     </div>
   );
 }

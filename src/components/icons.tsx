@@ -32,7 +32,8 @@ import {
   Settings,
   Calendar,
   CalendarDays,
-  CalendarCheck
+  CalendarCheck,
+  Hand
 } from 'lucide-react';
 
 export const Icons = {
@@ -70,6 +71,7 @@ export const Icons = {
   schedule: Calendar,
   myDay: CalendarDays,
   calendarCheck: CalendarCheck,
+  help: Hand
 };
 
 export const PriorityIcons = {

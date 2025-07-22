@@ -1,4 +1,5 @@
 
+
 'use client';
 import React, { useState, useRef, type MouseEvent } from 'react';
 import type { Task, User } from '@/types';
@@ -18,19 +19,45 @@ import {
 } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('') || '?';
 
-export default function TaskListItem({ task, allTasks = [] }: { task: Task, allTasks?: Task[] }) {
+export default function TaskListItem({ task, allTasks = [], onTaskUpdate }: { task: Task, allTasks?: Task[], onTaskUpdate: (task: Task) => void }) {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
   const itemRef = useRef<HTMLDivElement>(null);
-  const { users } = useApp();
+  const { users, loggedInUser } = useApp();
+  const { toast } = useToast();
 
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
     if (itemRef.current) {
       const rect = itemRef.current.getBoundingClientRect();
       setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+    }
+  };
+
+  const handleHelpRequest = async () => {
+    const newNeedsHelp = !task.needsHelp;
+    try {
+        const response = await fetch(`/api/tasks/${task.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ needsHelp: newNeedsHelp }),
+        });
+        if (!response.ok) throw new Error('Nie udało się zaktualizować zadania.');
+        const updatedTask = await response.json();
+        onTaskUpdate(updatedTask);
+        toast({
+            title: 'Zaktualizowano!',
+            description: newNeedsHelp ? 'Twoja prośba o pomoc jest widoczna dla zespołu.' : 'Anulowano prośbę o pomoc.',
+        });
+    } catch (error) {
+        toast({
+            title: 'Błąd',
+            description: 'Nie można było zaktualizować statusu pomocy.',
+            variant: 'destructive',
+        });
     }
   };
   
@@ -49,7 +76,8 @@ export default function TaskListItem({ task, allTasks = [] }: { task: Task, allT
       onMouseLeave={() => setIsHovering(false)}
       className={cn(
         "group relative rounded-lg border bg-card p-0.5 overflow-hidden transition-all duration-300",
-         task.status === 'Done' ? 'border-transparent bg-card/50' : 'hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10'
+         task.status === 'Done' ? 'border-transparent bg-card/50' : 'hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10',
+         task.needsHelp && 'border-yellow-500/50'
       )}
     >
       <div
@@ -68,6 +96,18 @@ export default function TaskListItem({ task, allTasks = [] }: { task: Task, allT
                         <div className="flex items-center gap-3">
                             {task.status === 'Done' ? <Icons.checkCircle className="size-5 text-green-500" /> : React.createElement(PriorityIcons[task.priority], { className: "size-5 text-primary" })}
                             <h3 className={cn("font-semibold text-lg", task.status === 'Done' && 'line-through text-muted-foreground')}>{task.name}</h3>
+                             {task.needsHelp && (
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger>
+                                            <Icons.help className="size-5 text-yellow-500 animate-pulse" />
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>To zadanie wymaga pomocy!</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            )}
                         </div>
                         <div className="flex items-center gap-2 ml-4 flex-shrink-0">
                             <div className="flex -space-x-2">
@@ -89,14 +129,35 @@ export default function TaskListItem({ task, allTasks = [] }: { task: Task, allT
 
                     <p className={cn("text-sm text-muted-foreground mb-4 pl-8 text-left", task.status === 'Done' && 'line-through')}>{task.description}</p>
 
-                    <div className="flex items-center gap-4 pl-8">
-                        <Progress
-                            value={progress}
-                            className="w-full h-1.5"
-                            indicatorStyle={{ background: progressGradient }}
-                            indicatorClassName={isInProgress && task.status !== 'Done' ? 'animate-subtle-pulse' : ''}
-                        />
-                        <span className="font-mono text-sm font-semibold">{progress}%</span>
+                    <div className="flex items-center justify-between gap-4 pl-8">
+                        <div className="flex items-center gap-4 flex-1">
+                            <Progress
+                                value={progress}
+                                className="w-full h-1.5"
+                                indicatorStyle={{ background: progressGradient }}
+                                indicatorClassName={isInProgress && task.status !== 'Done' ? 'animate-subtle-pulse' : ''}
+                            />
+                            <span className="font-mono text-sm font-semibold">{progress}%</span>
+                        </div>
+                        {task.status !== 'Done' && (
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button
+                                            variant={task.needsHelp ? "destructive" : "outline"}
+                                            size="sm"
+                                            onClick={handleHelpRequest}
+                                            className={cn("h-7 px-2", task.needsHelp && "bg-yellow-500/20 border-yellow-500/50 hover:bg-yellow-500/30 text-yellow-400")}
+                                        >
+                                            <Icons.help className="size-4" />
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>{task.needsHelp ? 'Anuluj prośbę o pomoc' : 'Poproś o pomoc'}</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        )}
                     </div>
                 </div>
                 {subTasks.length > 0 && (
