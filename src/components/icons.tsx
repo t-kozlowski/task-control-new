@@ -30,7 +30,6 @@ import {
   CalendarClock,
   File,
   Settings,
-  Calendar,
   CalendarDays,
   CalendarCheck,
   Hand
@@ -68,7 +67,6 @@ export const Icons = {
   deadline: CalendarClock,
   file: File,
   settings: Settings,
-  schedule: Calendar,
   myDay: CalendarDays,
   calendarCheck: CalendarCheck,
   help: Hand

@@ -30,7 +30,6 @@ const menuItems = [
   { href: '/my-tasks', label: 'Moje Zadania', icon: Icons.myTasks },
   { href: '/my-day', label: 'Mój Dzień', icon: Icons.myDay },
   { href: '/backlog', label: 'Backlog', icon: Icons.backlog },
-  { href: '/schedule', label: 'Harmonogram', icon: Icons.schedule },
   { href: '/meetings', label: 'Spotkania', icon: Icons.meetings },
   { href: '/project-manager', label: 'Project Manager', icon: Icons.projectManager, requiredEmail: 'tkozlowski@lspgroup.pl' },
   { href: '/directives', label: 'Dyrektywy AI', icon: Icons.directives },
