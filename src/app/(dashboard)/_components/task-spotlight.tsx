@@ -5,6 +5,7 @@ import { Task } from '@/types';
 import React, { useMemo, useState, useEffect } from 'react';
 import { TaskSpotlightItem } from './task-spotlight-item';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Icons } from '@/components/icons';
 
 const MAX_VISIBLE_TASKS = 5;
 
@@ -36,8 +37,10 @@ export default function TaskSpotlight({ tasks }: { tasks: Task[] }) {
                 <CardTitle>Zadania w Centrum Uwagi</CardTitle>
             </CardHeader>
             <CardContent>
-                <div className="text-center py-8 text-muted-foreground">
-                    <p>Brak zadań o wysokim priorytecie.</p>
+                <div className="text-center py-8 text-muted-foreground flex flex-col items-center gap-4 h-[420px] justify-center">
+                    <Icons.checkCircle className="h-12 w-12 text-green-500" />
+                    <h3 className="text-lg font-semibold">Brak zadań w centrum uwagi.</h3>
+                    <p className="text-sm">Wszystkie pilne zadania zostały ukończone.</p>
                 </div>
             </CardContent>
         </Card>

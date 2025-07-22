@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, type ReactNode } from 'react';
 import { Icons } from '@/components/icons';
 
-const ALLOWED_EMAIL = 'tomek@example.com';
+const ALLOWED_EMAIL = 'tkozlowski@lspgroup.pl';
 
 export default function ProtectedRoute({ children }: { children: ReactNode }) {
   const { loggedInUser, isLoading } = useApp();

@@ -28,9 +28,11 @@ import {
   Layers,
   ClipboardList,
   CalendarClock,
-  FlaskConical,
   File,
   Settings,
+  Calendar,
+  CalendarDays,
+  CalendarCheck
 } from 'lucide-react';
 
 export const Icons = {
@@ -63,9 +65,11 @@ export const Icons = {
   myTasks: ListTodo,
   projectManager: Briefcase,
   deadline: CalendarClock,
-  aiTest: FlaskConical,
   file: File,
   settings: Settings,
+  schedule: Calendar,
+  myDay: CalendarDays,
+  calendarCheck: CalendarCheck,
 };
 
 export const PriorityIcons = {

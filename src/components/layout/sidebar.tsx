@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -29,12 +28,13 @@ import { Task } from '@/types';
 const menuItems = [
   { href: '/', label: 'Pulpit', icon: Icons.dashboard },
   { href: '/my-tasks', label: 'Moje Zadania', icon: Icons.myTasks },
+  { href: '/my-day', label: 'Mój Dzień', icon: Icons.myDay },
   { href: '/backlog', label: 'Backlog', icon: Icons.backlog },
+  { href: '/schedule', label: 'Harmonogram', icon: Icons.schedule },
   { href: '/meetings', label: 'Spotkania', icon: Icons.meetings },
-  { href: '/project-manager', label: 'Project Manager', icon: Icons.projectManager, requiredEmail: 'tomek@example.com' },
+  { href: '/project-manager', label: 'Project Manager', icon: Icons.projectManager, requiredEmail: 'tkozlowski@lspgroup.pl' },
   { href: '/directives', label: 'Dyrektywy AI', icon: Icons.directives },
-  { href: '/users', label: 'Użytkownicy', icon: Icons.users, requiredEmail: 'tomek@example.com' },
-  { href: '/ai-test', label: 'Test AI', icon: Icons.aiTest },
+  { href: '/users', label: 'Użytkownicy', icon: Icons.users, requiredEmail: 'tkozlowski@lspgroup.pl' },
 ];
 
 const settingsMenuItem = { href: '/settings', label: 'Konfiguracja', icon: Icons.settings };
