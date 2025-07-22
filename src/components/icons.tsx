@@ -32,7 +32,10 @@ import {
   Settings,
   CalendarDays,
   CalendarCheck,
-  Hand
+  Hand,
+  Mic,
+  MicOff,
+  Copy
 } from 'lucide-react';
 
 export const Icons = {
@@ -69,7 +72,10 @@ export const Icons = {
   settings: Settings,
   myDay: CalendarDays,
   calendarCheck: CalendarCheck,
-  help: Hand
+  help: Hand,
+  mic: Mic,
+  micOff: MicOff,
+  copy: Copy
 };
 
 export const PriorityIcons = {

@@ -1,6 +1,6 @@
 // src/app/(dashboard)/meetings/_components/meetings-client.tsx
 'use client';
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import type { Meeting, ActionItem, User, Task } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Icons } from '@/components/icons';
@@ -25,6 +25,124 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { Mic, MicOff, Copy } from 'lucide-react';
+
+function TranscriptionView({ meeting }: { meeting: Meeting }) {
+    const { toast } = useToast();
+    const [isRecording, setIsRecording] = useState(false);
+    const [transcript, setTranscript] = useState<{ raw: string, processed: string } | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+    const audioChunksRef = useRef<Blob[]>([]);
+
+    const handleStartRecording = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorderRef.current = new MediaRecorder(stream);
+            mediaRecorderRef.current.ondataavailable = (event) => {
+                audioChunksRef.current.push(event.data);
+            };
+            mediaRecorderRef.current.onstop = handleStopRecording;
+            mediaRecorderRef.current.start();
+            setIsRecording(true);
+            setTranscript(null);
+        } catch (err) {
+            toast({ title: "Błąd", description: "Nie można uzyskać dostępu do mikrofonu.", variant: "destructive" });
+        }
+    };
+
+    const handleStopRecording = async () => {
+        if (mediaRecorderRef.current && isRecording) {
+            mediaRecorderRef.current.stop();
+            // Get stream tracks and stop them to turn off the mic indicator
+            mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+        }
+        setIsRecording(false);
+        setIsLoading(true);
+
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        audioChunksRef.current = [];
+
+        try {
+            const reader = new FileReader();
+            reader.readAsDataURL(audioBlob);
+            reader.onloadend = async () => {
+                const base64Audio = reader.result as string;
+
+                const response = await fetch('/api/ai/transcribe-audio', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ audioDataUri: base64Audio, attendees: meeting.attendees.length }),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Błąd transkrypcji');
+                }
+
+                const result = await response.json();
+                setTranscript({ raw: result.rawTranscript, processed: result.processedTranscript });
+                toast({ title: "Sukces", description: "Transkrypcja została wygenerowana." });
+            };
+        } catch (error) {
+            toast({ title: "Błąd", description: error instanceof Error ? error.message : 'Nieznany błąd', variant: "destructive" });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
+    const handleCopy = (text: string) => {
+        navigator.clipboard.writeText(text);
+        toast({ title: 'Skopiowano!' });
+    }
+
+    // This will toggle recording state
+    const toggleRecording = () => {
+        if (isRecording) {
+            handleStopRecording();
+        } else {
+            handleStartRecording();
+        }
+    };
+
+    return (
+        <div className="p-4 space-y-4">
+             <div className="p-4 border rounded-lg bg-secondary/30 flex items-center justify-between">
+                <div>
+                    <h4 className="font-semibold">Nagrywanie spotkania</h4>
+                    <p className="text-sm text-muted-foreground">Nagraj spotkanie, a AI stworzy z niego notatki.</p>
+                </div>
+                <Button onClick={toggleRecording} disabled={isLoading} size="lg">
+                    {isLoading ? <Icons.spinner className="animate-spin mr-2" /> : (isRecording ? <MicOff className="mr-2" /> : <Mic className="mr-2" />)}
+                    {isLoading ? "Przetwarzanie..." : (isRecording ? "Zatrzymaj" : "Rozpocznij Nagrywanie")}
+                </Button>
+            </div>
+
+            {transcript && (
+                <div className="space-y-4">
+                     <Card>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <CardTitle>Surowa Transkrypcja</CardTitle>
+                            <Button variant="ghost" size="icon" onClick={() => handleCopy(transcript.raw)}><Copy className="size-4"/></Button>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-sm whitespace-pre-wrap font-mono bg-background p-4 rounded-md h-48 overflow-y-auto">{transcript.raw}</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                           <CardTitle>Zredagowane Notatki AI</CardTitle>
+                           <Button variant="ghost" size="icon" onClick={() => handleCopy(transcript.processed)}><Copy className="size-4"/></Button>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-sm whitespace-pre-wrap font-mono bg-background p-4 rounded-md">{transcript.processed}</p>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
+        </div>
+    );
+}
 
 
 function AiPrepView({ meeting, users, tasks }: { meeting: Meeting; users: User[]; tasks: Task[] }) {
@@ -244,6 +362,7 @@ export default function MeetingsClient({ initialMeetings, initialTasks }: { init
                                     <TabsTrigger value="actions">Punkty Akcji</TabsTrigger>
                                     <TabsTrigger value="prep">Przygotowanie AI</TabsTrigger>
                                     <TabsTrigger value="notes">Notatki</TabsTrigger>
+                                    <TabsTrigger value="transcription">Transkrypcja</TabsTrigger>
                                 </TabsList>
                                 <div className="flex gap-2">
                                      <Button variant="outline" size="sm" onClick={handleEditMeeting}>Edytuj</Button>
@@ -292,6 +411,9 @@ export default function MeetingsClient({ initialMeetings, initialTasks }: { init
                                       <p className="text-sm whitespace-pre-wrap font-mono bg-secondary/30 p-4 rounded-md">
                                         {selectedMeeting.rawNotes || "Brak surowych notatek dla tego spotkania."}
                                       </p>
+                                </TabsContent>
+                                 <TabsContent value="transcription" className="m-0">
+                                    <TranscriptionView meeting={selectedMeeting} />
                                 </TabsContent>
                             </ScrollArea>
                         </Tabs>
