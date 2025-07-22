@@ -105,6 +105,7 @@ export function MeetingFormSheet({ open, onOpenChange, meeting, onMeetingSaved, 
     }
     setIsRedacting(true);
     try {
+      // Use the proxy endpoint
       const response = await fetch(`/api/proxy/redact_notes`, {
         method: 'POST',
         headers: { 
@@ -112,8 +113,12 @@ export function MeetingFormSheet({ open, onOpenChange, meeting, onMeetingSaved, 
         },
         body: JSON.stringify({ notes: rawNotes })
       });
-      if (!response.ok) throw new Error('Nie udało się zredagować notatek.');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Nie udało się zredagować notatek.');
+      }
       const data = await response.json();
+      // Assuming the python server returns a field 'redactedSummary'
       setValue('summary', data.redactedSummary, { shouldValidate: true });
       toast({
         title: 'Sukces!',

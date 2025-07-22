@@ -26,21 +26,19 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Mic, MicOff, Copy, Highlighter, MessagesSquare, Sparkles, AlertTriangle, FileText } from 'lucide-react';
-import { Textarea } from '@/components/ui/textarea';
-import type { TranscribeOutput } from '@/ai/flows/transcribe-audio';
-
 
 function TranscriptionView({ meeting, onSummaryGenerated }: { meeting: Meeting; onSummaryGenerated: (summary: string) => void; }) {
     const { toast } = useToast();
     const [isRecording, setIsRecording] = useState(false);
     const [recordingTime, setRecordingTime] = useState(0);
-    const [transcriptData, setTranscriptData] = useState<TranscribeOutput | null>(null);
+    const [transcriptData, setTranscriptData] = useState<{ transcript: string } | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const audioChunksRef = useRef<Blob[]>([]);
     const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+    const { users } = useApp();
 
     const startTimer = () => {
         timerIntervalRef.current = setInterval(() => {
@@ -60,7 +58,7 @@ function TranscriptionView({ meeting, onSummaryGenerated }: { meeting: Meeting; 
         if (isRecording) return;
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorderRef.current = new MediaRecorder(stream);
+            mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: 'audio/webm' });
             audioChunksRef.current = [];
 
             mediaRecorderRef.current.ondataavailable = (event) => {
@@ -101,21 +99,21 @@ function TranscriptionView({ meeting, onSummaryGenerated }: { meeting: Meeting; 
         reader.readAsDataURL(audioBlob);
         reader.onloadend = async () => {
             const base64Audio = reader.result as string;
-            const attendeeNames = meeting.attendees.map(email => users.find(u => u.email === email)?.name || 'Unknown');
             
             try {
-                const response = await fetch('/api/ai/transcribe-audio', {
+                // Use the proxy to send the request to the Python backend
+                const response = await fetch('/api/proxy/transcribe_audio', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ audioDataUri: base64Audio, attendees: attendeeNames }),
+                    body: JSON.stringify({ audioDataUri: base64Audio }),
                 });
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.error || errorData.message || 'Błąd transkrypcji na serwerze.');
+                    throw new Error(errorData.error || 'Błąd transkrypcji na serwerze.');
                 }
 
-                const result: TranscribeOutput = await response.json();
+                const result: { transcript: string } = await response.json();
                 setTranscriptData(result);
                 toast({ title: "Sukces", description: "Transkrypcja została pomyślnie przetworzona." });
             } catch (error) {
@@ -128,36 +126,35 @@ function TranscriptionView({ meeting, onSummaryGenerated }: { meeting: Meeting; 
     };
 
     const handleGenerateSummary = async () => {
-        if (!transcriptData) return;
+        if (!transcriptData?.transcript) return;
         setIsProcessing(true);
         try {
-            const response = await fetch('/api/ai/redact-notes', {
+            const response = await fetch('/api/proxy/redact_notes', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ notes: transcriptData.rawTranscript }), // Send the raw transcript for redaction
+                body: JSON.stringify({ notes: transcriptData.transcript }),
             });
              if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error || errorData.message || 'Błąd generowania podsumowania.');
+                throw new Error(errorData.error || 'Błąd generowania podsumowania.');
             }
             const result = await response.json();
             onSummaryGenerated(result.redactedSummary);
             toast({ title: "Sukces!", description: "Nowe podsumowanie zostało wygenerowane i wstawione." });
         } catch (error) {
-            toast({ title: "Błąd", description: error instanceof Error ? error.message : 'Nieznany błąd', variant: "destructive" });
+            toast({ title: "Błąd", description: error instanceof Error ? error.message : 'Wystąpił nieznany błąd', variant: "destructive" });
         } finally {
             setIsProcessing(false);
         }
     };
 
-    const { users } = useApp();
 
     return (
         <div className="p-4 space-y-4">
              <div className="p-4 border rounded-lg bg-secondary/30 flex items-center justify-between">
                 <div>
                     <h4 className="font-semibold">Nagrywanie i Transkrypcja AI</h4>
-                    <p className="text-sm text-muted-foreground">Nagraj spotkanie, a AI przygotuje transkrypcję z podziałem na osoby.</p>
+                    <p className="text-sm text-muted-foreground">Nagraj spotkanie, a AI przygotuje transkrypcję.</p>
                 </div>
                 <div className="flex items-center gap-4">
                     {isRecording && (
@@ -186,42 +183,18 @@ function TranscriptionView({ meeting, onSummaryGenerated }: { meeting: Meeting; 
             {transcriptData && (
                 <Card>
                     <CardHeader>
-                        <CardTitle className='text-lg'>Wyniki Analizy AI</CardTitle>
+                        <CardTitle className='text-lg'>Wyniki Transkrypcji</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                        {/* Highlights */}
                         <div>
-                           <h3 className="font-semibold flex items-center gap-2 mb-2"><Highlighter className="size-5 text-primary" /> Kluczowe Punkty</h3>
-                           <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
-                             {transcriptData.highlights.map((h, i) => <li key={i}>{h}</li>)}
-                           </ul>
-                        </div>
-                        
-                         {/* Initial Summary */}
-                        <div>
-                           <h3 className="font-semibold flex items-center gap-2 mb-2"><FileText className="size-5 text-primary" /> Wstępne Podsumowanie</h3>
-                           <p className="text-sm text-muted-foreground p-3 bg-secondary/40 rounded-md">{transcriptData.initialSummary}</p>
-                        </div>
-
-                        {/* Speakers */}
-                        <div>
-                           <h3 className="font-semibold flex items-center gap-2 mb-2"><MessagesSquare className="size-5 text-primary" /> Dialog</h3>
-                           <div className="space-y-4 max-h-60 overflow-y-auto p-3 bg-secondary/40 rounded-md">
-                               {transcriptData.speakers.map((s, i) => (
-                                   <div key={i}>
-                                     <p className="font-semibold text-sm mb-1">{s.name}</p>
-                                     <div className="pl-4 border-l-2 border-primary/50 space-y-1 text-sm text-muted-foreground">
-                                         {s.lines.map((l, j) => <p key={j}>"{l}"</p>)}
-                                     </div>
-                                   </div>
-                               ))}
-                           </div>
+                           <h3 className="font-semibold flex items-center gap-2 mb-2"><FileText className="size-5 text-primary" /> Surowa Transkrypcja</h3>
+                           <p className="text-sm text-muted-foreground p-3 bg-secondary/40 rounded-md whitespace-pre-wrap">{transcriptData.transcript}</p>
                         </div>
                         
                         <div className="flex justify-end">
                             <Button onClick={handleGenerateSummary} disabled={isProcessing}>
                                 {isProcessing ? <Icons.spinner className="animate-spin mr-2"/> : <Sparkles className="mr-2 size-4" />}
-                                Wygeneruj finalne podsumowanie
+                                Wygeneruj podsumowanie z AI
                             </Button>
                         </div>
                     </CardContent>
@@ -241,9 +214,7 @@ function AiPrepView({ meeting, users, tasks }: { meeting: Meeting; users: User[]
         setIsLoading(true);
         setError(null);
         try {
-            const response = await fetch('/api/proxy/ai_help', {
-                method: 'GET',
-            });
+            const response = await fetch('/api/proxy/ai_help');
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.message || 'Wystąpił błąd podczas generowania podpowiedzi.');
@@ -255,19 +226,22 @@ function AiPrepView({ meeting, users, tasks }: { meeting: Meeting; users: User[]
         } finally {
             setIsLoading(false);
         }
-    }, [meeting]);
+    }, []);
 
     useEffect(() => {
         getPrepData();
     }, [getPrepData]);
 
     const ParsedContent = ({ content }: { content: string }) => {
-        const lines = content.split('\\n');
+        const lines = content.split(/\\n/g);
         return (
-            <div className="space-y-2">
+            <div className="space-y-2 prose prose-sm prose-invert max-w-none">
                 {lines.map((line, index) => {
                     if (line.startsWith('####')) {
-                        return <h5 key={index} className="text-md font-semibold mt-4 mb-2">{line.replace('####', '').trim()}</h5>;
+                        return <h5 key={index} className="text-md font-semibold mt-4 mb-2 text-foreground">{line.replace(/####/g, '').trim()}</h5>;
+                    }
+                     if (line.startsWith('- ')) {
+                        return <li key={index} className="text-sm text-muted-foreground ml-4">{line.substring(2)}</li>
                     }
                     
                     const parts = line.split(/(\*\*.*?\*\*)/g);
@@ -402,20 +376,24 @@ export default function MeetingsClient({ initialMeetings, initialTasks }: { init
         setIsSheetOpen(false);
     };
     
-    const handleSummaryGenerated = (summary: string) => {
+    const handleSummaryGenerated = async (summary: string) => {
       if (selectedMeeting) {
         const updatedMeeting = { ...selectedMeeting, summary };
-        setSelectedMeeting(updatedMeeting);
         
-        // Also update it in the main list
-        setMeetings(prevMeetings => prevMeetings.map(m => m.id === selectedMeeting.id ? updatedMeeting : m));
-
-        // You might want to persist this change to the backend automatically
-        fetch(`/api/meetings/${selectedMeeting.id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updatedMeeting)
-        });
+        try {
+            const response = await fetch(`/api/meetings/${selectedMeeting.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedMeeting)
+            });
+            if (!response.ok) throw new Error("Failed to save summary.");
+            
+            setSelectedMeeting(updatedMeeting);
+            setMeetings(prevMeetings => prevMeetings.map(m => m.id === selectedMeeting.id ? updatedMeeting : m));
+            toast({ title: "Podsumowanie zapisane!", description: "Nowe podsumowanie zostało zapisane w bazie danych." });
+        } catch (error) {
+            toast({ title: "Błąd zapisu", description: error instanceof Error ? error.message : "Unknown error.", variant: 'destructive' });
+        }
       }
     };
 
@@ -518,7 +496,7 @@ export default function MeetingsClient({ initialMeetings, initialTasks }: { init
                                 </TabsContent>
                                  <TabsContent value="transcription" className="m-0">
                                     <TranscriptionView meeting={selectedMeeting} onSummaryGenerated={handleSummaryGenerated} />
-                                </TabsContent>
+                                 </TabsContent>
                             </ScrollArea>
                         </Tabs>
                      ) : (

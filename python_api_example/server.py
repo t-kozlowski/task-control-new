@@ -47,6 +47,7 @@ def transcribe_audio():
         
         # Zapisz plik audio tymczasowo na serwerze
         # OpenAI potrzebuje dostępu do pliku, a nie surowych bajtów w tym przypadku
+        # Plik musi mieć rozszerzenie, np. .webm, .mp3, .wav
         temp_filename = f"{uuid.uuid4()}.webm"
         temp_filepath = os.path.join(TEMP_DIR, temp_filename)
         
@@ -55,17 +56,17 @@ def transcribe_audio():
 
         # Wyślij plik do API OpenAI Whisper w celu transkrypcji
         with open(temp_filepath, 'rb') as audio_file:
-            transcription = client.audio.transcriptions.create(
+            transcription_response = client.audio.transcriptions.create(
                 model="whisper-1", 
                 file=audio_file,
-                response_format="text" # Możesz zmienić na 'json', 'verbose_json' itp.
+                response_format="text"
             )
         
         # Usuń tymczasowy plik po przetworzeniu
         os.remove(temp_filepath)
             
         # Zwróć wynik transkrypcji
-        return jsonify({"transcript": transcription})
+        return jsonify({"transcript": transcription_response})
 
     except Exception as e:
         print(f"Error during transcription: {e}")
@@ -78,26 +79,54 @@ def transcribe_audio():
 def get_ai_help():
     """
     Przykładowy endpoint, który może być użyty do generowania podpowiedzi AI.
+    W przyszłości można tu dodać logikę wywołania modelu GPT.
     """
-    # Tutaj możesz dodać logikę do generowania podpowiedzi
-    # np. na podstawie danych z bazy, innych API itp.
-    # W tym przykładzie zwracamy statyczną odpowiedź.
-    
     mock_response = {
         "message": (
-            "#### Sentyment Projektu: Pozytywny ####\\n"
-            "**Uzasadnienie:** Większość kluczowych zadań jest w toku, a ostatnie punkty akcji zostały zamknięte.\\n\\n"
-            "#### Proponowana Agenda: ####\\n"
-            "- Omówienie statusu zadania **'Integracja z API płatności'** - czy potrzebne jest wsparcie?\\n"
-            "- Potwierdzenie terminów dla sprintu #3.\\n\n"
-            "#### Pytania do Zadania: ####\\n"
-            "- **Do Ani (UX):** Czy mamy już finalne makiety dla nowego profilu użytkownika?\\n"
-            "- **Do Bartka (Backend):** Jakie są największe wyzwania związane z refaktoryzacją modułu X?\\n\n"
-            "#### Pozytywy do Podkreślenia: ####\\n"
-            "- Gratulacje dla zespołu za ukończenie wdrożenia na środowisko testowe przed terminem!\\n"
+            "#### Sentyment Projektu: Pozytywny ####\n"
+            "**Uzasadnienie:** Większość kluczowych zadań jest w toku, a ostatnie punkty akcji zostały zamknięte.\n\n"
+            "#### Proponowana Agenda: ####\n"
+            "- Omówienie statusu zadania **'Integracja z API płatności'** - czy potrzebne jest wsparcie?\n"
+            "- Potwierdzenie terminów dla sprintu #3.\n\n"
+            "#### Pytania do Zadania: ####\n"
+            "- **Do Ani (UX):** Czy mamy już finalne makiety dla nowego profilu użytkownika?\n"
+            "- **Do Bartka (Backend):** Jakie są największe wyzwania związane z refaktoryzacją modułu X?\n\n"
+            "#### Pozytywy do Podkreślenia: ####\n"
+            "- Gratulacje dla zespołu za ukończenie wdrożenia na środowisko testowe przed terminem!\n"
         )
     }
     return jsonify(mock_response)
+
+@app.route('/redact_notes', methods=['POST'])
+def redact_notes_endpoint():
+    """
+    Endpoint do redagowania notatek przy użyciu modelu językowego OpenAI.
+    """
+    if not request.is_json:
+        return jsonify({"error": "Request must be JSON"}), 400
+
+    data = request.get_json()
+    notes = data.get('notes')
+
+    if not notes:
+        return jsonify({"error": "Missing 'notes' in request body"}), 400
+
+    try:
+        # Wywołanie API OpenAI do zredagowania notatek
+        completion = client.chat.completions.create(
+            model="gpt-3.5-turbo", # lub inny model, np. gpt-4
+            messages=[
+                {"role": "system", "content": "Jesteś asystentem AI, który specjalizuje się w tworzeniu profesjonalnych notatek ze spotkań. Twoim zadaniem jest przekształcenie surowych, nieformalnych notatek w zwięzłe i dobrze zorganizowane podsumowanie."},
+                {"role": "user", "content": f"Zredaguj następujące notatki: \n\n{notes}"}
+            ]
+        )
+        
+        redacted_summary = completion.choices[0].message.content
+        return jsonify({"redactedSummary": redacted_summary})
+
+    except Exception as e:
+        print(f"Error during note redaction: {e}")
+        return jsonify({"error": f"An error occurred during note redaction: {str(e)}"}), 500
 
 
 if __name__ == '__main__':
