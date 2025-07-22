@@ -36,7 +36,7 @@ function AiPrepView({ meeting, users, tasks }: { meeting: Meeting; users: User[]
         setIsLoading(true);
         setError(null);
         try {
-            const response = await fetch('http://10.73.0.148:5000/ai_help', {
+            const response = await fetch('/api/proxy/ai_help', {
                 method: 'GET',
             });
             if (!response.ok) {

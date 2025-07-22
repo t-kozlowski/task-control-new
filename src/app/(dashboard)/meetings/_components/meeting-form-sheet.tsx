@@ -105,7 +105,7 @@ export function MeetingFormSheet({ open, onOpenChange, meeting, onMeetingSaved, 
     }
     setIsRedacting(true);
     try {
-      const response = await fetch(`http://10.73.0.148:5000/redact_notes`, {
+      const response = await fetch(`/api/proxy/redact_notes`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

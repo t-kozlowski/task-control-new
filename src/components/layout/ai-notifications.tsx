@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -16,7 +15,7 @@ export function AiNotifications() {
     setError(null);
     setNotification(null);
     try {
-      const res = await fetch(`http://10.73.0.148:5000/generate_summary`);
+      const res = await fetch(`/api/proxy/generate_summary`);
       if (!res.ok) {
         let errorData;
         try {

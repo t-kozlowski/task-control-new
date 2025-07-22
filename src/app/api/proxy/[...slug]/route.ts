@@ -25,8 +25,9 @@ async function handler(request: Request, { params }: { params: { slug: string[] 
       headers: {
         'Content-Type': 'application/json',
       },
-      body: request.method !== 'GET' ? await request.text() : undefined,
-    });
+      body: request.method !== 'GET' && request.body ? request.body : undefined,
+      duplex: 'half',
+    } as RequestInit);
 
     if (!response.ok) {
       const errorText = await response.text();
