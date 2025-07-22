@@ -7,9 +7,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Icons } from '@/components/icons';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import type { ProjectSummaryOutput } from '@/ai/flows/project-summary';
 import { AlertTriangle, Lightbulb, CheckCircle, FlaskConical, File } from 'lucide-react';
 import { useSettings } from '@/context/settings-context';
+
+interface ProjectSummaryOutput {
+  summary: string;
+  risks: string[];
+  recommendations: string[];
+}
+
 
 export default function AiTestPage() {
   const [result, setResult] = useState<ProjectSummaryOutput | null>(null);
@@ -23,20 +29,29 @@ export default function AiTestPage() {
     setResult(null);
 
     try {
-      const response = await fetch('/api/ai/summary');
+      // Endpoint jest teraz proxy do serwera Pythona
+      const response = await fetch('/api/proxy/project_summary', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        // W prawdziwej aplikacji wysłalibyśmy tutaj prawdziwe dane
+        body: JSON.stringify({
+          tasks: [], // Przykładowe dane
+          directives: [], // Przykładowe dane
+        })
+      });
       
       const responseBody = await response.text();
       
       if (!response.ok) {
         let errorData;
         try {
-          // Try to parse the error response as JSON
           errorData = JSON.parse(responseBody);
         } catch (e) {
-            // If it's not JSON, it's an unexpected server error (e.g., HTML error page)
             throw new Error(`Server returned non-JSON error (status: ${response.status}): ${responseBody.substring(0, 100)}...`);
         }
-        throw new Error(errorData.message || `An unknown server error occurred (status: ${response.status}).`);
+        throw new Error(errorData.error || `An unknown server error occurred (status: ${response.status}).`);
       }
       
       const data: ProjectSummaryOutput = JSON.parse(responseBody);
@@ -57,9 +72,9 @@ export default function AiTestPage() {
         </div>
       <Card>
         <CardHeader>
-          <CardTitle>Test Głównego Przepływu Analitycznego</CardTitle>
+          <CardTitle>Test Głównego Przepływu Analitycznego (przez Python API)</CardTitle>
           <CardDescription>
-            Kliknij przycisk poniżej, aby wywołać przepływ AI `getProjectSummary` i sprawdzić, czy otrzymujemy poprawną, ustrukturyzowaną odpowiedź od modelu Gemini.
+            Kliknij przycisk poniżej, aby wywołać endpoint `/api/proxy/project_summary` i sprawdzić, czy otrzymujemy poprawną, ustrukturyzowaną odpowiedź od modelu AI przez serwer Pythona.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

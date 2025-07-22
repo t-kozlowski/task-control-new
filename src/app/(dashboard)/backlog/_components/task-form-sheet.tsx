@@ -104,14 +104,17 @@ export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved, users, ta
 
     setIsSuggesting(true);
     try {
-      const response = await fetch('/api/ai/suggest-description', {
+      const response = await fetch('/api/proxy/suggest_task_description', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ taskName }),
       });
-      if (!response.ok) throw new Error('Nie udało się wygenerować opisu.');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Nie udało się wygenerować opisu.');
+      }
       const data = await response.json();
       setValue('description', data.suggestedDescription, { shouldValidate: true });
       toast({

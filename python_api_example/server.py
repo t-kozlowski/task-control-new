@@ -2,6 +2,7 @@
 import os
 import base64
 import uuid
+import json
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from openai import OpenAI
@@ -46,8 +47,6 @@ def transcribe_audio():
         audio_data = base64.b64decode(encoded)
         
         # Zapisz plik audio tymczasowo na serwerze
-        # OpenAI potrzebuje dostępu do pliku, a nie surowych bajtów w tym przypadku
-        # Plik musi mieć rozszerzenie, np. .webm, .mp3, .wav
         temp_filename = f"{uuid.uuid4()}.webm"
         temp_filepath = os.path.join(TEMP_DIR, temp_filename)
         
@@ -62,40 +61,14 @@ def transcribe_audio():
                 response_format="text"
             )
         
-        # Usuń tymczasowy plik po przetworzeniu
         os.remove(temp_filepath)
-            
-        # Zwróć wynik transkrypcji
         return jsonify({"transcript": transcription_response})
 
     except Exception as e:
         print(f"Error during transcription: {e}")
-        # Usuń tymczasowy plik w razie błędu
         if 'temp_filepath' in locals() and os.path.exists(temp_filepath):
             os.remove(temp_filepath)
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
-
-@app.route('/ai_help', methods=['GET'])
-def get_ai_help():
-    """
-    Przykładowy endpoint, który może być użyty do generowania podpowiedzi AI.
-    W przyszłości można tu dodać logikę wywołania modelu GPT.
-    """
-    mock_response = {
-        "message": (
-            "#### Sentyment Projektu: Pozytywny ####\n"
-            "**Uzasadnienie:** Większość kluczowych zadań jest w toku, a ostatnie punkty akcji zostały zamknięte.\n\n"
-            "#### Proponowana Agenda: ####\n"
-            "- Omówienie statusu zadania **'Integracja z API płatności'** - czy potrzebne jest wsparcie?\n"
-            "- Potwierdzenie terminów dla sprintu #3.\n\n"
-            "#### Pytania do Zadania: ####\n"
-            "- **Do Ani (UX):** Czy mamy już finalne makiety dla nowego profilu użytkownika?\n"
-            "- **Do Bartka (Backend):** Jakie są największe wyzwania związane z refaktoryzacją modułu X?\n\n"
-            "#### Pozytywy do Podkreślenia: ####\n"
-            "- Gratulacje dla zespołu za ukończenie wdrożenia na środowisko testowe przed terminem!\n"
-        )
-    }
-    return jsonify(mock_response)
 
 @app.route('/redact_notes', methods=['POST'])
 def redact_notes_endpoint():
@@ -112,9 +85,8 @@ def redact_notes_endpoint():
         return jsonify({"error": "Missing 'notes' in request body"}), 400
 
     try:
-        # Wywołanie API OpenAI do zredagowania notatek
         completion = client.chat.completions.create(
-            model="gpt-3.5-turbo", # lub inny model, np. gpt-4
+            model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "Jesteś asystentem AI, który specjalizuje się w tworzeniu profesjonalnych notatek ze spotkań. Twoim zadaniem jest przekształcenie surowych, nieformalnych notatek w zwięzłe i dobrze zorganizowane podsumowanie."},
                 {"role": "user", "content": f"Zredaguj następujące notatki: \n\n{notes}"}
@@ -128,7 +100,166 @@ def redact_notes_endpoint():
         print(f"Error during note redaction: {e}")
         return jsonify({"error": f"An error occurred during note redaction: {str(e)}"}), 500
 
+@app.route('/project_summary', methods=['POST'])
+def project_summary():
+    """
+    Generuje strategiczne podsumowanie projektu na podstawie zadań i dyrektyw.
+    """
+    if not request.is_json:
+        return jsonify({"error": "Request must be JSON"}), 400
+    
+    data = request.get_json()
+    tasks = data.get('tasks')
+    directives = data.get('directives')
+
+    if not tasks:
+        return jsonify({"error": "Missing 'tasks' in request body"}), 400
+    
+    prompt_content = f"""
+    Jesteś głównym analitykiem strategicznym AI w projekcie. Twoim zadaniem jest dostarczenie zwięzłego, ale wnikliwego podsumowania dla zarządu.
+
+    Przeanalizuj poniższą listę zadań oraz dyrektywy strategiczne.
+
+    Dane wejściowe:
+    - Zadania: {json.dumps(tasks)}
+    - Dyrektywy: {json.dumps(directives)}
+
+    Twoje zadania:
+    1. Wygeneruj Podsumowanie (summary): Stwórz 2-3 zdaniowe podsumowanie ogólnego stanu projektu.
+    2. Zidentyfikuj Ryzyka (risks): Wskaż 2-3 najważniejsze ryzyka.
+    3. Zaproponuj Rekomendacje (recommendations): Podaj 2-3 konkretne, możliwe do wdrożenia rekomendacje.
+
+    Odpowiedź zwróć w formacie JSON z kluczami: "summary", "risks", "recommendations".
+    """
+
+    try:
+        completion = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "Zwracasz odpowiedzi w formacie JSON."},
+                {"role": "user", "content": prompt_content}
+            ],
+            response_format={"type": "json_object"}
+        )
+        response_data = json.loads(completion.choices[0].message.content)
+        return jsonify(response_data)
+
+    except Exception as e:
+        print(f"Error during project summary: {e}")
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+
+@app.route('/ai_notification', methods=['POST'])
+def ai_notification():
+    """
+    Generuje powiadomienie AI na podstawie zadań i dyrektywy.
+    """
+    if not request.is_json:
+        return jsonify({"error": "Request must be JSON"}), 400
+    
+    data = request.get_json()
+    tasks = data.get('tasks')
+    directive = data.get('directive')
+
+    if not tasks:
+        return jsonify({"error": "Missing 'tasks' in request body"}), 400
+
+    prompt_content = f"""
+    Jesteś strategicznym asystentem AI. Przeanalizuj listę zadań i dyrektywę.
+    
+    Zadania: {json.dumps(tasks)}
+    Dyrektywa: {directive}
+    
+    Wygeneruj powiadomienie (1-2 zdania) i skategoryzuj je jako 'risk', 'positive', lub 'suggestion'.
+    Jeśli masz pomysł na zupełnie NOWE zadanie inspirowane dyrektywą, dodaj je w polu 'newTaskSuggestion' z polami 'name' i 'description'.
+
+    Odpowiedź zwróć w formacie JSON z kluczami: "notification", "type", "newTaskSuggestion" (opcjonalnie).
+    """
+
+    try:
+        completion = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "Zwracasz odpowiedzi w formacie JSON."},
+                {"role": "user", "content": prompt_content}
+            ],
+            response_format={"type": "json_object"}
+        )
+        response_data = json.loads(completion.choices[0].message.content)
+        return jsonify(response_data)
+
+    except Exception as e:
+        print(f"Error during AI notification: {e}")
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+
+
+@app.route('/suggest_task_description', methods=['POST'])
+def suggest_task_description():
+    """
+    Sugeruje opis zadania na podstawie jego nazwy.
+    """
+    if not request.is_json:
+        return jsonify({"error": "Request must be JSON"}), 400
+    
+    data = request.get_json()
+    task_name = data.get('taskName')
+
+    if not task_name:
+        return jsonify({"error": "Missing 'taskName' in request body"}), 400
+
+    prompt_content = f"""
+    Jesteś ekspertem w zarządzaniu projektami. Przekształć nazwę zadania w szczegółowy, profesjonalny opis.
+    Nazwa zadania: "{task_name}"
+    
+    Odpowiedź zwróć w formacie JSON z kluczem: "suggestedDescription".
+    """
+
+    try:
+        completion = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "Zwracasz odpowiedzi w formacie JSON."},
+                {"role": "user", "content": prompt_content}
+            ],
+            response_format={"type": "json_object"}
+        )
+        response_data = json.loads(completion.choices[0].message.content)
+        return jsonify(response_data)
+
+    except Exception as e:
+        print(f"Error during task description suggestion: {e}")
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+
+
+@app.route('/suggest_burndown_values', methods=['POST'])
+def suggest_burndown_values():
+    """
+    Sugeruje wartości dla wykresu spalania.
+    """
+    # Ta funkcja wymagałaby bardziej złożonej logiki,
+    # np. analizy dat w zadaniach, więc na razie zwraca mockowe dane.
+    # W pełnej implementacji tutaj znalazłby się kod analizujący daty z 'allTasks'.
+    mock_response = {
+      "suggestedActual": 15,
+      "suggestedIdeal": 12,
+      "reasoning": "Sugerowane wartości na podstawie mockowego endpointu w Pythonie."
+    }
+    return jsonify(mock_response)
+
+@app.route('/meeting_prep', methods=['POST'])
+def meeting_prep():
+    """
+    Generuje przygotowanie do spotkania.
+    """
+    # Podobnie jak wyżej, to jest przykład, który można rozbudować.
+    mock_response = {
+        "overallSentiment": "neutral",
+        "sentimentReasoning": "Przykładowy sentyment z serwera Pythona.",
+        "discussionPoints": ["Omówienie statusu zadania X", "Dyskusja nad blokadami w zadaniu Y"],
+        "questionsToAsk": ["Jakie są główne przeszkody?", "Czy potrzebujecie dodatkowych zasobów?"],
+        "talkingPoints": ["Gratulacje dla zespołu za ukończenie sprintu!"]
+    }
+    return jsonify(mock_response)
+
 
 if __name__ == '__main__':
-    # Uruchom serwer na porcie 5000, dostępny w sieci lokalnej
     app.run(host='0.0.0.0', port=5000, debug=True)

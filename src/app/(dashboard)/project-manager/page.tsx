@@ -148,10 +148,15 @@ export default function ProjectManagerPage() {
   const handleSuggestValues = async () => {
     setIsSuggesting(true);
     try {
-        const response = await fetch('/api/ai/suggest-burndown', {
+        const response = await fetch('/api/proxy/suggest_burndown_values', {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ allTasks: tasks }),
         });
-        if (!response.ok) throw new Error('Nie udało się pobrać sugestii AI.');
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Nie udało się pobrać sugestii AI.');
+        }
         const data = await response.json();
         setNewPoint(prev => ({
             ...prev,

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -6,8 +7,16 @@ import { Button } from '../ui/button';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useSettings } from '@/context/settings-context';
 import { useToast } from '@/hooks/use-toast';
-import type { AiNotificationOutput } from '@/ai/flows/ai-notifications';
+import { Task } from '@/types';
 
+interface AiNotificationOutput {
+  notification: string;
+  type: 'risk' | 'positive' | 'suggestion';
+  newTaskSuggestion?: {
+    name: string;
+    description: string;
+  };
+}
 
 export function AiNotifications() {
   const [notification, setNotification] = useState<AiNotificationOutput | null>(null);
@@ -21,7 +30,19 @@ export function AiNotifications() {
     setError(null);
     setNotification(null);
     try {
-      const res = await fetch(`/api/ai/notification`);
+      // W prawdziwej aplikacji pobralibyśmy te dane dynamicznie
+      const tasks: Task[] = await (await fetch('/api/tasks')).json();
+      const directives: {id: string, text: string}[] = await (await fetch('/api/directives')).json();
+
+      const res = await fetch(`/api/proxy/ai_notification`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tasks: tasks,
+          directive: directives.length > 0 ? directives[0].text : ''
+        }),
+      });
+
       if (!res.ok) {
         let errorData;
         try {
@@ -29,7 +50,7 @@ export function AiNotifications() {
         } catch (e) {
           throw new Error(`Server returned non-JSON error (status: ${res.status})`);
         }
-        throw new Error(errorData.message || `An unknown server error occurred (status: ${res.status}).`);
+        throw new Error(errorData.error || `An unknown server error occurred (status: ${res.status}).`);
       }
       const newNotification: AiNotificationOutput = await res.json();
       setNotification(newNotification);
