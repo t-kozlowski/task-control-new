@@ -1,3 +1,4 @@
+
 // WAŻNE: Wszystkie funkcje AI w tej aplikacji są obsługiwane przez zewnętrzny serwer w Pythonie,
 // który korzysta z API OpenAI. Poniższe komponenty (TranscriptionView, AiPrepView)
 // wysyłają zapytania do odpowiednich endpointów w Pythonie przez proxy.
@@ -162,9 +163,9 @@ function TranscriptionView({ meeting, onSummaryGenerated }: { meeting: Meeting; 
                 </div>
                 <div className="flex items-center gap-4">
                     {isRecording && (
-                        <div className="flex items-center gap-2 text-sm text-destructive animate-pulse">
-                            <div className="size-2 rounded-full bg-destructive" />
-                            <span>{new Date(recordingTime * 1000).toISOString().substr(14, 5)}</span>
+                        <div className="flex items-center gap-2 text-destructive animate-pulse bg-destructive/20 text-destructive-foreground px-3 py-1.5 rounded-md">
+                            <div className="size-2.5 rounded-full bg-destructive" />
+                            <span className="font-mono text-lg font-semibold">{new Date(recordingTime * 1000).toISOString().substr(14, 5)}</span>
                         </div>
                     )}
                     <Button onClick={isRecording ? handleStopRecording : handleStartRecording} disabled={isProcessing} size="lg">
