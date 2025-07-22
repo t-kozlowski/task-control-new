@@ -1,3 +1,4 @@
+
 // src/app/(dashboard)/schedule/_components/schedule-client.tsx
 'use client';
 import { useMemo } from 'react';
@@ -13,6 +14,7 @@ export default function ScheduleClient({ tasks }: { tasks: Task[] }) {
 
   const tasksByDate = useMemo(() => {
     const map = new Map<string, Task[]>();
+    if (!tasks) return map; // Fix: Check if tasks is defined
     tasks.forEach(task => {
       if (task.dueDate && !task.parentId) { // Only main tasks
         const dateKey = task.dueDate;
