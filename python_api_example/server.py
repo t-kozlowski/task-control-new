@@ -1,3 +1,8 @@
+# WAŻNE: Ten serwer w Pythonie jest centralnym punktem dla wszystkich operacji AI w tej aplikacji.
+# Należy tu implementować całą logikę komunikacji z API OpenAI (lub innymi modelami AI).
+# Aplikacja Next.js komunikuje się z tym serwerem przez endpointy proxy.
+# Pamiętaj, aby ustawić zmienną środowiskową OPENAI_API_KEY.
+
 # python_api_example/server.py
 import os
 import base64

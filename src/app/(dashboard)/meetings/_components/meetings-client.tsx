@@ -1,3 +1,7 @@
+// WAŻNE: Wszystkie funkcje AI w tej aplikacji są obsługiwane przez zewnętrzny serwer w Pythonie,
+// który korzysta z API OpenAI. Poniższe komponenty (TranscriptionView, AiPrepView)
+// wysyłają zapytania do odpowiednich endpointów w Pythonie przez proxy.
+
 // src/app/(dashboard)/meetings/_components/meetings-client.tsx
 'use client';
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
@@ -206,7 +210,7 @@ function TranscriptionView({ meeting, onSummaryGenerated }: { meeting: Meeting; 
 
 
 function AiPrepView({ meeting, users, tasks }: { meeting: Meeting; users: User[]; tasks: Task[] }) {
-    const [prepData, setPrepData] = useState<{message: string} | null>(null);
+    const [prepData, setPrepData] = useState<any | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -214,10 +218,15 @@ function AiPrepView({ meeting, users, tasks }: { meeting: Meeting; users: User[]
         setIsLoading(true);
         setError(null);
         try {
-            const response = await fetch('/api/proxy/ai_help');
+            // Mocked call to a new endpoint
+            const response = await fetch('/api/proxy/meeting_prep', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ meeting, users, tasks })
+            });
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'Wystąpił błąd podczas generowania podpowiedzi.');
+                throw new Error(errorData.error || 'Wystąpił błąd podczas generowania podpowiedzi.');
             }
             const data = await response.json();
             setPrepData(data);
@@ -226,40 +235,12 @@ function AiPrepView({ meeting, users, tasks }: { meeting: Meeting; users: User[]
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [meeting, users, tasks]);
 
     useEffect(() => {
         getPrepData();
     }, [getPrepData]);
 
-    const ParsedContent = ({ content }: { content: string }) => {
-        const lines = content.split(/\\n/g);
-        return (
-            <div className="space-y-2 prose prose-sm prose-invert max-w-none">
-                {lines.map((line, index) => {
-                    if (line.startsWith('####')) {
-                        return <h5 key={index} className="text-md font-semibold mt-4 mb-2 text-foreground">{line.replace(/####/g, '').trim()}</h5>;
-                    }
-                     if (line.startsWith('- ')) {
-                        return <li key={index} className="text-sm text-muted-foreground ml-4">{line.substring(2)}</li>
-                    }
-                    
-                    const parts = line.split(/(\*\*.*?\*\*)/g);
-
-                    return (
-                        <p key={index} className="text-sm text-muted-foreground">
-                            {parts.map((part, i) => {
-                                if (part.startsWith('**') && part.endsWith('**')) {
-                                    return <strong key={i} className="font-bold text-foreground">{part.slice(2, -2)}</strong>;
-                                }
-                                return part;
-                            })}
-                        </p>
-                    );
-                })}
-            </div>
-        );
-    };
 
     if (isLoading) {
         return <div className="p-6 flex items-center justify-center gap-2 text-muted-foreground"><Icons.spinner className="animate-spin" /> Ładowanie sugestii AI...</div>;
@@ -269,15 +250,32 @@ function AiPrepView({ meeting, users, tasks }: { meeting: Meeting; users: User[]
         return <div className="p-6 text-destructive">{error}</div>;
     }
     
-    if (!prepData || !prepData.message) {
+    if (!prepData) {
         return <div className="p-6 text-muted-foreground">Brak danych do wyświetlenia.</div>;
     }
 
     return (
         <div className="p-4 space-y-6">
-            <div className="p-4 rounded-lg border bg-secondary/50">
-                 <h4 className="font-semibold mb-2 text-primary">Podpowiedzi AI</h4>
-                 <ParsedContent content={prepData.message} />
+            <div className="p-4 rounded-lg border bg-secondary/50 space-y-4">
+                 <h4 className="font-semibold text-primary">Podpowiedzi AI do Spotkania</h4>
+                 <div>
+                    <h5 className="font-medium text-sm">Sugerowane Punkty Dyskusji</h5>
+                    <ul className="list-disc pl-5 text-muted-foreground text-sm">
+                        {prepData.discussionPoints.map((point: string, i: number) => <li key={i}>{point}</li>)}
+                    </ul>
+                 </div>
+                  <div>
+                    <h5 className="font-medium text-sm">Pytania do Zadania</h5>
+                    <ul className="list-disc pl-5 text-muted-foreground text-sm">
+                        {prepData.questionsToAsk.map((q: string, i: number) => <li key={i}>{q}</li>)}
+                    </ul>
+                 </div>
+                  <div>
+                    <h5 className="font-medium text-sm">Punkty do Rozmowy (Talking Points)</h5>
+                    <ul className="list-disc pl-5 text-muted-foreground text-sm">
+                        {prepData.talkingPoints.map((tp: string, i: number) => <li key={i}>{tp}</li>)}
+                    </ul>
+                 </div>
             </div>
         </div>
     );

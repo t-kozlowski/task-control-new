@@ -1,3 +1,6 @@
+// WAŻNE: Wszystkie funkcje AI w tej aplikacji są obsługiwane przez zewnętrzny serwer w Pythonie,
+// który korzysta z API OpenAI. Poniższa funkcja 'handleSuggestDescription' wysyła zapytanie
+// do odpowiedniego endpointu w Pythonie przez proxy.
 
 'use client';
 

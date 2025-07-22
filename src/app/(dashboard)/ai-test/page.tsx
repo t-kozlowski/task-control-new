@@ -1,3 +1,8 @@
+// WAŻNE: Wszystkie funkcje AI w tej aplikacji są obsługiwane przez zewnętrzny serwer w Pythonie,
+// który korzysta z API OpenAI. Nie należy implementować logiki AI bezpośrednio w tej aplikacji
+// przy użyciu Genkit lub innych bibliotek po stronie Next.js.
+// Ten komponent testuje połączenie z endpointem Pythona.
+
 // src/app/(dashboard)/ai-test/page.tsx
 'use client';
 
