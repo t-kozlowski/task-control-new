@@ -7,6 +7,7 @@ import ProjectStats from './_components/project-stats';
 import { KeyStats } from './_components/key-stats';
 import { AiNotifications } from '@/components/layout/ai-notifications';
 import HelpNeededBoard from './_components/help-needed-board';
+import { WelcomeCard } from './_components/welcome-card';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,6 +19,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <WelcomeCard />
       <AiNotifications />
       <HelpNeededBoard initialTasks={tasks} />
       <NoticeBoard tasks={tasks} initialVision={vision.text} />
