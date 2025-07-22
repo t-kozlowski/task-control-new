@@ -25,118 +25,207 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Mic, MicOff, Copy } from 'lucide-react';
+import { Mic, MicOff, Copy, Highlighter, MessagesSquare, Sparkles, AlertTriangle, FileText } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
+import type { TranscribeOutput } from '@/ai/flows/transcribe-audio';
 
-function TranscriptionView({ meeting }: { meeting: Meeting }) {
+
+function TranscriptionView({ meeting, onSummaryGenerated }: { meeting: Meeting; onSummaryGenerated: (summary: string) => void; }) {
     const { toast } = useToast();
     const [isRecording, setIsRecording] = useState(false);
-    const [transcript, setTranscript] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
+    const [recordingTime, setRecordingTime] = useState(0);
+    const [transcriptData, setTranscriptData] = useState<TranscribeOutput | null>(null);
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const audioChunksRef = useRef<Blob[]>([]);
+    const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+    const startTimer = () => {
+        timerIntervalRef.current = setInterval(() => {
+            setRecordingTime(prevTime => prevTime + 1);
+        }, 1000);
+    };
+
+    const stopTimer = () => {
+        if (timerIntervalRef.current) {
+            clearInterval(timerIntervalRef.current);
+            timerIntervalRef.current = null;
+        }
+        setRecordingTime(0);
+    };
 
     const handleStartRecording = async () => {
+        if (isRecording) return;
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+            mediaRecorderRef.current = new MediaRecorder(stream);
+            audioChunksRef.current = [];
+
             mediaRecorderRef.current.ondataavailable = (event) => {
                 audioChunksRef.current.push(event.data);
             };
-            mediaRecorderRef.current.onstop = handleStopRecording;
+
+            mediaRecorderRef.current.onstop = () => {
+                const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+                handleTranscription(audioBlob);
+                stream.getTracks().forEach(track => track.stop());
+            };
+
             mediaRecorderRef.current.start();
             setIsRecording(true);
-            setTranscript(null);
+            setTranscriptData(null);
+            setError(null);
+            startTimer();
         } catch (err) {
             console.error(err);
-            toast({ title: "Błąd", description: "Nie można uzyskać dostępu do mikrofonu lub format audio/webm nie jest wspierany.", variant: "destructive" });
+            toast({ title: "Błąd", description: "Nie można uzyskać dostępu do mikrofonu.", variant: "destructive" });
         }
     };
-
-    const handleStopRecording = async () => {
-        if (mediaRecorderRef.current && isRecording) {
-            mediaRecorderRef.current.stop();
-            mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
-        }
-        setIsRecording(false);
+    
+    const handleStopRecording = () => {
+      if (mediaRecorderRef.current && isRecording) {
+        mediaRecorderRef.current.stop();
+      }
+      setIsRecording(false);
+      stopTimer();
+    }
+    
+    const handleTranscription = async (audioBlob: Blob) => {
         if (audioChunksRef.current.length === 0) return;
-
-        setIsLoading(true);
-
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        audioChunksRef.current = [];
-
-        try {
-            const reader = new FileReader();
-            reader.readAsDataURL(audioBlob);
-            reader.onloadend = async () => {
-                const base64Audio = reader.result as string;
-
-                // Call the proxy which will forward to the Python backend
-                const response = await fetch('/api/proxy/transcribe_audio', {
+        setIsProcessing(true);
+        setError(null);
+        
+        const reader = new FileReader();
+        reader.readAsDataURL(audioBlob);
+        reader.onloadend = async () => {
+            const base64Audio = reader.result as string;
+            const attendeeNames = meeting.attendees.map(email => users.find(u => u.email === email)?.name || 'Unknown');
+            
+            try {
+                const response = await fetch('/api/ai/transcribe-audio', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ audioDataUri: base64Audio }),
+                    body: JSON.stringify({ audioDataUri: base64Audio, attendees: attendeeNames }),
                 });
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.error || errorData.message || 'Błąd transkrypcji na serwerze Python.');
+                    throw new Error(errorData.error || errorData.message || 'Błąd transkrypcji na serwerze.');
                 }
 
-                const result = await response.json();
-                setTranscript(result.transcript);
-                toast({ title: "Sukces", description: "Transkrypcja została pomyślnie wygenerowana." });
-            };
+                const result: TranscribeOutput = await response.json();
+                setTranscriptData(result);
+                toast({ title: "Sukces", description: "Transkrypcja została pomyślnie przetworzona." });
+            } catch (error) {
+                setError(error instanceof Error ? error.message : 'Nieznany błąd');
+                toast({ title: "Błąd transkrypcji", description: error instanceof Error ? error.message : 'Nieznany błąd', variant: "destructive" });
+            } finally {
+                setIsProcessing(false);
+            }
+        };
+    };
+
+    const handleGenerateSummary = async () => {
+        if (!transcriptData) return;
+        setIsProcessing(true);
+        try {
+            const response = await fetch('/api/ai/redact-notes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ notes: transcriptData.rawTranscript }), // Send the raw transcript for redaction
+            });
+             if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || errorData.message || 'Błąd generowania podsumowania.');
+            }
+            const result = await response.json();
+            onSummaryGenerated(result.redactedSummary);
+            toast({ title: "Sukces!", description: "Nowe podsumowanie zostało wygenerowane i wstawione." });
         } catch (error) {
             toast({ title: "Błąd", description: error instanceof Error ? error.message : 'Nieznany błąd', variant: "destructive" });
         } finally {
-            setIsLoading(false);
+            setIsProcessing(false);
         }
     };
-    
-    const handleCopy = (text: string) => {
-        navigator.clipboard.writeText(text);
-        toast({ title: 'Skopiowano!' });
-    }
 
-    const toggleRecording = () => {
-        if (isRecording) {
-            handleStopRecording();
-        } else {
-            handleStartRecording();
-        }
-    };
+    const { users } = useApp();
 
     return (
         <div className="p-4 space-y-4">
              <div className="p-4 border rounded-lg bg-secondary/30 flex items-center justify-between">
                 <div>
-                    <h4 className="font-semibold">Nagrywanie i Transkrypcja OpenAI</h4>
-                    <p className="text-sm text-muted-foreground">Nagraj spotkanie, a serwer Python zredaguje notatki z użyciem Whisper API.</p>
+                    <h4 className="font-semibold">Nagrywanie i Transkrypcja AI</h4>
+                    <p className="text-sm text-muted-foreground">Nagraj spotkanie, a AI przygotuje transkrypcję z podziałem na osoby.</p>
                 </div>
-                <Button onClick={toggleRecording} disabled={isLoading} size="lg">
-                    {isLoading ? <Icons.spinner className="animate-spin mr-2" /> : (isRecording ? <MicOff className="mr-2" /> : <Mic className="mr-2" />)}
-                    {isLoading ? "Przetwarzanie..." : (isRecording ? "Zatrzymaj" : "Rozpocznij Nagrywanie")}
-                </Button>
+                <div className="flex items-center gap-4">
+                    {isRecording && (
+                        <div className="flex items-center gap-2 text-sm text-destructive animate-pulse">
+                            <div className="size-2 rounded-full bg-destructive" />
+                            <span>{new Date(recordingTime * 1000).toISOString().substr(14, 5)}</span>
+                        </div>
+                    )}
+                    <Button onClick={isRecording ? handleStopRecording : handleStartRecording} disabled={isProcessing} size="lg">
+                        {isProcessing ? <Icons.spinner className="animate-spin mr-2" /> : (isRecording ? <MicOff className="mr-2" /> : <Mic className="mr-2" />)}
+                        {isProcessing ? "Przetwarzanie..." : (isRecording ? "Zatrzymaj" : "Rozpocznij Nagrywanie")}
+                    </Button>
+                </div>
             </div>
 
-            {transcript && (
-                <div className="space-y-4">
-                     <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className='text-lg'>Wynik transkrypcji</CardTitle>
-                            <Button variant="ghost" size="icon" onClick={() => handleCopy(transcript)}><Copy className="size-4"/></Button>
-                        </CardHeader>
-                        <CardContent>
-                            <Textarea 
-                              value={transcript}
-                              readOnly
-                              className="text-sm whitespace-pre-wrap font-mono bg-background h-64"
-                            />
-                        </CardContent>
-                    </Card>
+            {error && (
+                <div className="p-4 border rounded-lg bg-destructive/10 text-destructive flex items-center gap-3">
+                    <AlertTriangle className="size-5" />
+                    <div>
+                        <h5 className="font-semibold">Wystąpił błąd</h5>
+                        <p className="text-sm">{error}</p>
+                    </div>
                 </div>
+            )}
+
+            {transcriptData && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className='text-lg'>Wyniki Analizy AI</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        {/* Highlights */}
+                        <div>
+                           <h3 className="font-semibold flex items-center gap-2 mb-2"><Highlighter className="size-5 text-primary" /> Kluczowe Punkty</h3>
+                           <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+                             {transcriptData.highlights.map((h, i) => <li key={i}>{h}</li>)}
+                           </ul>
+                        </div>
+                        
+                         {/* Initial Summary */}
+                        <div>
+                           <h3 className="font-semibold flex items-center gap-2 mb-2"><FileText className="size-5 text-primary" /> Wstępne Podsumowanie</h3>
+                           <p className="text-sm text-muted-foreground p-3 bg-secondary/40 rounded-md">{transcriptData.initialSummary}</p>
+                        </div>
+
+                        {/* Speakers */}
+                        <div>
+                           <h3 className="font-semibold flex items-center gap-2 mb-2"><MessagesSquare className="size-5 text-primary" /> Dialog</h3>
+                           <div className="space-y-4 max-h-60 overflow-y-auto p-3 bg-secondary/40 rounded-md">
+                               {transcriptData.speakers.map((s, i) => (
+                                   <div key={i}>
+                                     <p className="font-semibold text-sm mb-1">{s.name}</p>
+                                     <div className="pl-4 border-l-2 border-primary/50 space-y-1 text-sm text-muted-foreground">
+                                         {s.lines.map((l, j) => <p key={j}>"{l}"</p>)}
+                                     </div>
+                                   </div>
+                               ))}
+                           </div>
+                        </div>
+                        
+                        <div className="flex justify-end">
+                            <Button onClick={handleGenerateSummary} disabled={isProcessing}>
+                                {isProcessing ? <Icons.spinner className="animate-spin mr-2"/> : <Sparkles className="mr-2 size-4" />}
+                                Wygeneruj finalne podsumowanie
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
             )}
         </div>
     );
@@ -313,6 +402,23 @@ export default function MeetingsClient({ initialMeetings, initialTasks }: { init
         setIsSheetOpen(false);
     };
     
+    const handleSummaryGenerated = (summary: string) => {
+      if (selectedMeeting) {
+        const updatedMeeting = { ...selectedMeeting, summary };
+        setSelectedMeeting(updatedMeeting);
+        
+        // Also update it in the main list
+        setMeetings(prevMeetings => prevMeetings.map(m => m.id === selectedMeeting.id ? updatedMeeting : m));
+
+        // You might want to persist this change to the backend automatically
+        fetch(`/api/meetings/${selectedMeeting.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedMeeting)
+        });
+      }
+    };
+
     const getAssigneeName = (email: string) => users.find(u => u.email === email)?.name || email;
 
     return (
@@ -411,7 +517,7 @@ export default function MeetingsClient({ initialMeetings, initialTasks }: { init
                                       </p>
                                 </TabsContent>
                                  <TabsContent value="transcription" className="m-0">
-                                    <TranscriptionView meeting={selectedMeeting} />
+                                    <TranscriptionView meeting={selectedMeeting} onSummaryGenerated={handleSummaryGenerated} />
                                 </TabsContent>
                             </ScrollArea>
                         </Tabs>

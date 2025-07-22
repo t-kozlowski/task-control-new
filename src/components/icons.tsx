@@ -35,7 +35,12 @@ import {
   Hand,
   Mic,
   MicOff,
-  Copy
+  Copy,
+  Highlighter,
+  MessagesSquare,
+  Sparkles,
+  AlertTriangle,
+  FileText,
 } from 'lucide-react';
 
 export const Icons = {
@@ -75,7 +80,12 @@ export const Icons = {
   help: Hand,
   mic: Mic,
   micOff: MicOff,
-  copy: Copy
+  copy: Copy,
+  highlighter: Highlighter,
+  messagesSquare: MessagesSquare,
+  sparkles: Sparkles,
+  alertTriangle: AlertTriangle,
+  fileText: FileText,
 };
 
 export const PriorityIcons = {
@@ -88,7 +98,7 @@ export const PriorityIcons = {
 export const ProjectIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg
         xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
+        viewBox="0 0 24"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
