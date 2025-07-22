@@ -23,6 +23,7 @@ export interface Task {
   date?: string; // Add date field for completion date tracking
   dueDate?: string | null; // Add due date field for burndown chart
   needsHelp?: boolean;
+  createdAt?: string;
 }
 
 export interface AiDirective {

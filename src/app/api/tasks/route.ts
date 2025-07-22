@@ -16,6 +16,11 @@ export async function POST(request: Request) {
     const newTask: Task = await request.json();
     const tasks = await getTasks();
     
+    // Ensure createdAt is set
+    if (!newTask.createdAt) {
+        newTask.createdAt = new Date().toISOString();
+    }
+    
     if (newTask.status === 'Done') {
         newTask.date = new Date().toISOString();
     }

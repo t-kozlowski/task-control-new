@@ -44,6 +44,7 @@ const taskSchema = z.object({
   dueDate: z.date({
     required_error: "Termin wykonania jest wymagany.",
   }),
+  createdAt: z.string().optional(), // Keep track of creation date
 });
 
 type TaskFormData = z.infer<typeof taskSchema>;
@@ -72,6 +73,7 @@ export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved, users, ta
         reset({
           ...task,
           dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
+          createdAt: task.createdAt,
         });
       } else {
         reset({
@@ -83,6 +85,7 @@ export function TaskFormSheet({ open, onOpenChange, task, onTaskSaved, users, ta
           status: 'Todo',
           parentId: null,
           dueDate: undefined,
+          createdAt: new Date().toISOString(),
         });
       }
     }
