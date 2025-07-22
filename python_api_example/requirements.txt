@@ -1,0 +1,13 @@
+# Wymagania dla przykładowego serwera w Pythonie
+
+# Biblioteka do tworzenia aplikacji webowych
+flask
+
+# Biblioteka do obsługi zapytań z innych domen (np. z Twojej aplikacji Next.js)
+flask-cors
+
+# Oficjalna biblioteka OpenAI do komunikacji z API
+openai
+
+# Biblioteka do wczytywania zmiennych środowiskowych z pliku .env
+python-dotenv

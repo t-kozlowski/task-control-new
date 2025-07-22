@@ -26,11 +26,12 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Mic, MicOff, Copy } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 
 function TranscriptionView({ meeting }: { meeting: Meeting }) {
     const { toast } = useToast();
     const [isRecording, setIsRecording] = useState(false);
-    const [transcript, setTranscript] = useState<{ raw: string, processed: string } | null>(null);
+    const [transcript, setTranscript] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const audioChunksRef = useRef<Blob[]>([]);
@@ -38,7 +39,7 @@ function TranscriptionView({ meeting }: { meeting: Meeting }) {
     const handleStartRecording = async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorderRef.current = new MediaRecorder(stream);
+            mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: 'audio/webm' });
             mediaRecorderRef.current.ondataavailable = (event) => {
                 audioChunksRef.current.push(event.data);
             };
@@ -47,17 +48,19 @@ function TranscriptionView({ meeting }: { meeting: Meeting }) {
             setIsRecording(true);
             setTranscript(null);
         } catch (err) {
-            toast({ title: "Błąd", description: "Nie można uzyskać dostępu do mikrofonu.", variant: "destructive" });
+            console.error(err);
+            toast({ title: "Błąd", description: "Nie można uzyskać dostępu do mikrofonu lub format audio/webm nie jest wspierany.", variant: "destructive" });
         }
     };
 
     const handleStopRecording = async () => {
         if (mediaRecorderRef.current && isRecording) {
             mediaRecorderRef.current.stop();
-            // Get stream tracks and stop them to turn off the mic indicator
             mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
         }
         setIsRecording(false);
+        if (audioChunksRef.current.length === 0) return;
+
         setIsLoading(true);
 
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
@@ -69,20 +72,21 @@ function TranscriptionView({ meeting }: { meeting: Meeting }) {
             reader.onloadend = async () => {
                 const base64Audio = reader.result as string;
 
-                const response = await fetch('/api/ai/transcribe-audio', {
+                // Call the proxy which will forward to the Python backend
+                const response = await fetch('/api/proxy/transcribe_audio', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ audioDataUri: base64Audio, attendees: meeting.attendees.length }),
+                    body: JSON.stringify({ audioDataUri: base64Audio }),
                 });
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.message || 'Błąd transkrypcji');
+                    throw new Error(errorData.error || errorData.message || 'Błąd transkrypcji na serwerze Python.');
                 }
 
                 const result = await response.json();
-                setTranscript({ raw: result.rawTranscript, processed: result.processedTranscript });
-                toast({ title: "Sukces", description: "Transkrypcja została wygenerowana." });
+                setTranscript(result.transcript);
+                toast({ title: "Sukces", description: "Transkrypcja została pomyślnie wygenerowana." });
             };
         } catch (error) {
             toast({ title: "Błąd", description: error instanceof Error ? error.message : 'Nieznany błąd', variant: "destructive" });
@@ -96,7 +100,6 @@ function TranscriptionView({ meeting }: { meeting: Meeting }) {
         toast({ title: 'Skopiowano!' });
     }
 
-    // This will toggle recording state
     const toggleRecording = () => {
         if (isRecording) {
             handleStopRecording();
@@ -109,8 +112,8 @@ function TranscriptionView({ meeting }: { meeting: Meeting }) {
         <div className="p-4 space-y-4">
              <div className="p-4 border rounded-lg bg-secondary/30 flex items-center justify-between">
                 <div>
-                    <h4 className="font-semibold">Nagrywanie spotkania</h4>
-                    <p className="text-sm text-muted-foreground">Nagraj spotkanie, a AI stworzy z niego notatki.</p>
+                    <h4 className="font-semibold">Nagrywanie i Transkrypcja OpenAI</h4>
+                    <p className="text-sm text-muted-foreground">Nagraj spotkanie, a serwer Python zredaguje notatki z użyciem Whisper API.</p>
                 </div>
                 <Button onClick={toggleRecording} disabled={isLoading} size="lg">
                     {isLoading ? <Icons.spinner className="animate-spin mr-2" /> : (isRecording ? <MicOff className="mr-2" /> : <Mic className="mr-2" />)}
@@ -121,21 +124,16 @@ function TranscriptionView({ meeting }: { meeting: Meeting }) {
             {transcript && (
                 <div className="space-y-4">
                      <Card>
-                        <CardHeader className="flex flex-row items-center justify-between">
-                            <CardTitle>Surowa Transkrypcja</CardTitle>
-                            <Button variant="ghost" size="icon" onClick={() => handleCopy(transcript.raw)}><Copy className="size-4"/></Button>
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <CardTitle className='text-lg'>Wynik transkrypcji</CardTitle>
+                            <Button variant="ghost" size="icon" onClick={() => handleCopy(transcript)}><Copy className="size-4"/></Button>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-sm whitespace-pre-wrap font-mono bg-background p-4 rounded-md h-48 overflow-y-auto">{transcript.raw}</p>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between">
-                           <CardTitle>Zredagowane Notatki AI</CardTitle>
-                           <Button variant="ghost" size="icon" onClick={() => handleCopy(transcript.processed)}><Copy className="size-4"/></Button>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm whitespace-pre-wrap font-mono bg-background p-4 rounded-md">{transcript.processed}</p>
+                            <Textarea 
+                              value={transcript}
+                              readOnly
+                              className="text-sm whitespace-pre-wrap font-mono bg-background h-64"
+                            />
                         </CardContent>
                     </Card>
                 </div>
