@@ -5,7 +5,7 @@
 
 // src/app/(dashboard)/meetings/_components/meetings-client.tsx
 'use client';
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef, ChangeEvent } from 'react';
 import type { Meeting, ActionItem, User, Task } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Icons } from '@/components/icons';
@@ -30,7 +30,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Mic, MicOff, Copy, Highlighter, MessagesSquare, Sparkles, AlertTriangle, FileText } from 'lucide-react';
+import { Mic, MicOff, Copy, Highlighter, MessagesSquare, Sparkles, AlertTriangle, FileText, Upload } from 'lucide-react';
 
 function TranscriptionView({ meeting, onSummaryGenerated }: { meeting: Meeting; onSummaryGenerated: (summary: string) => void; }) {
     const { toast } = useToast();
@@ -43,7 +43,7 @@ function TranscriptionView({ meeting, onSummaryGenerated }: { meeting: Meeting; 
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const audioChunksRef = useRef<Blob[]>([]);
     const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
-    const { users } = useApp();
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const startTimer = () => {
         timerIntervalRef.current = setInterval(() => {
@@ -96,7 +96,7 @@ function TranscriptionView({ meeting, onSummaryGenerated }: { meeting: Meeting; 
     }
     
     const handleTranscription = async (audioBlob: Blob) => {
-        if (audioChunksRef.current.length === 0) return;
+        if (!audioBlob) return;
         setIsProcessing(true);
         setError(null);
         
@@ -130,6 +130,18 @@ function TranscriptionView({ meeting, onSummaryGenerated }: { meeting: Meeting; 
         };
     };
 
+    const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            handleTranscription(file);
+        }
+    };
+
+    const handleUploadClick = () => {
+        fileInputRef.current?.click();
+    };
+
+
     const handleGenerateSummary = async () => {
         if (!transcriptData?.transcript) return;
         setIsProcessing(true);
@@ -159,7 +171,7 @@ function TranscriptionView({ meeting, onSummaryGenerated }: { meeting: Meeting; 
              <div className="p-4 border rounded-lg bg-secondary/30 flex items-center justify-between">
                 <div>
                     <h4 className="font-semibold">Nagrywanie i Transkrypcja AI</h4>
-                    <p className="text-sm text-muted-foreground">Nagraj spotkanie, a AI przygotuje transkrypcję.</p>
+                    <p className="text-sm text-muted-foreground">Nagraj spotkanie lub prześlij plik, a AI przygotuje transkrypcję.</p>
                 </div>
                 <div className="flex items-center gap-4">
                     {isRecording && (
@@ -168,6 +180,17 @@ function TranscriptionView({ meeting, onSummaryGenerated }: { meeting: Meeting; 
                             <span className="font-mono text-lg font-semibold">{new Date(recordingTime * 1000).toISOString().substr(14, 5)}</span>
                         </div>
                     )}
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        className="hidden"
+                        accept="audio/*"
+                    />
+                     <Button onClick={handleUploadClick} variant="outline" disabled={isProcessing || isRecording}>
+                        <Upload className="mr-2 h-4 w-4" />
+                        Prześlij plik
+                    </Button>
                     <Button onClick={isRecording ? handleStopRecording : handleStartRecording} disabled={isProcessing} size="lg">
                         {isProcessing ? <Icons.spinner className="animate-spin mr-2" /> : (isRecording ? <MicOff className="mr-2" /> : <Mic className="mr-2" />)}
                         {isProcessing ? "Przetwarzanie..." : (isRecording ? "Zatrzymaj" : "Rozpocznij Nagrywanie")}

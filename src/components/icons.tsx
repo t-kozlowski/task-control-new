@@ -41,6 +41,7 @@ import {
   Sparkles,
   AlertTriangle,
   FileText,
+  Upload,
 } from 'lucide-react';
 
 export const Icons = {
@@ -86,6 +87,7 @@ export const Icons = {
   sparkles: Sparkles,
   alertTriangle: AlertTriangle,
   fileText: FileText,
+  upload: Upload,
 };
 
 export const PriorityIcons = {
